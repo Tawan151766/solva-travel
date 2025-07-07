@@ -5,6 +5,8 @@ import { useState } from "react";
 export default function CustomTourModal({ isOpen, onClose }) {
   if (!isOpen) return null;
 
+  const [requireGuide, setRequireGuide] = useState(false);
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
       <div className="bg-[#231f10] rounded-lg p-6 w-full max-w-lg text-white relative">
@@ -83,6 +85,23 @@ export default function CustomTourModal({ isOpen, onClose }) {
               className="w-full px-3 py-2 rounded-lg bg-[#4a4221] text-white border-none"
               placeholder="0812345678"
             />
+          </div>
+          <div>
+            <label className="block mb-1 text-sm">
+              ต้องการไกด์นำเที่ยวหรือไม่?
+            </label>
+            <div className="flex items-center gap-2">
+              <input
+                id="requireGuide"
+                type="checkbox"
+                checked={requireGuide}
+                onChange={(e) => setRequireGuide(e.target.checked)}
+                className="accent-[#efc004] w-4 h-4"
+              />
+              <label htmlFor="requireGuide" className="text-sm">
+                ต้องการไกด์
+              </label>
+            </div>
           </div>
           <div className="pt-2">
             <button

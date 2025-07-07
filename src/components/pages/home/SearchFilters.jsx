@@ -5,6 +5,7 @@ import PriceRangeSlider from "@/components/ui/PriceRangeSlider";
 import { useTravelContext } from "@/contexts/TravelContext";
 import CustomTourModal from "./CustomTourModal";
 import { useState } from "react";
+import ButtonSolva from "@/components/ui/ButtonSolva";
 
 export function SearchFilters() {
   const { filters, updateFilters } = useTravelContext();
@@ -90,12 +91,11 @@ export function SearchFilters() {
           value={filters.city}
           onChange={handleCityChange}
         />
-        <button
+
+        <ButtonSolva
+          label="Customize Tour"
           onClick={() => setIsModalOpen(true)}
-          className="rounded-lg bg-[#efc004] text-[#231f10] font-medium px-4 py-2 hover:bg-[#ddb900] transition"
-        >
-          Customize Tour
-        </button>
+        />
       </div>
 
       <div className="@container">
