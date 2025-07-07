@@ -3,6 +3,8 @@
 import DropdownSelect from "@/components/ui/DropdownSelect";
 import PriceRangeSlider from "@/components/ui/PriceRangeSlider";
 import { useTravelContext } from "@/contexts/TravelContext";
+import CustomTourModal from "./CustomTourModal";
+import { useState } from "react";
 
 export function SearchFilters() {
   const { filters, updateFilters } = useTravelContext();
@@ -66,6 +68,7 @@ export function SearchFilters() {
   const handleRecommendedToggle = (checked) => {
     updateFilters({ isRecommendedOnly: checked });
   };
+  const [isModalOpen, setIsModalOpen] = useState(false);
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap justify-between gap-3 p-4">
@@ -87,13 +90,19 @@ export function SearchFilters() {
           value={filters.city}
           onChange={handleCityChange}
         />
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="rounded-lg bg-[#efc004] text-[#231f10] font-medium px-4 py-2 hover:bg-[#ddb900] transition"
+        >
+          Customize Tour
+        </button>
       </div>
 
       <div className="@container">
         <div className="flex h-[38px] w-full pt-1.5">
-          <PriceRangeSlider 
+          <PriceRangeSlider
             value={filters.priceRange}
-            onChange={handlePriceRangeChange} 
+            onChange={handlePriceRangeChange}
           />
         </div>
       </div>
@@ -120,6 +129,10 @@ export function SearchFilters() {
           </label>
         </div>
       </div>
+      <CustomTourModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </div>
   );
 }
