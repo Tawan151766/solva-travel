@@ -31,15 +31,15 @@ export function Navbar() {
         <nav className="hidden lg:flex items-center gap-9">
           <a
             className="text-white text-sm font-medium leading-normal hover:text-[#efc004] transition-colors"
-            href="#"
+            href="/"
           >
             Home
           </a>
           <a
             className="text-white text-sm font-medium leading-normal hover:text-[#efc004] transition-colors"
-            href="#"
+            href="/staff"
           >
-            Explore
+            Our Staff
           </a>
           <a
             className="text-white text-sm font-medium leading-normal hover:text-[#efc004] transition-colors"
