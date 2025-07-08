@@ -1,12 +1,24 @@
-export function TravelCard({ imageUrl, title, location }) {
+export function TravelCard({ imageUrl, title, location, price, duration }) {
   return (
     <div className="flex flex-col gap-3 pb-3">
-      <div
-        className="w-full bg-center bg-no-repeat aspect-video bg-cover rounded-lg cursor-pointer hover:scale-105 transition-transform duration-200"
-        style={{
-          backgroundImage: `url("${imageUrl}")`
-        }}
-      />
+      <div className="relative">
+        <div
+          className="w-full bg-center bg-no-repeat aspect-video bg-cover rounded-lg cursor-pointer hover:scale-105 transition-transform duration-200"
+          style={{
+            backgroundImage: `url("${imageUrl}")`
+          }}
+        />
+        {/* Price Tag */}
+        <div className="absolute top-3 right-3 bg-[#efc004] text-[#231f10] px-3 py-1 rounded-full text-sm font-bold">
+          {price}
+        </div>
+        {/* Duration Tag */}
+        {duration && (
+          <div className="absolute bottom-3 left-3 bg-black/70 text-white px-3 py-1 rounded-full text-sm font-medium">
+            {duration}
+          </div>
+        )}
+      </div>
       <div>
         <p className="text-white text-base font-medium leading-normal">
           {title}
