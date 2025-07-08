@@ -1,7 +1,7 @@
 "use client";
 
 import { notFound } from "next/navigation";
-import { Suspense } from "react";
+import { Suspense, use } from "react";
 import { useStaffContext } from "@/core/context";
 import { StaffProfile } from "@/components/pages/staff/StaffProfile";
 import { ReviewStats } from "@/components/pages/staff/ReviewStats";
@@ -11,7 +11,8 @@ import { ReviewsErrorWrapper } from "@/components/pages/staff/ReviewsErrorBounda
 import { ReviewsLoading } from "@/components/pages/staff/ReviewsLoading";
 
 export default function StaffPage({ params }) {
-  const { id } = params;
+  // Unwrap params Promise using React.use()
+  const { id } = use(params);
   const { allStaffData, allReviewsData, getStaffReviewStats } = useStaffContext();
 
   // Find staff member
@@ -36,7 +37,7 @@ export default function StaffPage({ params }) {
         {/* Staff Navigation */}
         <StaffNavigation 
           currentStaffId={id}
-          allStaff={staffData}
+          allStaff={allStaffData}
         />
 
         {/* Header */}

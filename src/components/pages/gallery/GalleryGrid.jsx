@@ -4,7 +4,7 @@ import { useState } from "react";
 import { GalleryImageCard } from "./GalleryImageCard";
 import { ImageModal } from "./ImageModal";
 import { CategoryFilter } from "./CategoryFilter";
-import { useGallery } from "@/core/context";
+import { useGalleryContext } from "@/core/context";
 
 const galleryImages = [
   {
@@ -82,7 +82,7 @@ const galleryImages = [
 ];
 
 export function GalleryGrid() {
-  const { selectedCategory, setSelectedCategory } = useGallery();
+  const { selectedCategory, setSelectedCategory } = useGalleryContext();
   const [selectedImageIndex, setSelectedImageIndex] = useState(null);
 
   // Get unique categories

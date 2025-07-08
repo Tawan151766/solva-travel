@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import { GalleryCategoryCard } from "./GalleryCategoryCard";
-import { useGallery } from "@/core/context";
+import { useGalleryContext } from "@/core/context";
 
 const categories = [
   {
@@ -38,7 +38,7 @@ const categories = [
 ];
 
 export function GalleryCategories() {
-  const { selectedCategory, setSelectedCategory } = useGallery();
+  const { selectedCategory, setSelectedCategory } = useGalleryContext();
   const scrollContainerRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
