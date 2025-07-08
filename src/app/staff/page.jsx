@@ -4,8 +4,10 @@ import { StarRating } from "@/components/ui/StarRating";
 
 export const metadata = {
   title: "Our Travel Staff - Solva Travel",
-  description: "Meet our experienced travel experts and adventure guides. View reviews and ratings for our professional staff members.",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes",
+  description:
+    "Meet our experienced travel experts and adventure guides. View reviews and ratings for our professional staff members.",
+  viewport:
+    "width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes",
 };
 
 function StaffCard({ staff }) {
@@ -17,7 +19,7 @@ function StaffCard({ staff }) {
           <div
             className="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-20 h-20 sm:w-24 sm:h-24 mx-auto sm:mx-0 flex-shrink-0"
             style={{
-              backgroundImage: `url("${staff.image}")`
+              backgroundImage: `url("${staff.image}")`,
             }}
           />
 
@@ -70,9 +72,9 @@ function StaffCard({ staff }) {
 
           {/* Arrow Icon */}
           <div className="flex items-center justify-center sm:justify-end">
-            <svg 
+            <svg
               className="w-5 h-5 text-[#bcb69f] group-hover:text-[#d4af37] transition-colors"
-              fill="currentColor" 
+              fill="currentColor"
               viewBox="0 0 256 256"
             >
               <path d="m181.66,133.66-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z" />
@@ -89,28 +91,35 @@ export default function StaffPage() {
     <div className="min-h-screen bg-[#231f10] px-2 sm:px-4 lg:px-8 py-4 sm:py-6">
       <div className="max-w-4xl mx-auto">
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-sm mb-4 sm:mb-6" aria-label="Breadcrumb">
-          <Link 
+        <nav
+          className="flex items-center gap-2 text-sm mb-4 sm:mb-6"
+          aria-label="Breadcrumb"
+        >
+          <Link
             href="/"
             className="text-[#bcb69f] hover:text-white transition-colors"
           >
             Home
           </Link>
-          <svg className="w-4 h-4 text-[#bcb69f]" fill="currentColor" viewBox="0 0 256 256">
+          <svg
+            className="w-4 h-4 text-[#bcb69f]"
+            fill="currentColor"
+            viewBox="0 0 256 256"
+          >
             <path d="m181.66,133.66-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z" />
           </svg>
-          <span className="text-white font-medium">Our Staff</span>
+          <span className="text-white font-medium">Our Team</span>
         </nav>
 
         {/* Header */}
         <div className="mb-8 sm:mb-12">
           <h1 className="text-white text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight mb-3 sm:mb-4">
-            Meet Our Travel Experts
+            Meet the Zelo App Team
           </h1>
           <p className="text-[#bcb69f] text-base sm:text-lg leading-relaxed max-w-3xl">
-            Our experienced team of travel professionals is dedicated to creating unforgettable 
-            experiences for every traveler. Each member brings unique expertise and passion to 
-            help you discover the world.
+            Our talented team of professionals is dedicated to building seamless
+            digital experiences with Zelo App. Each member brings unique skills
+            and passion to help you achieve more.
           </p>
         </div>
 
@@ -124,16 +133,25 @@ export default function StaffPage() {
         {/* Call to Action */}
         <div className="mt-12 text-center bg-[#1e1c15] rounded-xl p-6 sm:p-8">
           <h2 className="text-white text-xl sm:text-2xl font-bold mb-3">
-            Ready to Start Your Adventure?
+            Ready to Boost Your Productivity?
           </h2>
           <p className="text-[#bcb69f] text-base mb-6">
-            Our expert team is here to help plan your perfect trip.
+            Contact our Zelo App experts directly via{" "}
+            <a
+              href="https://zalo.me/1234567890" // ใส่ลิงก์ Zalo จริงของคุณที่นี่
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#d4af37] underline hover:text-[#c49e2a]"
+            >
+              Zalo
+            </a>{" "}
+            and we’ll help you get started and make the most of our platform.
           </p>
           <Link
-            href="/tour-request"
+            href="/contact"
             className="inline-block bg-[#d4af37] hover:bg-[#c49e2a] text-[#231f10] px-6 sm:px-8 py-3 rounded-full font-semibold transition-colors"
           >
-            Request a Tour
+            Contact Us
           </Link>
         </div>
       </div>
