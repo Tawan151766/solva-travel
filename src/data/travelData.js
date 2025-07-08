@@ -5,7 +5,15 @@ export const travelData = [
     location: "Paris, France",
     price: "$899",
     duration: "5 days",
-    imageUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuAOFHdVQ9D0Pgd8DKVpldUC8nCfIEmAt596cLLThQ_WwNz8HXLGYXCh5aPszZf71h05Ja8oP9Jn_LPTunGRNXbid7mmilbvSSPmQdJFAuxX3c-qVtc2INbaxnpGW0qL7n3IevKwwzVLK-54Z7SvsRvuJG2iGMkoZ06cQBZFsKLJf6_NrOe2EHOA8QO6x88qH9bvYMplLaTzau899b66yrxIbpFtWXn7S0nMIt015Hs3vjGLL7Y5NlwjCZzt_16vdFSuOHjcHw9x8E0j"
+    imageUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuAOFHdVQ9D0Pgd8DKVpldUC8nCfIEmAt596cLLThQ_WwNz8HXLGYXCh5aPszZf71h05Ja8oP9Jn_LPTunGRNXbid7mmilbvSSPmQdJFAuxX3c-qVtc2INbaxnpGW0qL7n3IevKwwzVLK-54Z7SvsRvuJG2iGMkoZ06cQBZFsKLJf6_NrOe2EHOA8QO6x88qH9bvYMplLaTzau899b66yrxIbpFtWXn7S0nMIt015Hs3vjGLL7Y5NlwjCZzt_16vdFSuOHjcHw9x8E0j",
+    description: "Immerse yourself in the romantic charm of Paris, the City of Light. This enchanting journey takes you through iconic landmarks, world-class museums, and charming neighborhoods that have captivated visitors for centuries.",
+    highlights: [
+      "Visit the iconic Eiffel Tower and Arc de Triomphe",
+      "Explore world-renowned Louvre Museum and Musée d'Orsay",
+      "Stroll through charming Montmartre district",
+      "Enjoy Seine River cruise with dinner",
+      "Experience authentic French cuisine and wine tasting"
+    ]
   },
   {
     id: 2,
@@ -13,7 +21,15 @@ export const travelData = [
     location: "Tokyo, Japan",
     price: "$1,299",
     duration: "7 days",
-    imageUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuAsTdJXUtrrW-n2675HzzAHCI3UMrVRoOdhbhqpOn83gkqauKRE8QDFHTvc_IdAQzFjqfSspWjwj3qW4mc2ozWxU3t3frCFLbD_WATP-qJanIrGiNJb2TBVP43nhyvtmIcWWuZKhzYIMd-5leqf7Hsf9oAiPKU4TNgHPqcjdDLqP1EfFqm-YbIL_v2hv0gTsGvWF_-dBCrAI_4ukbOGizWYYQenA3yh77orkHMen6p8Yii4M3cGauTcGRL9oMWZ49JDmKseyuxgS5pC"
+    imageUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuAsTdJXUtrrW-n2675HzzAHCI3UMrVRoOdhbhqpOn83gkqauKRE8QDFHTvc_IdAQzFjqfSspWjwj3qW4mc2ozWxU3t3frCFLbD_WATP-qJanIrGiNJb2TBVP43nhyvtmIcWWuZKhzYIMd-5leqf7Hsf9oAiPKU4TNgHPqcjdDLqP1EfFqm-YbIL_v2hv0gTsGvWF_-dBCrAI_4ukbOGizWYYQenA3yh77orkHMen6p8Yii4M3cGauTcGRL9oMWZ49JDmKseyuxgS5pC",
+    description: "Experience the perfect blend of ancient traditions and cutting-edge modernity in Tokyo. From serene temples to bustling districts, discover why Tokyo is one of the world's most fascinating capitals.",
+    highlights: [
+      "Visit historic Senso-ji Temple and Imperial Palace",
+      "Explore vibrant districts: Shibuya, Harajuku, and Ginza",
+      "Experience traditional tea ceremony and sumo wrestling",
+      "Enjoy fresh sushi at Tsukiji Outer Market",
+      "Day trip to Mount Fuji and Hakone hot springs"
+    ]
   },
   {
     id: 3,
@@ -21,7 +37,15 @@ export const travelData = [
     location: "Rome, Italy",
     price: "$799",
     duration: "4 days",
-    imageUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuAcVIEopS5NsXuip2c3qpxBMltjXON4lIhnx5yPiVZseThuzsMmolGWn2QemK3K4eT6l9VTfl5diOHfJYmzewWg_ZxLF-cJ68BWAe_qPAnIY0JRX0UdSsusK-QzCG8Lh212XdnuTXBK_7mTGv3A9llqzRslqI12-XCha-PO1ld_t7ugHKzCvaPodqbL92eEy2QWAo8A8uaNhpBr69obV-Nly7ijBFWzSypjf3V4IVsE1klyaH8unRwwzkYzEhuIlVhWIdvzZgtRFe9U"
+    imageUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuAcVIEopS5NsXuip2c3qpxBMltjXON4lIhnx5yPiVZseThuzsMmolGWn2QemK3K4eT6l9VTfl5diOHfJYmzewWg_ZxLF-cJ68BWAe_qPAnIY0JRX0UdSsusK-QzCG8Lh212XdnuTXBK_7mTGv3A9llqzRslqI12-XCha-PO1ld_t7ugHKzCvaPodqbL92eEy2QWAo8A8uaNhpBr69obV-Nly7ijBFWzSypjf3V4IVsE1klyaH8unRwwzkYzEhuIlVhWIdvzZgtRFe9U",
+    description: "Step back in time and walk through 2,000 years of history in the Eternal City. Rome offers an unparalleled journey through ancient ruins, Renaissance art, and vibrant Italian culture.",
+    highlights: [
+      "Explore the iconic Colosseum and Roman Forum",
+      "Visit Vatican City and Sistine Chapel",
+      "Throw a coin in Trevi Fountain",
+      "Climb the Spanish Steps and explore Pantheon",
+      "Enjoy authentic Italian pasta and gelato"
+    ]
   },
   {
     id: 4,

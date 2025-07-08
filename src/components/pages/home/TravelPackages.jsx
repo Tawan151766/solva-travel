@@ -25,6 +25,7 @@ export function TravelPackages() {
         {currentItems.map((travel) => (
           <TravelCard
             key={travel.id}
+            id={travel.id}
             title={travel.title}
             location={travel.location}
             price={travel.price}

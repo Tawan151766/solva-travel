@@ -1,9 +1,11 @@
-export function TravelCard({ imageUrl, title, location, price, duration }) {
+import Link from "next/link";
+
+export function TravelCard({ id, imageUrl, title, location, price, duration }) {
   return (
-    <div className="flex flex-col gap-3 pb-3">
+    <Link href={`/packages/${id}`} className="flex flex-col gap-3 pb-3 group">
       <div className="relative">
         <div
-          className="w-full bg-center bg-no-repeat aspect-video bg-cover rounded-lg cursor-pointer hover:scale-105 transition-transform duration-200"
+          className="w-full bg-center bg-no-repeat aspect-video bg-cover rounded-lg cursor-pointer group-hover:scale-105 transition-transform duration-200"
           style={{
             backgroundImage: `url("${imageUrl}")`
           }}
@@ -27,6 +29,6 @@ export function TravelCard({ imageUrl, title, location, price, duration }) {
           {location}
         </p>
       </div>
-    </div>
+    </Link>
   );
 }
