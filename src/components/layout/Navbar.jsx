@@ -31,9 +31,9 @@ export function Navbar() {
           </a>
           <a
             className="text-white text-sm font-medium leading-normal hover:text-[#efc004] transition-colors"
-            href="#"
+            href="/gallery"
           >
-            Trips
+            Gallery
           </a>
           <a
             className="text-white text-sm font-medium leading-normal hover:text-[#efc004] transition-colors"
