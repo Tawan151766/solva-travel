@@ -158,6 +158,51 @@
   animation: zoom-in 0.4s ease-out forwards;
 }
 
+/* Enhanced Mobile Interactions and Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Responsive animations */
+.fade-in-up {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.slide-in-right {
+  animation: slideInRight 0.4s ease-out;
+}
+
+.pulse-animation {
+  animation: pulse 2s infinite;
+}
+
 /* Smooth transitions */
 .gallery-card {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -178,6 +223,107 @@
   .gallery-card:active {
     transform: scale(0.95);
   }
+  
+  /* Mobile touch targets */
+  .review-filter-button {
+    min-height: 44px;
+    padding: 12px 16px;
+  }
+  
+  .review-like-button {
+    min-height: 44px;
+    padding: 8px 12px;
+  }
+  
+  /* Mobile typography */
+  .staff-profile-name {
+    font-size: 1.25rem;
+    line-height: 1.6;
+  }
+  
+  .review-card {
+    padding: 16px;
+    border-radius: 12px;
+  }
+  
+  /* Mobile spacing */
+  .staff-layout {
+    gap: 1rem;
+  }
+  
+  .review-stats-grid {
+    grid-template-columns: 16px 1fr 48px;
+    gap: 0.75rem;
+  }
+  
+  .staff-card-mobile {
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .review-card-mobile {
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .filter-button-mobile {
+    font-size: 0.875rem;
+    padding: 0.75rem 1rem;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  /* Tablet optimizations */
+  .staff-layout {
+    gap: 1.5rem;
+  }
+  
+  .review-stats-grid {
+    grid-template-columns: 20px 1fr 56px;
+    gap: 1rem;
+  }
+  
+  .staff-profile-sticky {
+    position: static;
+  }
+  
+  .staff-grid-tablet {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+  
+  .review-grid-tablet {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+}
+
+@media (min-width: 1025px) {
+  /* Desktop optimizations */
+  .staff-layout {
+    gap: 2rem;
+  }
+  
+  .staff-profile-sticky {
+    position: sticky;
+    top: 6rem;
+  }
+  
+  .review-stats-grid {
+    grid-template-columns: 20px 1fr 60px;
+    gap: 1.25rem;
+  }
+  
+  .staff-grid-desktop {
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 2rem;
+  }
+  
+  .review-sidebar-desktop {
+    position: sticky;
+    top: 2rem;
+    height: fit-content;
+  }
 }
 
 /* Touch-friendly interactions */
@@ -192,6 +338,18 @@
   
   .group:hover .group-hover\:scale-110 {
     transform: scale(1.05);
+  }
+  
+  .interactive-element {
+    transition: transform 0.15s ease;
+  }
+  
+  .interactive-element:active {
+    transform: scale(0.95);
+  }
+  
+  .review-card:active {
+    background-color: rgba(255, 255, 255, 0.05);
   }
 }
 
@@ -217,6 +375,64 @@
   button {
     min-height: 44px;
     min-width: 44px;
+  }
+}
+
+/* Focus styles for accessibility */
+.focus-visible {
+  outline: 2px solid #d4af37;
+  outline-offset: 2px;
+}
+
+/* Custom scrollbar for mobile */
+@media (max-width: 640px) {
+  .custom-scrollbar::-webkit-scrollbar {
+    height: 4px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #2a2821;
+    border-radius: 2px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #5a553f;
+    border-radius: 2px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #6a654f;
+  }
+}
+
+/* Animation optimizations for mobile */
+@media (prefers-reduced-motion: reduce) {
+  .animate-element {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .review-card {
+    border: 2px solid #ffffff;
+  }
+  
+  .star-rating {
+    filter: contrast(1.5);
+  }
+}
+
+/* Dark mode enhancements */
+@media (prefers-color-scheme: dark) {
+  .review-card {
+    background-color: #1a1713;
+    border-color: #2a2821;
+  }
+  
+  .staff-profile-card {
+    background-color: #1a1713;
   }
 }
 
