@@ -10,25 +10,22 @@ import { StaffBreadcrumb, StaffNavigation } from "@/components/pages/staff/Staff
 import { ReviewsErrorWrapper } from "@/components/pages/staff/ReviewsErrorBoundary";
 import { ReviewsLoading } from "@/components/pages/staff/ReviewsLoading";
 
-export const metadata = {
-  title: "Staff Reviews - Solva Travel",
-  description: "Read reviews and ratings for our professional travel staff members.",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes",
-};
-
 export default function StaffPage({ params }) {
   const { id } = params;
-  const { staffData, reviewsData, ratingBreakdown } = useStaffContext();
+  const { allStaffData, allReviewsData, getStaffReviewStats } = useStaffContext();
 
   // Find staff member
-  const staff = staffData.find(member => member.id === id);
+  const staff = allStaffData.find(member => member.id === id);
   
   if (!staff) {
     notFound();
   }
 
   // Get reviews for this staff member
-  const staffReviews = reviewsData.filter(review => review.staffId === id);
+  const staffReviews = allReviewsData.filter(review => review.staffId === id);
+  
+  // Get rating breakdown for this staff member
+  const ratingBreakdown = getStaffReviewStats(id);
 
   return (
     <div className="min-h-screen bg-[#231f10] px-2 sm:px-4 lg:px-8 py-4 sm:py-6">

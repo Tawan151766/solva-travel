@@ -4,14 +4,6 @@ import Link from "next/link";
 import { useStaffContext } from "@/core/context";
 import { StarRating } from "@/components/ui/StarRating";
 
-export const metadata = {
-  title: "Our Travel Staff - Solva Travel",
-  description:
-    "Meet our experienced travel experts and adventure guides. View reviews and ratings for our professional staff members.",
-  viewport:
-    "width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes",
-};
-
 function StaffCard({ staff }) {
   return (
     <Link href={`/staff/${staff.id}`}>
@@ -89,7 +81,7 @@ function StaffCard({ staff }) {
 }
 
 export default function StaffPage() {
-  const { staffData } = useStaffContext();
+  const { allStaffData } = useStaffContext();
 
   return (
     <div className="min-h-screen bg-[#231f10] px-2 sm:px-4 lg:px-8 py-4 sm:py-6">
@@ -129,7 +121,7 @@ export default function StaffPage() {
 
         {/* Staff Grid */}
         <div className="space-y-6">
-          {staffData.map((staff) => (
+          {allStaffData.map((staff) => (
             <StaffCard key={staff.id} staff={staff} />
           ))}
         </div>
