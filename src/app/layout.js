@@ -39,6 +39,12 @@ export const metadata = {
   authors: [{ name: "Wanderlust Team" }],
   creator: "Wanderlust",
   publisher: "Wanderlust",
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 5,
+    userScalable: true,
+  },
   formatDetection: {
     email: false,
     address: false,

@@ -75,36 +75,36 @@ export function GalleryCategories() {
 
   return (
     <section>
-      <div className="flex items-center justify-between px-4 pb-2 pt-4">
-        <h3 className="text-white text-lg font-bold leading-tight tracking-[-0.015em]">
+      <div className="flex items-center justify-between px-2 sm:px-4 pb-2 pt-4">
+        <h3 className="text-white text-base sm:text-lg font-bold leading-tight tracking-[-0.015em]">
           Browse Categories
         </h3>
-        <div className="flex gap-2">
+        <div className="flex gap-1 sm:gap-2">
           <button
             onClick={scrollLeft}
             disabled={!canScrollLeft}
-            className={`p-2 rounded-full transition-all duration-200 ${
+            className={`p-1.5 sm:p-2 rounded-full transition-all duration-200 ${
               canScrollLeft 
                 ? 'bg-[#4a4221] hover:bg-[#5a5230] text-white' 
                 : 'bg-gray-700 text-gray-500 cursor-not-allowed'
             }`}
             aria-label="Scroll left"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
           <button
             onClick={scrollRight}
             disabled={!canScrollRight}
-            className={`p-2 rounded-full transition-all duration-200 ${
+            className={`p-1.5 sm:p-2 rounded-full transition-all duration-200 ${
               canScrollRight 
                 ? 'bg-[#4a4221] hover:bg-[#5a5230] text-white' 
                 : 'bg-gray-700 text-gray-500 cursor-not-allowed'
             }`}
             aria-label="Scroll right"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </button>
@@ -117,7 +117,7 @@ export function GalleryCategories() {
           onScroll={checkScrollButtons}
           className="flex overflow-x-auto [-ms-scrollbar-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden scroll-smooth"
         >
-          <div className="flex items-stretch p-4 gap-4">
+          <div className="flex items-stretch p-2 sm:p-4 gap-2 sm:gap-4">
             {/* All Categories Card */}
             <GalleryCategoryCard 
               name="All Images"

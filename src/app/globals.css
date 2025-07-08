@@ -168,6 +168,58 @@
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
+/* Mobile-specific optimizations */
+@media (max-width: 640px) {
+  .gallery-card:hover {
+    transform: none;
+    box-shadow: none;
+  }
+  
+  .gallery-card:active {
+    transform: scale(0.95);
+  }
+}
+
+/* Touch-friendly interactions */
+@media (hover: none) and (pointer: coarse) {
+  .group:hover .group-hover\:opacity-100 {
+    opacity: 1;
+  }
+  
+  .group:hover .group-hover\:scale-105 {
+    transform: scale(1.02);
+  }
+  
+  .group:hover .group-hover\:scale-110 {
+    transform: scale(1.05);
+  }
+}
+
+/* Prevent zoom on double tap for gallery images */
+.gallery-image {
+  touch-action: manipulation;
+}
+
+/* Scrollbar styling for mobile */
+@supports (-webkit-overflow-scrolling: touch) {
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Smooth scrolling for category carousel */
+.scroll-smooth {
+  scroll-behavior: smooth;
+}
+
+/* Better touch targets */
+@media (max-width: 640px) {
+  button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

@@ -115,7 +115,7 @@ export function GalleryGrid() {
 
   return (
     <section>
-      <h3 className="text-white text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-4">
+      <h3 className="text-white text-base sm:text-lg font-bold leading-tight tracking-[-0.015em] px-2 sm:px-4 pb-2 pt-4">
         Gallery ({filteredImages.length} images)
       </h3>
       
@@ -125,7 +125,7 @@ export function GalleryGrid() {
         onCategoryChange={setSelectedCategory}
       />
       
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(158px,1fr))] gap-3 p-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-[repeat(auto-fit,minmax(158px,1fr))] gap-2 sm:gap-3 p-2 sm:p-4">
         {filteredImages.map((image, index) => (
           <div 
             key={image.id} 

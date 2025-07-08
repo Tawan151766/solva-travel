@@ -52,51 +52,51 @@ export function GalleryHero() {
 
   return (
     <div className="@container">
-      <div className="@[480px]:px-4 @[480px]:py-3">
-        <div className="relative w-full min-h-80 @[480px]:rounded-xl overflow-hidden group">
+      <div className="px-2 py-2 sm:px-4 sm:py-3">
+        <div className="relative w-full min-h-64 sm:min-h-80 md:min-h-96 rounded-lg sm:@[480px]:rounded-xl overflow-hidden group">
           {/* Main Image */}
           <div
-            className="w-full h-full bg-center bg-no-repeat bg-cover flex flex-col justify-end bg-[#231e10] @[480px]:rounded-xl min-h-80 transition-all duration-500"
+            className="w-full h-full bg-center bg-no-repeat bg-cover flex flex-col justify-end bg-[#231e10] rounded-lg sm:@[480px]:rounded-xl min-h-64 sm:min-h-80 md:min-h-96 transition-all duration-500"
             style={{
               backgroundImage: `url("${currentImage.url}")`
             }}
           >
-            <div className="absolute inset-0 bg-black/40 @[480px]:rounded-xl" />
+            <div className="absolute inset-0 bg-black/40 rounded-lg sm:@[480px]:rounded-xl" />
             
             {/* Content */}
-            <div className="relative p-6 text-white z-10">
-              <h2 className="text-2xl font-bold mb-2">{currentImage.title}</h2>
-              <p className="text-lg opacity-90">{currentImage.description}</p>
+            <div className="relative p-4 sm:p-6 text-white z-10">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-1 sm:mb-2">{currentImage.title}</h2>
+              <p className="text-sm sm:text-lg opacity-90">{currentImage.description}</p>
             </div>
 
             {/* Navigation Arrows */}
             <button
               onClick={prevSlide}
-              className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all duration-200 opacity-0 group-hover:opacity-100"
+              className="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-1.5 sm:p-2 rounded-full transition-all duration-200 opacity-70 group-hover:opacity-100 md:opacity-0 md:group-hover:opacity-100"
               aria-label="Previous image"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
             
             <button
               onClick={nextSlide}
-              className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all duration-200 opacity-0 group-hover:opacity-100"
+              className="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-1.5 sm:p-2 rounded-full transition-all duration-200 opacity-70 group-hover:opacity-100 md:opacity-0 md:group-hover:opacity-100"
               aria-label="Next image"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>
 
             {/* Dots Indicator */}
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+            <div className="absolute bottom-2 sm:bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-1.5 sm:space-x-2">
               {heroImages.map((_, index) => (
                 <button
                   key={index}
                   onClick={() => goToSlide(index)}
-                  className={`w-3 h-3 rounded-full transition-all duration-200 ${
+                  className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all duration-200 ${
                     index === currentIndex 
                       ? 'bg-white' 
                       : 'bg-white/50 hover:bg-white/75'
