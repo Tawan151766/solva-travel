@@ -1,10 +1,10 @@
 export function HamburgerButton({ isOpen, onClick }) {
   return (
     <button
-      className={`lg:hidden flex items-center justify-center w-10 h-10 rounded-lg transition-all duration-300 z-50 ${
+      className={`lg:hidden relative flex items-center justify-center w-12 h-12 rounded-xl z-50 ${
         isOpen
-          ? "text-white shadow-lg transform scale-105"
-          : "text-slate-300 hover:text-white"
+          ? "bg-gradient-to-br from-[#FFD700] to-[#FFED4E] text-black shadow-lg shadow-[#FFD700]/30"
+          : "bg-gradient-to-br from-black/60 to-[#0a0804]/60 backdrop-blur-xl border border-[#FFD700]/20 text-[#FFD700] hover:border-[#FFD700]/40 hover:bg-gradient-to-br hover:from-[#FFD700]/10 hover:to-[#FFED4E]/10"
       }`}
       onClick={onClick}
       aria-label="Toggle mobile menu"
@@ -14,9 +14,6 @@ export function HamburgerButton({ isOpen, onClick }) {
         height="20"
         fill="currentColor"
         viewBox="0 0 256 256"
-        className={`transition-transform duration-300 ${
-          isOpen ? "rotate-90" : ""
-        }`}
       >
         {isOpen ? (
           <path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z" />

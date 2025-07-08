@@ -6,11 +6,12 @@ export function DesktopNavigation() {
       {menuItems.map((item) => (
         <a
           key={item.name}
-          className="relative text-slate-300 text-sm font-medium hover:text-white transition-all duration-300 group"
+          className="relative cursor-pointer px-4 py-2 rounded-xl hover:bg-gradient-to-r hover:from-[#FFD700]/10 hover:to-[#FFED4E]/10 hover:border hover:border-[#FFD700]/20"
           href={item.href}
         >
-          {item.name}
-          <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-emerald-400 to-cyan-500 transition-all duration-300 group-hover:w-full"></span>
+          <span className="text-[#cdc08e] text-sm font-medium hover:text-[#FFD700] tracking-wide">
+            {item.name}
+          </span>
         </a>
       ))}
     </nav>
