@@ -1,5 +1,7 @@
+"use client";
+
 import Link from "next/link";
-import { staffData } from "@/data/staffData";
+import { useStaffContext } from "@/core/context";
 import { StarRating } from "@/components/ui/StarRating";
 
 export const metadata = {
@@ -87,6 +89,8 @@ function StaffCard({ staff }) {
 }
 
 export default function StaffPage() {
+  const { staffData } = useStaffContext();
+
   return (
     <div className="min-h-screen bg-[#231f10] px-2 sm:px-4 lg:px-8 py-4 sm:py-6">
       <div className="max-w-4xl mx-auto">

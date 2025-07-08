@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import { GalleryCategoryCard } from "./GalleryCategoryCard";
-import { useGallery } from "@/contexts/GalleryContext";
+import { useGallery } from "@/core/context";
 
 const categories = [
   {

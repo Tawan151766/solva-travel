@@ -2,10 +2,13 @@ import React from "react";
 import { Range } from "react-range";
 
 const STEP = 10;
-const MIN = 0;
-const MAX = 3000;
 
-export default function PriceRangeSlider({ value = [0, 3000], onChange }) {
+export default function PriceRangeSlider({ 
+  value = [0, 3000], 
+  onChange, 
+  min = 0, 
+  max = 3000 
+}) {
   const handleChange = (vals) => {
     onChange?.(vals);
   };
@@ -18,8 +21,8 @@ export default function PriceRangeSlider({ value = [0, 3000], onChange }) {
       <Range
         values={value}
         step={STEP}
-        min={MIN}
-        max={MAX}
+        min={min}
+        max={max}
         onChange={handleChange}
         renderTrack={({ props, children }) => (
           <div
@@ -30,8 +33,8 @@ export default function PriceRangeSlider({ value = [0, 3000], onChange }) {
             <div
               className="absolute h-1 bg-yellow-500 rounded"
               style={{
-                left: `${((value[0] - MIN) / (MAX - MIN)) * 100}%`,
-                width: `${((value[1] - value[0]) / (MAX - MIN)) * 100}%`,
+                left: `${((value[0] - min) / (max - min)) * 100}%`,
+                width: `${((value[1] - value[0]) / (max - min)) * 100}%`,
               }}
             />
             {children}

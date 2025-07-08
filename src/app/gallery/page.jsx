@@ -1,7 +1,7 @@
 import { GalleryHero } from "@/components/pages/gallery/GalleryHero";
 import { GalleryCategories } from "@/components/pages/gallery/GalleryCategories";
 import { GalleryGrid } from "@/components/pages/gallery/GalleryGrid";
-import { GalleryProvider } from "@/contexts/GalleryContext";
+import { GalleryProvider } from "@/core/context";
 
 export const metadata = {
   title: "Gallery - Solva Travel",

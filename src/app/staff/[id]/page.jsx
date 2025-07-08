@@ -1,6 +1,8 @@
+"use client";
+
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { staffData, reviewsData, ratingBreakdown } from "@/data/staffData";
+import { useStaffContext } from "@/core/context";
 import { StaffProfile } from "@/components/pages/staff/StaffProfile";
 import { ReviewStats } from "@/components/pages/staff/ReviewStats";
 import { ReviewsList } from "@/components/pages/staff/ReviewsList";
@@ -16,6 +18,7 @@ export const metadata = {
 
 export default function StaffPage({ params }) {
   const { id } = params;
+  const { staffData, reviewsData, ratingBreakdown } = useStaffContext();
 
   // Find staff member
   const staff = staffData.find(member => member.id === id);

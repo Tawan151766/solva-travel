@@ -4,7 +4,7 @@ import { useState } from "react";
 import { GalleryImageCard } from "./GalleryImageCard";
 import { ImageModal } from "./ImageModal";
 import { CategoryFilter } from "./CategoryFilter";
-import { useGallery } from "@/contexts/GalleryContext";
+import { useGallery } from "@/core/context";
 
 const galleryImages = [
   {

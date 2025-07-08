@@ -1,6 +1,6 @@
 "use client";
 
-import { useTravelContext } from "../../../contexts/TravelContext";
+import { useTravelContext } from "@/core/context";
 
 export function FilterDebugPanel() {
   const { filters, totalItems, filteredData } = useTravelContext();

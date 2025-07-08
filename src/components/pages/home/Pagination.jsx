@@ -1,6 +1,6 @@
 "use client";
 
-import { useTravelContext } from "../../../contexts/TravelContext";
+import { useTravelContext } from "@/core/context";
 
 export function Pagination() {
   const { currentPage, setCurrentPage, totalItems, itemsPerPage } = useTravelContext();

@@ -2,57 +2,18 @@
 
 import DropdownSelect from "@/components/ui/DropdownSelect";
 import PriceRangeSlider from "@/components/ui/PriceRangeSlider";
-import { useTravelContext } from "@/contexts/TravelContext";
+import { useTravelContext } from "@/core/context";
 import CustomTourModal from "./CustomTourModal";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import ButtonSolva from "@/components/ui/ButtonSolva";
 
 export function SearchFilters() {
-  const { filters, updateFilters } = useTravelContext();
+  const { filters, updateFilters, getCountries, getCities, getPriceStats } = useTravelContext();
 
-  // Extract unique countries and cities from the travel data
-  const countries = [
-    { label: "All Countries", value: "" },
-    { label: "France", value: "france" },
-    { label: "Japan", value: "japan" },
-    { label: "Italy", value: "italy" },
-    { label: "UK", value: "uk" },
-    { label: "USA", value: "usa" },
-    { label: "Australia", value: "australia" },
-    { label: "Greece", value: "greece" },
-    { label: "Iceland", value: "iceland" },
-    { label: "Indonesia", value: "indonesia" },
-    { label: "Kenya", value: "kenya" },
-    { label: "Egypt", value: "egypt" },
-    { label: "Norway", value: "norway" },
-    { label: "Peru", value: "peru" },
-    { label: "Brazil", value: "brazil" },
-    { label: "Alaska", value: "alaska" },
-    { label: "Morocco", value: "morocco" },
-    { label: "Thailand", value: "thailand" },
-  ];
-
-  const cityOptions = [
-    { label: "All Cities", value: "" },
-    { label: "Paris", value: "paris" },
-    { label: "Tokyo", value: "tokyo" },
-    { label: "Rome", value: "rome" },
-    { label: "London", value: "london" },
-    { label: "New York", value: "new york" },
-    { label: "Sydney", value: "sydney" },
-    { label: "Athens", value: "athens" },
-    { label: "Reykjavik", value: "reykjavik" },
-    { label: "Bali", value: "bali" },
-    { label: "Nairobi", value: "nairobi" },
-    { label: "Cairo", value: "cairo" },
-    { label: "Bergen", value: "bergen" },
-    { label: "Cusco", value: "cusco" },
-    { label: "Kyoto", value: "kyoto" },
-    { label: "Manaus", value: "manaus" },
-    { label: "Fairbanks", value: "fairbanks" },
-    { label: "Marrakech", value: "marrakech" },
-    { label: "Phuket", value: "phuket" },
-  ];
+  // Get dynamic country and city options from context
+  const countryOptions = useMemo(() => getCountries(), []);
+  const cityOptions = useMemo(() => getCities(), []);
+  const priceStats = useMemo(() => getPriceStats(), []);
 
   const handleCountryChange = (value) => {
     updateFilters({ country: value });
@@ -81,7 +42,7 @@ export function SearchFilters() {
       <div className="flex gap-3 p-3 flex-wrap pr-4">
         <DropdownSelect
           label="Country"
-          options={countries}
+          options={countryOptions}
           value={filters.country}
           onChange={handleCountryChange}
         />
@@ -103,6 +64,8 @@ export function SearchFilters() {
           <PriceRangeSlider
             value={filters.priceRange}
             onChange={handlePriceRangeChange}
+            min={priceStats.min}
+            max={priceStats.max}
           />
         </div>
       </div>

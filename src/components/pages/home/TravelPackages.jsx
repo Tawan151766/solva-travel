@@ -1,5 +1,5 @@
 import { TravelCard } from "./TravelCard";
-import { useTravelContext } from "../../../contexts/TravelContext";
+import { useTravelContext } from "@/core/context";
 
 export function TravelPackages() {
   const { currentItems, totalItems, currentPage, itemsPerPage } = useTravelContext();

@@ -1,6 +1,7 @@
 import { Plus_Jakarta_Sans, Noto_Sans } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
+import { AppProvider } from "@/core/context/AppProvider";
 import {
   generateOrganizationSchema,
   generateWebsiteSchema,
@@ -144,12 +145,14 @@ export default function RootLayout({ children }) {
       <body
         className={`${plusJakartaSans.variable} ${notoSans.variable} antialiased font-plus-jakarta-sans h-full`}
       >
-        <div className="min-h-full flex flex-col">
-          <Navbar />
-          <main className="flex-1">
-            <div className="w-full">{children}</div>
-          </main>
-        </div>
+        <AppProvider>
+          <div className="min-h-full flex flex-col">
+            <Navbar />
+            <main className="flex-1">
+              <div className="w-full">{children}</div>
+            </main>
+          </div>
+        </AppProvider>
       </body>
     </html>
   );
