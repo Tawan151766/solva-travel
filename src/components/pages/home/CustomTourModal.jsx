@@ -53,14 +53,14 @@ export default function CustomTourModal({ isOpen, onClose }) {
             </div>
           </div>
           <div className="grid grid-cols-2 gap-2">
-            <div>
+            {/* <div>
               <label className="block mb-1 text-sm">งบประมาณ</label>
               <input
                 type="number"
                 className="w-full px-3 py-2 rounded-lg bg-[#4a4221] text-white border-none"
                 placeholder="5000"
               />
-            </div>
+            </div> */}
             <div>
               <label className="block mb-1 text-sm">จำนวนคน</label>
               <input

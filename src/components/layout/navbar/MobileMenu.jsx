@@ -19,7 +19,7 @@ export function MobileMenu({ isOpen, onClose }) {
               onClick={onClose}
             >
               <svg
-                className={`w-5 h-5 ${item.iconColor} group-hover:scale-110 transition-transform duration-300`}
+                className={`w-5 h-5 text-white group-hover:scale-110 transition-transform duration-300`}
                 fill="currentColor"
                 viewBox="0 0 256 256"
               >
