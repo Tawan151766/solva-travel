@@ -8,9 +8,12 @@ import {
   HamburgerButton, 
   MobileMenu 
 } from "./navbar/index";
+import { AuthModal } from "../auth/AuthModal";
 
 export function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authMode, setAuthMode] = useState("login");
 
   const handleMobileMenuToggle = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -18,6 +21,15 @@ export function Navbar() {
 
   const handleMobileMenuClose = () => {
     setIsMobileMenuOpen(false);
+  };
+
+  const handleOpenAuthModal = (mode = "login") => {
+    setAuthMode(mode);
+    setIsAuthModalOpen(true);
+  };
+
+  const handleCloseAuthModal = () => {
+    setIsAuthModalOpen(false);
   };
 
   return (
@@ -38,7 +50,7 @@ export function Navbar() {
           </div>
 
           <div className="flex items-center gap-4 lg:gap-6">
-            <UserProfile />
+            <UserProfile onOpenAuthModal={handleOpenAuthModal} />
             <HamburgerButton 
               isOpen={isMobileMenuOpen} 
               onClick={handleMobileMenuToggle} 
@@ -49,7 +61,15 @@ export function Navbar() {
 
       <MobileMenu 
         isOpen={isMobileMenuOpen} 
-        onClose={handleMobileMenuClose} 
+        onClose={handleMobileMenuClose}
+        onOpenAuthModal={handleOpenAuthModal}
+      />
+
+      {/* Auth Modal */}
+      <AuthModal 
+        isOpen={isAuthModalOpen}
+        onClose={handleCloseAuthModal}
+        initialMode={authMode}
       />
     </div>
   );
