@@ -40,9 +40,9 @@ export function ReviewPagination({
   const endItem = Math.min(currentPage * itemsPerPage, totalItems);
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-t border-[#2a2821]">
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-t border-[#FFD700]/20">
       {/* Results Info */}
-      <div className="text-[#bcb69f] text-sm">
+      <div className="text-white/80 text-sm">
         Showing {startItem}-{endItem} of {totalItems} reviews
       </div>
 
@@ -52,7 +52,7 @@ export function ReviewPagination({
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className="flex items-center justify-center w-8 h-8 rounded-full bg-[#3f3b2c] text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#4a4221] transition-colors"
+          className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-r from-[#FFD700]/20 to-[#FFED4E]/20 backdrop-blur-xl border border-[#FFD700]/30 text-[#FFD700] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gradient-to-r hover:from-[#FFD700]/40 hover:to-[#FFED4E]/40 transition-all duration-200"
         >
           <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 256 256">
             <path d="M165.66,202.34a8,8,0,0,1-11.32,11.32l-80-80a8,8,0,0,1,0-11.32l80-80a8,8,0,0,1,11.32,11.32L91.31,128Z" />
@@ -64,12 +64,12 @@ export function ReviewPagination({
           <>
             <button
               onClick={() => onPageChange(1)}
-              className="flex items-center justify-center w-8 h-8 rounded-full bg-[#3f3b2c] text-white hover:bg-[#4a4221] transition-colors text-sm"
+              className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-r from-[#FFD700]/20 to-[#FFED4E]/20 backdrop-blur-xl border border-[#FFD700]/30 text-[#FFD700] hover:bg-gradient-to-r hover:from-[#FFD700]/40 hover:to-[#FFED4E]/40 transition-all duration-200 text-sm"
             >
               1
             </button>
             {pages[0] > 2 && (
-              <span className="text-[#bcb69f] px-2">...</span>
+              <span className="text-white/60 px-2">...</span>
             )}
           </>
         )}
@@ -78,10 +78,10 @@ export function ReviewPagination({
           <button
             key={page}
             onClick={() => onPageChange(page)}
-            className={`flex items-center justify-center w-8 h-8 rounded-full transition-colors text-sm ${
+            className={`flex items-center justify-center w-8 h-8 rounded-full transition-all duration-200 text-sm ${
               page === currentPage
-                ? 'bg-[#d4af37] text-[#231f10] font-semibold'
-                : 'bg-[#3f3b2c] text-white hover:bg-[#4a4221]'
+                ? 'bg-gradient-to-r from-[#FFD700] to-[#FFED4E] text-black font-semibold shadow-lg shadow-[#FFD700]/30'
+                : 'bg-gradient-to-r from-[#FFD700]/20 to-[#FFED4E]/20 backdrop-blur-xl border border-[#FFD700]/30 text-[#FFD700] hover:bg-gradient-to-r hover:from-[#FFD700]/40 hover:to-[#FFED4E]/40'
             }`}
           >
             {page}
@@ -91,11 +91,11 @@ export function ReviewPagination({
         {pages[pages.length - 1] < totalPages && (
           <>
             {pages[pages.length - 1] < totalPages - 1 && (
-              <span className="text-[#bcb69f] px-2">...</span>
+              <span className="text-white/60 px-2">...</span>
             )}
             <button
               onClick={() => onPageChange(totalPages)}
-              className="flex items-center justify-center w-8 h-8 rounded-full bg-[#3f3b2c] text-white hover:bg-[#4a4221] transition-colors text-sm"
+              className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-r from-[#FFD700]/20 to-[#FFED4E]/20 backdrop-blur-xl border border-[#FFD700]/30 text-[#FFD700] hover:bg-gradient-to-r hover:from-[#FFD700]/40 hover:to-[#FFED4E]/40 transition-all duration-200 text-sm"
             >
               {totalPages}
             </button>
@@ -106,7 +106,7 @@ export function ReviewPagination({
         <button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className="flex items-center justify-center w-8 h-8 rounded-full bg-[#3f3b2c] text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#4a4221] transition-colors"
+          className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-r from-[#FFD700]/20 to-[#FFED4E]/20 backdrop-blur-xl border border-[#FFD700]/30 text-[#FFD700] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gradient-to-r hover:from-[#FFD700]/40 hover:to-[#FFED4E]/40 transition-all duration-200"
         >
           <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 256 256">
             <path d="m181.66,133.66-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z" />

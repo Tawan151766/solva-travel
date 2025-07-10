@@ -38,11 +38,11 @@ export function ReviewCard({ review }) {
   };
 
   return (
-    <div className="flex flex-col gap-3 bg-[#1e1c15] p-4 rounded-lg border border-[#2a2821] hover:border-[#3a3529] transition-colors">
+    <div className="flex flex-col gap-3 bg-gradient-to-br from-black/60 via-[#0a0804]/60 to-black/60 backdrop-blur-md p-4 rounded-lg border border-[#FFD700]/20 hover:border-[#FFD700]/40 transition-all duration-200 shadow-lg shadow-black/30">
       {/* Reviewer Info */}
       <div className="flex items-center gap-3">
         <div
-          className="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-10 h-10 flex-shrink-0"
+          className="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-10 h-10 flex-shrink-0 ring-2 ring-[#FFD700]/30"
           style={{
             backgroundImage: `url("${review.reviewerImage}")`
           }}
@@ -51,7 +51,7 @@ export function ReviewCard({ review }) {
           <p className="text-white text-sm sm:text-base font-medium leading-normal truncate">
             {review.reviewerName}
           </p>
-          <p className="text-[#bcb69f] text-xs sm:text-sm font-normal leading-normal">
+          <p className="text-white/70 text-xs sm:text-sm font-normal leading-normal">
             {new Date(review.date).toLocaleDateString('en-US', {
               year: 'numeric',
               month: 'long',
@@ -65,15 +65,15 @@ export function ReviewCard({ review }) {
       <StarRating rating={review.rating} size="20" />
 
       {/* Review Text */}
-      <p className="text-white text-sm sm:text-base font-normal leading-relaxed">
+      <p className="text-white/90 text-sm sm:text-base font-normal leading-relaxed">
         {review.comment}
       </p>
 
       {/* Like/Dislike Buttons */}
-      <div className="flex gap-6 sm:gap-9 text-[#bcb69f] pt-2">
+      <div className="flex gap-6 sm:gap-9 text-white/70 pt-2">
         <button 
-          className={`flex items-center gap-2 transition-colors hover:text-white ${
-            liked ? 'text-[#d4af37]' : ''
+          className={`flex items-center gap-2 transition-colors hover:text-[#FFD700] ${
+            liked ? 'text-[#FFD700]' : ''
           }`}
           onClick={handleLike}
         >
@@ -88,7 +88,7 @@ export function ReviewCard({ review }) {
         </button>
         
         <button 
-          className={`flex items-center gap-2 transition-colors hover:text-white ${
+          className={`flex items-center gap-2 transition-colors hover:text-red-400 ${
             disliked ? 'text-red-400' : ''
           }`}
           onClick={handleDislike}

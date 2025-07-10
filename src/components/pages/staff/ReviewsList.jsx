@@ -59,10 +59,10 @@ export function ReviewsList({ reviews }) {
   };
 
   return (
-    <div className="bg-[#1e1c15] rounded-xl overflow-hidden">
+    <div className="bg-gradient-to-br from-black/80 via-[#0a0804]/80 to-black/80 backdrop-blur-xl rounded-xl overflow-hidden border border-[#FFD700]/20 shadow-2xl shadow-black/50">
       {/* Header */}
-      <div className="p-4 border-b border-[#2a2821]">
-        <h3 className="text-white text-lg sm:text-xl font-bold leading-tight tracking-[-0.015em] mb-4">
+      <div className="p-4 border-b border-[#FFD700]/20">
+        <h3 className="text-transparent bg-gradient-to-r from-[#FFD700] to-[#FFED4E] bg-clip-text text-lg sm:text-xl font-bold leading-tight tracking-[-0.015em] mb-4">
           All Reviews ({filteredAndSortedReviews.length})
         </h3>
         
@@ -83,7 +83,7 @@ export function ReviewsList({ reviews }) {
           </div>
         ) : (
           <div className="text-center py-8">
-            <p className="text-[#bcb69f] text-base">
+            <p className="text-white/80 text-base">
               No reviews found for the selected filter.
             </p>
           </div>

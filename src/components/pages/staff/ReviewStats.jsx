@@ -8,7 +8,7 @@ export function ReviewStats({ rating, totalReviews, ratingBreakdown }) {
     <div className="flex flex-col sm:flex-row gap-6 sm:gap-8 p-4 mb-6">
       {/* Overall Rating */}
       <div className="flex flex-col items-center sm:items-start">
-        <p className="text-white text-3xl sm:text-4xl font-black leading-tight tracking-[-0.033em] mb-2">
+        <p className="text-transparent bg-gradient-to-r from-[#FFD700] to-[#FFED4E] bg-clip-text text-3xl sm:text-4xl font-black leading-tight tracking-[-0.033em] mb-2">
           {rating}
         </p>
         <StarRating rating={Math.floor(rating)} size="18" className="mb-2" />
@@ -22,13 +22,13 @@ export function ReviewStats({ rating, totalReviews, ratingBreakdown }) {
         {[5, 4, 3, 2, 1].map((star) => (
           <React.Fragment key={star}>
             <p className="text-white text-sm font-normal leading-normal">{star}</p>
-            <div className="flex h-2 flex-1 overflow-hidden rounded-full bg-[#5a553f] mx-2">
+            <div className="flex h-2 flex-1 overflow-hidden rounded-full bg-[#FFD700]/20 mx-2">
               <div 
-                className="rounded-full bg-[#fcfbf7] transition-all duration-500" 
+                className="rounded-full bg-gradient-to-r from-[#FFD700] to-[#FFED4E] transition-all duration-500 shadow-sm shadow-[#FFD700]/30" 
                 style={{ width: `${ratingBreakdown[star] || 0}%` }}
               />
             </div>
-            <p className="text-[#bcb69f] text-sm font-normal leading-normal text-right">
+            <p className="text-white/80 text-sm font-normal leading-normal text-right">
               {ratingBreakdown[star] || 0}%
             </p>
           </React.Fragment>
