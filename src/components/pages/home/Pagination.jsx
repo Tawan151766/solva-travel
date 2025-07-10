@@ -33,9 +33,9 @@ export function Pagination() {
       <button 
         onClick={handlePrevious}
         disabled={currentPage === 1}
-        className="flex size-10 items-center justify-center disabled:opacity-50"
+        className="flex size-10 items-center justify-center disabled:opacity-50 text-[#FFD700] hover:text-[#FFED4E] disabled:text-[#FFD700]/30"
       >
-        <div className="text-white">
+        <div>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="18px"
@@ -52,8 +52,10 @@ export function Pagination() {
         <button
           key={page}
           onClick={() => handlePageChange(page)}
-          className={`text-sm font-${currentPage === page ? 'bold' : 'normal'} leading-normal tracking-[0.015em] flex size-10 items-center justify-center text-white rounded-full ${
-            currentPage === page ? 'bg-[#4a4221]' : ''
+          className={`text-sm font-${currentPage === page ? 'bold' : 'normal'} leading-normal tracking-[0.015em] flex size-10 items-center justify-center rounded-full transition-all ${
+            currentPage === page 
+              ? 'bg-gradient-to-r from-[#FFD700] to-[#FFED4E] text-black font-bold' 
+              : 'text-[#FFD700] hover:text-[#FFED4E] hover:bg-[#FFD700]/10'
           }`}
         >
           {page}
@@ -63,9 +65,9 @@ export function Pagination() {
       <button 
         onClick={handleNext}
         disabled={currentPage === totalPages}
-        className="flex size-10 items-center justify-center disabled:opacity-50"
+        className="flex size-10 items-center justify-center disabled:opacity-50 text-[#FFD700] hover:text-[#FFED4E] disabled:text-[#FFD700]/30"
       >
-        <div className="text-white">
+        <div>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="18px"

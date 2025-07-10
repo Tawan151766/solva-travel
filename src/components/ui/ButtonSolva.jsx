@@ -12,7 +12,7 @@ export default function ButtonSolva({
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-lg bg-[#efc004] text-[#231f10] font-medium px-4 hover:bg-[#ddb900] transition ${className}`}
+      className={`rounded-lg bg-gradient-to-r from-[#FFD700] to-[#FFED4E] text-black font-medium px-4 py-2 hover:from-[#FFED4E] hover:to-[#FFD700] shadow-lg shadow-[#FFD700]/30 hover:shadow-[#FFD700]/50 transition-all transform hover:scale-105 ${className}`}
     >
       {label}
     </button>

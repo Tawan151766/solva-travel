@@ -11,11 +11,11 @@ export function TravelPackages() {
     <div className="space-y-4">
       {/* Results Info */}
       <div className="flex justify-between items-center p-4">
-        <p className="text-[#cdc08e] text-sm">
+        <p className="text-[#FFD700]/80 text-sm">
           Showing {totalItems > 0 ? startIndex + 1 : 0}-{endIndex} of{" "}
           {totalItems} destinations
         </p>
-        <div className="text-[#cdc08e] text-sm">
+        <div className="text-[#FFD700]/80 text-sm">
           Page {currentPage} of {Math.ceil(totalItems / itemsPerPage) || 1}
         </div>
       </div>
@@ -38,7 +38,7 @@ export function TravelPackages() {
       {/* Loading animation for empty states */}
       {currentItems.length === 0 && (
         <div className="flex justify-center items-center p-8">
-          <div className="text-white text-lg">No travel packages found</div>
+          <div className="text-[#FFD700] text-lg">No travel packages found</div>
         </div>
       )}
     </div>

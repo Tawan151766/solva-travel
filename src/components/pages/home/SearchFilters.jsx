@@ -34,7 +34,7 @@ export function SearchFilters() {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap justify-between gap-3 p-4">
-        <p className="text-white tracking-light text-[32px] font-bold leading-tight min-w-72">
+        <p className="text-transparent bg-gradient-to-r from-[#FFD700] to-[#FFED4E] bg-clip-text tracking-light text-[32px] font-bold leading-tight min-w-72">
           Travel Packages
         </p>
       </div>
@@ -70,12 +70,12 @@ export function SearchFilters() {
         </div>
       </div>
 
-      <div className="flex items-center gap-4 bg-[#231f10] px-4 min-h-14 justify-between">
+      <div className="flex items-center gap-4 bg-gradient-to-r from-black/60 to-[#0a0804]/60 backdrop-blur-xl border border-[#FFD700]/20 rounded-xl px-4 min-h-14 justify-between">
         <p className="text-white text-base font-normal leading-normal flex-1 truncate">
           Only recommended
         </p>
         <div className="shrink-0">
-          <label className="relative flex h-[31px] w-[51px] cursor-pointer items-center rounded-full border-none bg-[#4a4221] p-0.5 has-[:checked]:justify-end has-[:checked]:bg-[#efc004]">
+          <label className="relative flex h-[31px] w-[51px] cursor-pointer items-center rounded-full border-none bg-[#FFD700]/20 p-0.5 has-[:checked]:justify-end has-[:checked]:bg-[#FFD700]">
             <div
               className="h-full w-[27px] rounded-full bg-white"
               style={{
