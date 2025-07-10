@@ -40,7 +40,7 @@ export function GalleryGrid() {
 
   return (
     <section>
-      <h3 className="text-white text-base sm:text-lg font-bold leading-tight tracking-[-0.015em] px-2 sm:px-4 pb-2 pt-4">
+      <h3 className="text-transparent bg-gradient-to-r from-[#FFD700] to-[#FFED4E] bg-clip-text text-base sm:text-lg font-bold leading-tight tracking-[-0.015em] px-2 sm:px-4 pb-2 pt-4">
         Gallery ({filteredImages.length} images)
       </h3>
       

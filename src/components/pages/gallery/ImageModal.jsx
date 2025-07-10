@@ -60,11 +60,14 @@ export function ImageModal({ images, currentIndex, onClose, onNext, onPrev }) {
   const currentImage = images[currentIndex];
 
   return (
-    <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-2 sm:p-4 animate-fade-in">
+    <div className="fixed inset-0 bg-gradient-to-br from-black/95 via-[#0a0804]/95 to-black/95 backdrop-blur-xl z-50 flex items-center justify-center p-2 sm:p-4 animate-fade-in">
+      {/* Luxury Background Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#FFD700]/5 via-transparent to-[#FFD700]/5 opacity-50"></div>
+      
       {/* Close Button */}
       <button
         onClick={onClose}
-        className="absolute top-2 right-2 sm:top-4 sm:right-4 text-white hover:text-gray-300 transition-colors z-10 p-2"
+        className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-gradient-to-r from-[#FFD700]/20 to-[#FFED4E]/20 backdrop-blur-xl border border-[#FFD700]/30 hover:bg-gradient-to-r hover:from-[#FFD700]/40 hover:to-[#FFED4E]/40 text-[#FFD700] transition-all duration-200 z-10 p-2 rounded-full"
         aria-label="Close modal"
       >
         <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -76,7 +79,7 @@ export function ImageModal({ images, currentIndex, onClose, onNext, onPrev }) {
       {images.length > 1 && (
         <button
           onClick={onPrev}
-          className="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 transition-colors z-10 p-2"
+          className="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-[#FFD700]/20 to-[#FFED4E]/20 backdrop-blur-xl border border-[#FFD700]/30 hover:bg-gradient-to-r hover:from-[#FFD700]/40 hover:to-[#FFED4E]/40 text-[#FFD700] transition-all duration-200 z-10 p-2 rounded-full"
           aria-label="Previous image"
         >
           <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -89,7 +92,7 @@ export function ImageModal({ images, currentIndex, onClose, onNext, onPrev }) {
       {images.length > 1 && (
         <button
           onClick={onNext}
-          className="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 transition-colors z-10 p-2"
+          className="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-[#FFD700]/20 to-[#FFED4E]/20 backdrop-blur-xl border border-[#FFD700]/30 hover:bg-gradient-to-r hover:from-[#FFD700]/40 hover:to-[#FFED4E]/40 text-[#FFD700] transition-all duration-200 z-10 p-2 rounded-full"
           aria-label="Next image"
         >
           <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -121,11 +124,11 @@ export function ImageModal({ images, currentIndex, onClose, onNext, onPrev }) {
         </div>
         
         {/* Image Info */}
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent text-white p-3 sm:p-6">
-          <h3 className="text-lg sm:text-xl font-bold mb-1">{currentImage.title}</h3>
-          <p className="text-sm opacity-75">{currentImage.category}</p>
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent text-white p-3 sm:p-6">
+          <h3 className="text-lg sm:text-xl font-bold mb-1 text-transparent bg-gradient-to-r from-[#FFD700] to-[#FFED4E] bg-clip-text">{currentImage.title}</h3>
+          <p className="text-sm text-white/80">{currentImage.category}</p>
           {images.length > 1 && (
-            <p className="text-sm mt-2">
+            <p className="text-sm mt-2 text-[#FFD700]/80">
               {currentIndex + 1} of {images.length}
             </p>
           )}
@@ -144,8 +147,8 @@ export function ImageModal({ images, currentIndex, onClose, onNext, onPrev }) {
               }}
               className={`flex-shrink-0 w-12 h-12 sm:w-16 sm:h-16 rounded-lg overflow-hidden border-2 transition-all ${
                 index === currentIndex
-                  ? 'border-white opacity-100'
-                  : 'border-transparent opacity-60 hover:opacity-80'
+                  ? 'border-[#FFD700] opacity-100 shadow-lg shadow-[#FFD700]/30'
+                  : 'border-[#FFD700]/30 opacity-60 hover:opacity-80 hover:border-[#FFD700]/60'
               }`}
             >
               <img

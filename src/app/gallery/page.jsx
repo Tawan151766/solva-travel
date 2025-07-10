@@ -21,10 +21,13 @@ export const metadata = {
 export default function GalleryPage() {
   return (
     <GalleryProvider>
-      <div className="px-2 sm:px-4 md:px-8 lg:px-16 xl:px-40 flex flex-1 justify-center py-3 sm:py-5 bg-[#231f10] min-h-screen">
-        <div className="layout-content-container flex flex-col max-w-[1200px] flex-1 w-full">
+      <div className="px-2 sm:px-4 md:px-8 lg:px-16 xl:px-40 flex flex-1 justify-center py-3 sm:py-5 bg-gradient-to-br from-black via-[#0a0804] to-black min-h-screen relative">
+        {/* Luxury Background Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#FFD700]/5 via-transparent to-[#FFD700]/5 opacity-50"></div>
+        
+        <div className="layout-content-container flex flex-col max-w-[1200px] flex-1 w-full relative">
           <div className="flex flex-wrap justify-between items-center gap-3 p-2 sm:p-4">
-            <h1 className="text-white tracking-light text-2xl sm:text-3xl lg:text-4xl font-bold leading-tight">
+            <h1 className="text-transparent bg-gradient-to-r from-[#FFD700] to-[#FFED4E] bg-clip-text tracking-light text-2xl sm:text-3xl lg:text-4xl font-bold leading-tight">
               Gallery
             </h1>
           </div>

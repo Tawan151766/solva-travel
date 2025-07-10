@@ -76,7 +76,7 @@ export function GalleryCategories() {
   return (
     <section>
       <div className="flex items-center justify-between px-2 sm:px-4 pb-2 pt-4">
-        <h3 className="text-white text-base sm:text-lg font-bold leading-tight tracking-[-0.015em]">
+        <h3 className="text-transparent bg-gradient-to-r from-[#FFD700] to-[#FFED4E] bg-clip-text text-base sm:text-lg font-bold leading-tight tracking-[-0.015em]">
           Browse Categories
         </h3>
         <div className="flex gap-1 sm:gap-2">
@@ -85,8 +85,8 @@ export function GalleryCategories() {
             disabled={!canScrollLeft}
             className={`p-1.5 sm:p-2 rounded-full transition-all duration-200 ${
               canScrollLeft 
-                ? 'bg-[#4a4221] hover:bg-[#5a5230] text-white' 
-                : 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                ? 'bg-gradient-to-r from-[#FFD700]/20 to-[#FFED4E]/20 backdrop-blur-xl border border-[#FFD700]/30 hover:bg-gradient-to-r hover:from-[#FFD700]/40 hover:to-[#FFED4E]/40 text-[#FFD700]' 
+                : 'bg-[#FFD700]/10 text-[#FFD700]/30 cursor-not-allowed border border-[#FFD700]/10'
             }`}
             aria-label="Scroll left"
           >
@@ -99,8 +99,8 @@ export function GalleryCategories() {
             disabled={!canScrollRight}
             className={`p-1.5 sm:p-2 rounded-full transition-all duration-200 ${
               canScrollRight 
-                ? 'bg-[#4a4221] hover:bg-[#5a5230] text-white' 
-                : 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                ? 'bg-gradient-to-r from-[#FFD700]/20 to-[#FFED4E]/20 backdrop-blur-xl border border-[#FFD700]/30 hover:bg-gradient-to-r hover:from-[#FFD700]/40 hover:to-[#FFED4E]/40 text-[#FFD700]' 
+                : 'bg-[#FFD700]/10 text-[#FFD700]/30 cursor-not-allowed border border-[#FFD700]/10'
             }`}
             aria-label="Scroll right"
           >
