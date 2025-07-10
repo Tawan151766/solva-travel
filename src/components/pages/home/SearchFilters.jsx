@@ -2,13 +2,15 @@
 
 import DropdownSelect from "@/components/ui/DropdownSelect";
 import PriceRangeSlider from "@/components/ui/PriceRangeSlider";
+import ButtonSolva from "@/components/ui/ButtonSolva";
+import { RecommendedToggle } from "@/components/ui/RecommendedToggle";
 import { useTravelContext } from "@/core/context";
 import CustomTourModal from "./CustomTourModal";
 import { useState, useMemo } from "react";
-import ButtonSolva from "@/components/ui/ButtonSolva";
 
 export function SearchFilters() {
-  const { filters, updateFilters, getCountries, getCities, getPriceStats } = useTravelContext();
+  const { filters, updateFilters, getCountries, getCities, getPriceStats } =
+    useTravelContext();
 
   // Get dynamic country and city options from context
   const countryOptions = useMemo(() => getCountries(), []);
@@ -70,28 +72,11 @@ export function SearchFilters() {
         </div>
       </div>
 
-      <div className="flex items-center gap-4 bg-gradient-to-r from-black/60 to-[#0a0804]/60 backdrop-blur-xl border border-[#FFD700]/20 rounded-xl px-4 min-h-14 justify-between">
-        <p className="text-white text-base font-normal leading-normal flex-1 truncate">
-          Only recommended
-        </p>
-        <div className="shrink-0">
-          <label className="relative flex h-[31px] w-[51px] cursor-pointer items-center rounded-full border-none bg-[#FFD700]/20 p-0.5 has-[:checked]:justify-end has-[:checked]:bg-[#FFD700]">
-            <div
-              className="h-full w-[27px] rounded-full bg-white"
-              style={{
-                boxShadow:
-                  "rgba(0, 0, 0, 0.15) 0px 3px 8px, rgba(0, 0, 0, 0.06) 0px 3px 1px",
-              }}
-            />
-            <input
-              type="checkbox"
-              className="invisible absolute"
-              checked={filters.isRecommendedOnly}
-              onChange={(e) => handleRecommendedToggle(e.target.checked)}
-            />
-          </label>
-        </div>
-      </div>
+      <RecommendedToggle
+        isChecked={filters.isRecommendedOnly}
+        onChange={handleRecommendedToggle}
+      />
+      
       <CustomTourModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
