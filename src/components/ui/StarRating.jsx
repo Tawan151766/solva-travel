@@ -8,7 +8,7 @@ export function StarRating({ rating, size = "18", className = "" }) {
     stars.push(
       <div
         key={i}
-        className={`text-[#fcfbf7] ${!isFilled ? 'text-[#7b7456]' : ''}`}
+        className={`${isFilled ? 'text-[#FFD700]' : 'text-[#FFD700]/30'}`}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
