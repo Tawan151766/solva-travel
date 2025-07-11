@@ -1,6 +1,9 @@
 import Link from "next/link";
 
-export function TravelCard({ id, imageUrl, title, location, price, duration }) {
+export function TravelCard({ id, imageUrl, title, location, price, duration, groupPricing }) {
+  // Format price to show "From" if group pricing exists
+  const displayPrice = groupPricing ? `From ${price}` : price;
+
   return (
     <Link href={`/packages/${id}`} className="flex flex-col gap-3 pb-3 group">
       <div className="relative">
@@ -12,7 +15,7 @@ export function TravelCard({ id, imageUrl, title, location, price, duration }) {
         />
         {/* Price Tag */}
         <div className="absolute top-3 right-3 bg-gradient-to-r from-[#FFD700] to-[#FFED4E] text-black px-3 py-1 rounded-full text-sm font-bold shadow-lg shadow-[#FFD700]/30">
-          {price}
+          {displayPrice}
         </div>
         {/* Duration Tag */}
         {duration && (

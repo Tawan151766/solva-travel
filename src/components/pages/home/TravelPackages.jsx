@@ -2,7 +2,42 @@ import { TravelCard } from "./TravelCard";
 import { useTravelContext } from "@/core/context";
 
 export function TravelPackages() {
-  const { currentItems, totalItems, currentPage, itemsPerPage } = useTravelContext();
+  const { currentItems, totalItems, currentPage, itemsPerPage, loading, error } = useTravelContext();
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        <div className="flex justify-center items-center p-12">
+          <div className="text-center">
+            <div className="w-16 h-16 border-4 border-[#FFD700]/30 border-t-[#FFD700] rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-white text-lg">Loading travel packages...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="space-y-4">
+        <div className="flex justify-center items-center p-12">
+          <div className="text-center max-w-md">
+            <div className="text-red-400 text-6xl mb-4">⚠️</div>
+            <h2 className="text-white text-xl font-bold mb-2">Unable to Load Packages</h2>
+            <p className="text-white/70 text-sm mb-6">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-gradient-to-r from-[#FFD700] to-[#FFED4E] hover:from-[#FFED4E] hover:to-[#FFD700] text-black px-6 py-3 rounded-full font-semibold transition-all"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
   
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
@@ -31,12 +66,13 @@ export function TravelPackages() {
             price={travel.price}
             duration={travel.duration}
             imageUrl={travel.imageUrl}
+            groupPricing={travel.groupPricing}
           />
         ))}
       </div>
 
-      {/* Loading animation for empty states */}
-      {currentItems.length === 0 && (
+      {/* No results state */}
+      {currentItems.length === 0 && !loading && !error && (
         <div className="flex justify-center items-center p-8">
           <div className="text-[#FFD700] text-lg">No travel packages found</div>
         </div>

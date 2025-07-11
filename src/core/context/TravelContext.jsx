@@ -1,141 +1,99 @@
 "use client";
 
-import { createContext, useContext, useState, useMemo } from "react";
-
-// Mock Travel Data - ย้ายมาจาก data/travelData.js
-const travelMockData = [
-  // ประเทศไทย
-  {
-    id: 1,
-    title: "Island Hopping in Krabi",
-    location: "Krabi, Thailand",
-    price: "$599",
-    duration: "5 days",
-    imageUrl:
-      "https://images.unsplash.com/photo-1600855380728-d17832d16fb0?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60",
-  },
-  {
-    id: 2,
-    title: "Cultural Discovery in Chiang Mai",
-    location: "Chiang Mai, Thailand",
-    price: "$499",
-    duration: "4 days",
-    imageUrl:
-      "https://images.unsplash.com/photo-1589885603410-1240d5c48f04?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60",
-  },
-  {
-    id: 3,
-    title: "City Life & Temples in Bangkok",
-    location: "Bangkok, Thailand",
-    price: "$699",
-    duration: "5 days",
-    imageUrl:
-      "https://images.unsplash.com/photo-1570129477492-45c003edd2be?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60",
-  },
-
-  // เวียดนาม
-  {
-    id: 4,
-    title: "Ha Long Bay Cruise",
-    location: "Ha Long, Vietnam",
-    price: "$799",
-    duration: "3 days",
-    imageUrl:
-      "https://images.unsplash.com/photo-1587620962725-abab7fe55159?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60",
-  },
-  {
-    id: 5,
-    title: "Discover the Charm of Hanoi",
-    location: "Hanoi, Vietnam",
-    price: "$599",
-    duration: "4 days",
-    imageUrl:
-      "https://images.unsplash.com/photo-1597915439281-e960f7dd14bb?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60",
-  },
-  {
-    id: 6,
-    title: "Ancient Beauty of Hoi An",
-    location: "Hoi An, Vietnam",
-    price: "$549",
-    duration: "4 days",
-    imageUrl:
-      "https://images.unsplash.com/photo-1585059895521-f0b06004d4ed?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60",
-  },
-  {
-    id: 7,
-    title: "Explore Vibrant Ho Chi Minh City",
-    location: "Ho Chi Minh City, Vietnam",
-    price: "$699",
-    duration: "5 days",
-    imageUrl:
-      "https://images.unsplash.com/photo-1620374641540-47a7dd6cb221?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60",
-  },
-
-  // ออสเตรีย
-  {
-    id: 8,
-    title: "Winter Wonderland in Salzburg",
-    location: "Salzburg, Austria",
-    price: "$1,299",
-    duration: "6 days",
-    imageUrl:
-      "https://images.unsplash.com/photo-1604665899314-b1b6a748b68c?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60",
-  },
-  {
-    id: 9,
-    title: "Vienna's Art & Architecture Tour",
-    location: "Vienna, Austria",
-    price: "$1,199",
-    duration: "5 days",
-    imageUrl:
-      "https://images.unsplash.com/photo-1618856319140-3fbaed03e7fc?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60",
-  },
-  {
-    id: 10,
-    title: "Alpine Adventure in Innsbruck",
-    location: "Innsbruck, Austria",
-    price: "$1,099",
-    duration: "6 days",
-    imageUrl:
-      "https://images.unsplash.com/photo-1602261467347-e4b39f152b39?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60",
-  },
-];
+import { createContext, useContext, useState, useMemo, useEffect, useCallback } from "react";
 
 const TravelContext = createContext();
 
 export function TravelProvider({ children }) {
-  // Calculate initial price range from data
-  const initialPriceStats = useMemo(() => {
-    const prices = travelMockData
-      .map((item) => {
-        const priceStr = item.price.replace(/[$,]/g, "");
-        return parseInt(priceStr);
-      })
-      .filter((price) => !isNaN(price));
-
-    return {
-      min: Math.min(...prices),
-      max: Math.max(...prices),
-    };
-  }, []);
-
   // States
+  const [allTravelData, setAllTravelData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  
+  // Filter states
   const [filters, setFilters] = useState({
     country: "",
     city: "",
-    priceRange: [initialPriceStats.min, initialPriceStats.max],
+    priceRange: [0, 5000],
     isRecommendedOnly: false,
     category: "",
   });
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-
   const itemsPerPage = 5;
 
-  // All travel data
-  const allTravelData = travelMockData;
+  // Fetch all travel packages from API
+  const fetchTravelData = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await fetch('/api/travel/packages?limit=100'); // Get all packages
+      const result = await response.json();
+
+      console.log('Travel API Response:', result);
+
+      if (!response.ok) {
+        throw new Error(result.message || 'Failed to fetch travel data');
+      }
+
+      console.log('Setting travel data:', result.data.packages);
+      setAllTravelData(result.data.packages);
+
+      // Update price range based on actual data
+      if (result.data.packages.length > 0) {
+        const prices = result.data.packages
+          .map(pkg => parseFloat(pkg.price.replace(/[$,]/g, '')))
+          .filter(price => !isNaN(price));
+        
+        const minPrice = Math.min(...prices);
+        const maxPrice = Math.max(...prices);
+        
+        setFilters(prev => ({
+          ...prev,
+          priceRange: [minPrice, maxPrice]
+        }));
+      }
+
+      console.log('Travel data loaded:', result.data.packages.length, 'packages');
+      
+    } catch (err) {
+      console.error('Error fetching travel data:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Load data on mount
+  useEffect(() => {
+    console.log('useEffect triggered, calling fetchTravelData');
+    fetchTravelData();
+  }, [fetchTravelData]);
+
+  // Get travel package by ID (with API call if needed)
+  const getTravelPackageById = useCallback(async (id) => {
+    // First check if we have it in local data
+    const localPackage = allTravelData.find(pkg => pkg.id === parseInt(id));
+    if (localPackage) {
+      return localPackage;
+    }
+
+    // Fetch from API if not found locally
+    try {
+      const response = await fetch(`/api/travel/packages/${id}`);
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || 'Package not found');
+      }
+
+      return result.data;
+    } catch (err) {
+      console.error('Error fetching package:', err);
+      return null;
+    }
+  }, [allTravelData]);
 
   // Filter the travel data based on current filters
   const filteredData = useMemo(() => {
@@ -158,7 +116,7 @@ export function TravelProvider({ children }) {
     // Filter by category
     if (filters.category) {
       filtered = filtered.filter(
-        (item) => item.category.toLowerCase() === filters.category.toLowerCase()
+        (item) => item.category?.toLowerCase() === filters.category.toLowerCase()
       );
     }
 
@@ -166,7 +124,6 @@ export function TravelProvider({ children }) {
     const minPrice = filters.priceRange[0];
     const maxPrice = filters.priceRange[1];
     filtered = filtered.filter((item) => {
-      // Extract price number from string like "$1,299"
       const priceStr = item.price.replace(/[$,]/g, "");
       const price = parseInt(priceStr);
       return !isNaN(price) && price >= minPrice && price <= maxPrice;
@@ -187,72 +144,73 @@ export function TravelProvider({ children }) {
   const currentItems = filteredData.slice(startIndex, endIndex);
 
   // Reset to page 1 when filters change
-  const updateFilters = (newFilters) => {
+  const updateFilters = useCallback((newFilters) => {
     setFilters((prev) => ({ ...prev, ...newFilters }));
     setCurrentPage(1);
-  };
-
-  // Get travel package by ID
-  const getTravelPackageById = (id) => {
-    return allTravelData.find((item) => item.id === parseInt(id));
-  };
+  }, []);
 
   // Get featured packages
-  const getFeaturedPackages = (limit = 6) => {
-    return allTravelData.filter((item) => item.isRecommended).slice(0, limit);
-  };
+  const getFeaturedPackages = useCallback((limit = 6) => {
+    return allTravelData
+      .filter(pkg => pkg.isRecommended || pkg.featured)
+      .slice(0, limit);
+  }, [allTravelData]);
 
   // Get packages by category
-  const getPackagesByCategory = (category) => {
-    return allTravelData.filter(
-      (item) => item.category.toLowerCase() === category.toLowerCase()
-    );
-  };
+  const getPackagesByCategory = useCallback((category, limit = 6) => {
+    return allTravelData
+      .filter(pkg => pkg.category?.toLowerCase() === category.toLowerCase())
+      .slice(0, limit);
+  }, [allTravelData]);
 
   // Search packages
-  const searchPackages = (searchTerm) => {
-    if (!searchTerm) return allTravelData;
+  const searchPackages = useCallback((query, limit = 10) => {
+    if (!query) return [];
+    
+    const lowercaseQuery = query.toLowerCase();
+    return allTravelData
+      .filter(pkg => 
+        pkg.title.toLowerCase().includes(lowercaseQuery) ||
+        pkg.location.toLowerCase().includes(lowercaseQuery) ||
+        pkg.description?.toLowerCase().includes(lowercaseQuery)
+      )
+      .slice(0, limit);
+  }, [allTravelData]);
 
-    const term = searchTerm.toLowerCase();
-    return allTravelData.filter(
-      (item) =>
-        item.title.toLowerCase().includes(term) ||
-        item.location.toLowerCase().includes(term) ||
-        item.description.toLowerCase().includes(term) ||
-        item.category.toLowerCase().includes(term)
-    );
-  };
+  // Get categories
+  const getCategories = useCallback(() => {
+    const categories = [...new Set(
+      allTravelData.map(pkg => pkg.category).filter(Boolean)
+    )].sort();
+    
+    return [
+      { label: "All Categories", value: "" },
+      ...categories.map(category => ({
+        label: category,
+        value: category.toLowerCase(),
+      })),
+    ];
+  }, [allTravelData]);
 
-  // Get available categories
-  const getCategories = () => {
-    const categories = [...new Set(allTravelData.map((item) => item.category))];
-    return categories.map((category) => ({
-      id: category.toLowerCase(),
-      name: category,
-      count: allTravelData.filter((item) => item.category === category).length,
-    }));
-  };
+  // Get price statistics
+  const getPriceStats = useCallback(() => {
+    if (allTravelData.length === 0) {
+      return { min: 0, max: 5000, average: 0 };
+    }
 
-  // Get price range statistics
-  const getPriceStats = () => {
     const prices = allTravelData
-      .map((item) => {
-        const priceStr = item.price.replace(/[$,]/g, "");
-        return parseInt(priceStr);
-      })
-      .filter((price) => !isNaN(price));
+      .map(pkg => parseFloat(pkg.price.replace(/[$,]/g, '')))
+      .filter(price => !isNaN(price));
 
     return {
       min: Math.min(...prices),
       max: Math.max(...prices),
-      average: Math.round(
-        prices.reduce((sum, price) => sum + price, 0) / prices.length
-      ),
+      average: Math.round(prices.reduce((sum, price) => sum + price, 0) / prices.length),
     };
-  };
+  }, [allTravelData]);
 
   // Get available countries from location data
-  const getCountries = () => {
+  const getCountries = useCallback(() => {
     const countries = [...new Set(
       allTravelData.map((item) => {
         const parts = item.location.split(', ');
@@ -267,10 +225,10 @@ export function TravelProvider({ children }) {
         value: country.toLowerCase(),
       })),
     ];
-  };
+  }, [allTravelData]);
 
   // Get available cities from location data
-  const getCities = () => {
+  const getCities = useCallback(() => {
     const cities = [...new Set(
       allTravelData.map((item) => {
         const parts = item.location.split(', ');
@@ -285,7 +243,7 @@ export function TravelProvider({ children }) {
         value: city.toLowerCase(),
       })),
     ];
-  };
+  }, [allTravelData]);
 
   const value = {
     // Data
@@ -317,6 +275,7 @@ export function TravelProvider({ children }) {
     getPriceStats,
     getCountries,
     getCities,
+    fetchTravelData,
 
     // Actions
     setLoading,

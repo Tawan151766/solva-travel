@@ -1,8 +1,7 @@
 "use client";
 
 import { notFound } from "next/navigation";
-import { use, useState } from "react";
-import { useTravelContext } from "@/core/context";
+import { use, useState, useEffect } from "react";
 import { galleryImages, getRelevantGalleryImages } from "@/data/galleryData";
 import Link from "next/link";
 import Image from "next/image";
@@ -10,16 +9,77 @@ import Image from "next/image";
 export default function PackagePage({ params }) {
   // Unwrap params Promise using React.use()
   const { id } = use(params);
-  const { allTravelData } = useTravelContext();
+  
+  // Local state for package data
+  const [travelPackage, setTravelPackage] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(null);
   const [showAllImages, setShowAllImages] = useState(false);
+  const [selectedGroupSize, setSelectedGroupSize] = useState("7"); // Default to smallest group
 
-  // Convert string ID to number for comparison
-  const packageId = parseInt(id, 10);
+  // Fetch individual package data from API
+  useEffect(() => {
+    const fetchPackageData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
 
-  // Find travel package
-  const travelPackage = allTravelData.find((pkg) => pkg.id === packageId);
+        const response = await fetch(`/api/travel/packages/${id}`);
+        const result = await response.json();
 
+        console.log('Individual package API response:', result);
+
+        if (!response.ok) {
+          if (response.status === 404) {
+            notFound();
+          }
+          throw new Error(result.message || 'Failed to fetch package data');
+        }
+
+        setTravelPackage(result.data);
+      } catch (err) {
+        console.error('Error fetching package data:', err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchPackageData();
+    }
+  }, [id]);
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-black via-[#0a0804] to-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-[#FFD700]/30 border-t-[#FFD700] rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-white text-lg">Loading package details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-black via-[#0a0804] to-black flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <div className="text-red-400 text-6xl mb-4">⚠️</div>
+          <h2 className="text-white text-xl font-bold mb-2">Unable to Load Package</h2>
+          <p className="text-white/70 text-sm mb-6">{error}</p>
+          <Link href="/" className="bg-gradient-to-r from-[#FFD700] to-[#FFED4E] hover:from-[#FFED4E] hover:to-[#FFD700] text-black px-6 py-3 rounded-full font-semibold transition-all">
+            Back to Home
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // Package not found
   if (!travelPackage) {
     notFound();
   }
@@ -102,7 +162,7 @@ export default function PackagePage({ params }) {
                     <span className="font-medium">{travelPackage.duration}</span>
                   </div>
                   <div className="text-3xl font-bold text-transparent bg-gradient-to-r from-[#FFD700] to-[#FFED4E] bg-clip-text">
-                    {travelPackage.price}
+                    {travelPackage.groupPricing ? `From ${travelPackage.price}` : travelPackage.price}
                   </div>
                 </div>
               </div>
@@ -315,9 +375,38 @@ export default function PackagePage({ params }) {
               {/* Pricing */}
               <section className="bg-gradient-to-br from-[#FFD700] to-[#FFED4E] rounded-2xl p-6 text-black shadow-2xl shadow-[#FFD700]/30">
                 <h3 className="text-2xl font-bold mb-4">Pricing</h3>
+                
+                {/* Group Size Selection */}
+                {travelPackage.groupPricing && (
+                  <div className="mb-6">
+                    <h4 className="text-lg font-semibold mb-3">Select Group Size</h4>
+                    <div className="grid grid-cols-2 gap-2">
+                      {Object.entries(travelPackage.groupPricing).map(([size, pricing]) => (
+                        <button
+                          key={size}
+                          onClick={() => setSelectedGroupSize(size)}
+                          className={`p-3 rounded-lg border-2 transition-all text-sm font-medium ${
+                            selectedGroupSize === size
+                              ? 'border-black bg-black text-[#FFD700] shadow-lg'
+                              : 'border-black/20 bg-transparent text-black hover:border-black/50'
+                          }`}
+                        >
+                          <div className="font-bold">${pricing.price}</div>
+                          <div className="text-xs opacity-80">{pricing.label}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div className="space-y-4">
                   <div>
-                    <div className="text-3xl font-bold">{travelPackage.price}</div>
+                    <div className="text-3xl font-bold">
+                      {travelPackage.groupPricing 
+                        ? `$${travelPackage.groupPricing[selectedGroupSize]?.price || travelPackage.price.replace(/[$,]/g, '')}` 
+                        : travelPackage.price
+                      }
+                    </div>
                     <div className="text-sm opacity-80">per person</div>
                   </div>
                   <div className="text-sm space-y-1">
