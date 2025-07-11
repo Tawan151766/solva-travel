@@ -8,9 +8,194 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  firstName String
-  lastName  String
-  email     String   @unique
-  createdAt DateTime @default(now())
+  id                String   @id @default(cuid())
+  email             String   @unique
+  password          String
+  firstName         String
+  lastName          String
+  phone             String?
+  profileImage      String?
+  role              UserRole @default(USER)
+  isActive          Boolean  @default(true)
+  isEmailVerified   Boolean  @default(false)
+  emailVerificationToken String?
+  resetPasswordToken String?
+  resetPasswordExpires DateTime?
+  lastLoginAt       DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Staff Profile (when role is STAFF or ADMIN)
+  staffProfile      StaffProfile?
+
+  // User Reviews (as reviewer)
+  reviewsGiven      Review[] @relation("ReviewerUser")
+  
+  // Reviews received (when user is staff being reviewed)
+  reviewsReceived   Review[] @relation("ReviewedUser")
+
+  // Travel bookings/packages
+  bookings          Booking[]
+  
+  // Staff management relations
+  managedBy         User[]   @relation("StaffManagement")
+  managing          User[]   @relation("StaffManagement")
+  
+  // System logs
+  systemLogs        SystemLog[]
+
+  @@map("users")
+}
+
+model StaffProfile {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Staff specific information
+  employeeId      String   @unique
+  department      Department
+  position        String
+  salary          Decimal?
+  hireDate        DateTime
+  bio             String?
+  specializations String[] // Areas of expertise
+  languages       String[] // Languages spoken
+  rating          Float?   @default(0)
+  totalReviews    Int      @default(0)
+  
+  // Work schedule
+  workSchedule    Json?    // Flexible schedule storage
+  isAvailable     Boolean  @default(true)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("staff_profiles")
+}
+
+model Review {
+  id            String     @id @default(cuid())
+  
+  // Reviewer (customer or another staff)
+  reviewerId    String
+  reviewer      User       @relation("ReviewerUser", fields: [reviewerId], references: [id])
+  
+  // Reviewed staff member
+  reviewedUserId String
+  reviewedUser   User      @relation("ReviewedUser", fields: [reviewedUserId], references: [id])
+  
+  // Review content
+  rating        Int        // 1-5 stars
+  title         String?
+  comment       String?
+  reviewType    ReviewType @default(SERVICE)
+  
+  // Optional booking reference
+  bookingId     String?
+  booking       Booking?   @relation(fields: [bookingId], references: [id])
+  
+  isPublic      Boolean    @default(true)
+  isVerified    Boolean    @default(false)
+  
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@map("reviews")
+}
+
+model Booking {
+  id            String      @id @default(cuid())
+  bookingNumber String      @unique
+  
+  // Customer
+  customerId    String
+  customer      User        @relation(fields: [customerId], references: [id])
+  
+  // Booking details
+  packageId     String?
+  package       TravelPackage? @relation(fields: [packageId], references: [id])
+  
+  startDate     DateTime
+  endDate       DateTime
+  totalAmount   Decimal
+  status        BookingStatus @default(PENDING)
+  
+  // Assigned staff (optional)
+  assignedStaff Json?       // Array of staff user IDs
+  
+  // Reviews for this booking
+  reviews       Review[]
+  
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@map("bookings")
+}
+
+model TravelPackage {
+  id            String    @id @default(cuid())
+  name          String
+  description   String
+  price         Decimal
+  duration      Int       // days
+  maxCapacity   Int
+  location      String
+  images        String[]
+  isActive      Boolean   @default(true)
+  
+  bookings      Booking[]
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("travel_packages")
+}
+
+model SystemLog {
+  id        String      @id @default(cuid())
+  userId    String?
+  user      User?       @relation(fields: [userId], references: [id])
+  
+  action    String      // Action performed
+  details   Json?       // Additional details
+  ipAddress String?
+  userAgent String?
+  
+  createdAt DateTime    @default(now())
+
+  @@map("system_logs")
+}
+
+// Enums
+enum UserRole {
+  USER          // Regular customer
+  STAFF         // Staff member
+  ADMIN         // Administrator
+  SUPER_ADMIN   // Super administrator
+}
+
+enum Department {
+  TOURS
+  CUSTOMER_SERVICE
+  SALES
+  OPERATIONS
+  MANAGEMENT
+  FINANCE
+  MARKETING
+}
+
+enum ReviewType {
+  SERVICE       // Service quality review
+  GUIDE         // Tour guide review
+  OVERALL       // Overall experience
+  BOOKING       // Booking process review
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  REFUNDED
 }
