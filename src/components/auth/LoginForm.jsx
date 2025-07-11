@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { authAPI } from "../../lib/auth";
+import { useRouter } from "next/navigation";
 
 export function LoginForm({ onSwitchToRegister, onClose }) {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     email: "",
     password: ""
@@ -11,6 +12,7 @@ export function LoginForm({ onSwitchToRegister, onClose }) {
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [success, setSuccess] = useState("");
 
   const handleChange = (e) => {
     setFormData({
@@ -47,25 +49,45 @@ export function LoginForm({ onSwitchToRegister, onClose }) {
     if (!validateForm()) return;
     
     setIsLoading(true);
+    setErrors({});
     
     try {
       // Call login API
-      const response = await authAPI.login(formData.email, formData.password);
+      const response = await fetch('/api/auth/login-prisma', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password
+        }),
+      });
+
+      const result = await response.json();
       
-      console.log("Login success:", response);
+      if (!response.ok) {
+        throw new Error(result.message || 'Login failed');
+      }
       
-      // Store token in localStorage (in real app, use secure storage)
-      localStorage.setItem('authToken', response.token);
+      console.log("Login success:", result);
+      setSuccess("เข้าสู่ระบบสำเร็จ! กำลังนำคุณเข้าสู่หน้าหลัก...");
       
-      // Close modal and trigger user state update
-      onClose();
+      // Store token in localStorage
+      if (result.data.token) {
+        localStorage.setItem('token', result.data.token);
+        localStorage.setItem('user', JSON.stringify(result.data.user));
+      }
       
-      // You might want to trigger a success callback here
-      // For example: onLoginSuccess(response.user);
+      // Close modal and redirect after 1.5 seconds
+      setTimeout(() => {
+        onClose();
+        router.push('/');
+      }, 1500);
       
     } catch (error) {
       console.error("Login error:", error);
-      setErrors({ submit: error.message || "เกิดข้อผิดพลาดในการเข้าสู่ระบบ" });
+      setErrors({ submit: error.message || "เกิดข้อผิดพลาดในการเข้าสู่ระบบ กรุณาลองใหม่อีกครั้ง" });
     } finally {
       setIsLoading(false);
     }
@@ -149,6 +171,13 @@ export function LoginForm({ onSwitchToRegister, onClose }) {
         {errors.submit && (
           <div className="p-3 bg-red-500/20 border border-red-500/50 rounded-xl">
             <p className="text-red-400 text-sm">{errors.submit}</p>
+          </div>
+        )}
+
+        {/* Success Message */}
+        {success && (
+          <div className="p-3 bg-green-500/20 border border-green-500/50 rounded-xl">
+            <p className="text-green-400 text-sm">{success}</p>
           </div>
         )}
 
