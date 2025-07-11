@@ -1,19 +1,23 @@
 "use client";
 
 import { useState } from "react";
-import { authAPI } from "../../lib/auth";
+import { useRouter } from "next/navigation";
 
 export function RegisterForm({ onSwitchToLogin, onSwitchToOTP }) {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
     email: "",
     password: "",
     confirmPassword: "",
+    phone: "",
+    role: "USER",
     agreeToTerms: false
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [success, setSuccess] = useState("");
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -55,6 +59,12 @@ export function RegisterForm({ onSwitchToLogin, onSwitchToOTP }) {
       newErrors.confirmPassword = "รหัสผ่านไม่ตรงกัน";
     }
 
+    if (!formData.phone.trim()) {
+      newErrors.phone = "หมายเลขโทรศัพท์ไม่สามารถว่างได้";
+    } else if (!/^[0-9]{9,10}$/.test(formData.phone.replace(/\D/g, ''))) {
+      newErrors.phone = "หมายเลขโทรศัพท์ไม่ถูกต้อง (9-10 หลัก)";
+    }
+
     if (!formData.agreeToTerms) {
       newErrors.agreeToTerms = "กรุณายอมรับข้อกำหนดและเงื่อนไข";
     }
@@ -69,20 +79,43 @@ export function RegisterForm({ onSwitchToLogin, onSwitchToOTP }) {
     if (!validateForm()) return;
 
     setIsLoading(true);
+    setErrors({});
     
     try {
       // Call registration API
-      const response = await authAPI.register({
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        password: formData.password
+      const response = await fetch('/api/auth/register-prisma', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          password: formData.password,
+          phone: formData.phone,
+          role: formData.role
+        }),
       });
+
+      const result = await response.json();
       
-      console.log('Registration success:', response);
+      if (!response.ok) {
+        throw new Error(result.message || 'Registration failed');
+      }
       
-      // Switch to OTP verification
-      onSwitchToOTP(formData.email);
+      console.log('Registration success:', result);
+      setSuccess("สมัครสมาชิกสำเร็จ! กำลังนำคุณเข้าสู่หน้าหลัก...");
+      
+      // Store token if provided
+      if (result.token) {
+        localStorage.setItem('token', result.token);
+      }
+      
+      // Redirect to home page after 2 seconds
+      setTimeout(() => {
+        router.push('/');
+      }, 2000);
       
     } catch (error) {
       console.error('Registration error:', error);
@@ -161,6 +194,44 @@ export function RegisterForm({ onSwitchToLogin, onSwitchToOTP }) {
           )}
         </div>
 
+        {/* Phone Field */}
+        <div>
+          <label className="block text-[#FFD700] text-sm font-medium mb-2">
+            หมายเลขโทรศัพท์
+          </label>
+          <input
+            type="tel"
+            name="phone"
+            value={formData.phone}
+            onChange={handleInputChange}
+            className="w-full px-4 py-3 bg-black/50 border border-[#FFD700]/30 rounded-xl text-white placeholder-white/50 focus:outline-none focus:border-[#FFD700] focus:bg-black/70 transition-all"
+            placeholder="08xxxxxxxx"
+          />
+          {errors.phone && (
+            <p className="text-red-400 text-xs mt-1">{errors.phone}</p>
+          )}
+        </div>
+
+        {/* Role Selection */}
+        <div>
+          <label className="block text-[#FFD700] text-sm font-medium mb-2">
+            ประเภทบัญชี
+          </label>
+          <select
+            name="role"
+            value={formData.role}
+            onChange={handleInputChange}
+            className="w-full px-4 py-3 bg-black/50 border border-[#FFD700]/30 rounded-xl text-white focus:outline-none focus:border-[#FFD700] focus:bg-black/70 transition-all"
+          >
+            <option value="USER">ลูกค้าทั่วไป</option>
+            <option value="STAFF">พนักงาน</option>
+            <option value="ADMIN">ผู้ดูแลระบบ</option>
+          </select>
+          {errors.role && (
+            <p className="text-red-400 text-xs mt-1">{errors.role}</p>
+          )}
+        </div>
+
         {/* Password Fields */}
         <div>
           <label className="block text-[#FFD700] text-sm font-medium mb-2">
@@ -224,6 +295,13 @@ export function RegisterForm({ onSwitchToLogin, onSwitchToOTP }) {
         {errors.submit && (
           <div className="p-3 bg-red-500/20 border border-red-500/50 rounded-xl">
             <p className="text-red-400 text-sm">{errors.submit}</p>
+          </div>
+        )}
+
+        {/* Success Message */}
+        {success && (
+          <div className="p-3 bg-green-500/20 border border-green-500/50 rounded-xl">
+            <p className="text-green-400 text-sm">{success}</p>
           </div>
         )}
 
