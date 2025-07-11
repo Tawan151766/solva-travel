@@ -111,8 +111,8 @@ export function ImageModal({ images, currentIndex, onClose, onNext, onPrev }) {
           )}
           <img
             ref={imageRef}
-            src={currentImage.imageUrl}
-            alt={currentImage.title}
+            src={currentImage.url || currentImage.imageUrl}
+            alt={currentImage.alt || currentImage.title}
             className="max-w-full max-h-[70vh] sm:max-h-[80vh] object-contain mx-auto block select-none"
             onLoad={() => setIsLoading(false)}
             onError={() => setIsLoading(false)}
@@ -152,8 +152,8 @@ export function ImageModal({ images, currentIndex, onClose, onNext, onPrev }) {
               }`}
             >
               <img
-                src={image.imageUrl}
-                alt={image.title}
+                src={image.url || image.imageUrl}
+                alt={image.alt || image.title}
                 className="w-full h-full object-cover"
               />
             </button>
