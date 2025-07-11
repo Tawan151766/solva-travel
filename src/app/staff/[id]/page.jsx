@@ -1,7 +1,7 @@
 "use client";
 
 import { notFound } from "next/navigation";
-import { Suspense, use } from "react";
+import { Suspense, use, useState, useEffect } from "react";
 import { useStaffContext } from "@/core/context";
 import { StaffProfile } from "@/components/pages/staff/StaffProfile";
 import { ReviewStats } from "@/components/pages/staff/ReviewStats";
@@ -13,20 +13,73 @@ import { ReviewsLoading } from "@/components/pages/staff/ReviewsLoading";
 export default function StaffPage({ params }) {
   // Unwrap params Promise using React.use()
   const { id } = use(params);
-  const { allStaffData, allReviewsData, getStaffReviewStats } = useStaffContext();
-
-  // Find staff member
-  const staff = allStaffData.find(member => member.id === id);
+  const { allStaffData, getStaffById, loading, error } = useStaffContext();
   
-  if (!staff) {
-    notFound();
+  const [staff, setStaff] = useState(null);
+  const [staffLoading, setStaffLoading] = useState(true);
+  const [staffError, setStaffError] = useState(null);
+
+  // Load staff data
+  useEffect(() => {
+    const loadStaff = async () => {
+      try {
+        setStaffLoading(true);
+        setStaffError(null);
+        
+        const staffData = await getStaffById(id);
+        if (!staffData) {
+          notFound();
+          return;
+        }
+        
+        setStaff(staffData);
+      } catch (err) {
+        console.error('Error loading staff:', err);
+        setStaffError(err.message);
+      } finally {
+        setStaffLoading(false);
+      }
+    };
+
+    loadStaff();
+  }, [id, getStaffById]);
+
+  // Loading state
+  if (staffLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-black via-[#0a0804] to-black relative px-2 sm:px-4 lg:px-8 py-4 sm:py-6 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-[#FFD700]/30 border-t-[#FFD700] rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-white text-lg">Loading staff member...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (staffError || !staff) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-black via-[#0a0804] to-black relative px-2 sm:px-4 lg:px-8 py-4 sm:py-6 flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <div className="text-red-400 text-6xl mb-4">⚠️</div>
+          <h2 className="text-white text-xl font-bold mb-2">Staff Member Not Found</h2>
+          <p className="text-white/70 text-sm mb-6">{staffError || 'This staff member could not be found.'}</p>
+          <a
+            href="/staff"
+            className="bg-gradient-to-r from-[#FFD700] to-[#FFED4E] hover:from-[#FFED4E] hover:to-[#FFD700] text-black px-6 py-3 rounded-full font-semibold transition-all"
+          >
+            Back to Staff
+          </a>
+        </div>
+      </div>
+    );
   }
 
   // Get reviews for this staff member
-  const staffReviews = allReviewsData.filter(review => review.staffId === id);
+  const staffReviews = staff.reviews || [];
   
   // Get rating breakdown for this staff member
-  const ratingBreakdown = getStaffReviewStats(id);
+  const ratingBreakdown = staff.ratingBreakdown || { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-[#0a0804] to-black relative px-2 sm:px-4 lg:px-8 py-4 sm:py-6">

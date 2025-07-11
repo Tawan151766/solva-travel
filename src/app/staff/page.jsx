@@ -9,11 +9,11 @@ function StaffCard({ staff }) {
     <Link href={`/staff/${staff.id}`}>
       <div className="bg-gradient-to-r from-black/60 to-[#0a0804]/60 backdrop-blur-xl border border-[#FFD700]/20 mt-3 rounded-xl p-4 sm:p-6 hover:bg-gradient-to-r hover:from-black/80 hover:to-[#0a0804]/80 hover:border-[#FFD700]/40 transition-all cursor-pointer group shadow-lg shadow-black/50">
         <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
-          {/* Profile Image */}
+          {/* Staff Image */}
           <div
             className="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-20 h-20 sm:w-24 sm:h-24 mx-auto sm:mx-0 flex-shrink-0 border-2 border-[#FFD700]/30 group-hover:border-[#FFD700] transition-all shadow-lg shadow-[#FFD700]/20"
             style={{
-              backgroundImage: `url("${staff.image}")`,
+              backgroundImage: `url("${staff.profileImage || staff.image || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300&h=300&fit=crop&crop=face'}")`,
             }}
           />
 
@@ -81,7 +81,41 @@ function StaffCard({ staff }) {
 }
 
 export default function StaffPage() {
-  const { allStaffData } = useStaffContext();
+  const { allStaffData, loading, error, fetchStaffData } = useStaffContext();
+
+  // Retry function for error states
+  const handleRetry = () => {
+    fetchStaffData();
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-black via-[#0a0804] to-black px-2 sm:px-4 lg:px-8 py-4 sm:py-6 relative flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-[#FFD700]/30 border-t-[#FFD700] rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-white text-lg">Loading our amazing team...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-black via-[#0a0804] to-black px-2 sm:px-4 lg:px-8 py-4 sm:py-6 relative flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <div className="text-red-400 text-6xl mb-4">⚠️</div>
+          <h2 className="text-white text-xl font-bold mb-2">Unable to Load Staff</h2>
+          <p className="text-white/70 text-sm mb-6">{error}</p>
+          <button
+            onClick={handleRetry}
+            className="bg-gradient-to-r from-[#FFD700] to-[#FFED4E] hover:from-[#FFED4E] hover:to-[#FFD700] text-black px-6 py-3 rounded-full font-semibold transition-all"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-[#0a0804] to-black px-2 sm:px-4 lg:px-8 py-4 sm:py-6 relative">

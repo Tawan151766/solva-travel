@@ -12,7 +12,7 @@ export function StaffProfile({ staff }) {
         <div
           className="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-24 h-24 sm:w-32 sm:h-32 mb-4 ring-4 ring-[#FFD700]/30 shadow-lg shadow-[#FFD700]/20"
           style={{
-            backgroundImage: `url("${staff.image}")`
+            backgroundImage: `url("${staff.profileImage || staff.image || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300&h=300&fit=crop&crop=face'}")`
           }}
         />
         
