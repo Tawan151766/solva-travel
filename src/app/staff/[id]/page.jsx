@@ -1,7 +1,7 @@
 "use client";
 
 import { notFound } from "next/navigation";
-import { Suspense, use, useState, useEffect } from "react";
+import { Suspense, use, useState, useEffect, useCallback } from "react";
 import { useStaffContext } from "@/core/context";
 import { StaffProfile } from "@/components/pages/staff/StaffProfile";
 import { ReviewStats } from "@/components/pages/staff/ReviewStats";
@@ -18,31 +18,54 @@ export default function StaffPage({ params }) {
   const [staff, setStaff] = useState(null);
   const [staffLoading, setStaffLoading] = useState(true);
   const [staffError, setStaffError] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   // Load staff data
-  useEffect(() => {
-    const loadStaff = async () => {
-      try {
-        setStaffLoading(true);
-        setStaffError(null);
-        
-        const staffData = await getStaffById(id);
-        if (!staffData) {
-          notFound();
-          return;
-        }
-        
-        setStaff(staffData);
-      } catch (err) {
-        console.error('Error loading staff:', err);
-        setStaffError(err.message);
-      } finally {
-        setStaffLoading(false);
+  const loadStaff = useCallback(async () => {
+    try {
+      setStaffLoading(true);
+      setStaffError(null);
+      
+      const staffData = await getStaffById(id);
+      if (!staffData) {
+        notFound();
+        return;
       }
-    };
-
-    loadStaff();
+      
+      setStaff(staffData);
+    } catch (err) {
+      console.error('Error loading staff:', err);
+      setStaffError(err.message);
+    } finally {
+      setStaffLoading(false);
+    }
   }, [id, getStaffById]);
+
+  // Refresh staff data
+  const refreshStaff = useCallback(async () => {
+    try {
+      setRefreshing(true);
+      setStaffError(null);
+      
+      const response = await fetch(`/api/staff/${id}`);
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || 'Failed to refresh staff data');
+      }
+
+      setStaff(result.data);
+    } catch (err) {
+      console.error('Error refreshing staff:', err);
+      setStaffError(err.message);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    loadStaff();
+  }, [loadStaff]); // Now depend on the memoized loadStaff function
 
   // Loading state
   if (staffLoading) {
@@ -64,12 +87,20 @@ export default function StaffPage({ params }) {
           <div className="text-red-400 text-6xl mb-4">⚠️</div>
           <h2 className="text-white text-xl font-bold mb-2">Staff Member Not Found</h2>
           <p className="text-white/70 text-sm mb-6">{staffError || 'This staff member could not be found.'}</p>
-          <a
-            href="/staff"
-            className="bg-gradient-to-r from-[#FFD700] to-[#FFED4E] hover:from-[#FFED4E] hover:to-[#FFD700] text-black px-6 py-3 rounded-full font-semibold transition-all"
-          >
-            Back to Staff
-          </a>
+          <div className="flex gap-3 justify-center">
+            <button
+              onClick={loadStaff}
+              className="bg-gradient-to-r from-[#FFD700] to-[#FFED4E] hover:from-[#FFED4E] hover:to-[#FFD700] text-black px-6 py-3 rounded-full font-semibold transition-all"
+            >
+              Try Again
+            </button>
+            <a
+              href="/staff"
+              className="bg-black/60 hover:bg-black/80 text-white border border-[#FFD700]/30 hover:border-[#FFD700] px-6 py-3 rounded-full font-semibold transition-all"
+            >
+              Back to Staff
+            </a>
+          </div>
         </div>
       </div>
     );
@@ -96,8 +127,8 @@ export default function StaffPage({ params }) {
           allStaff={allStaffData}
         />
 
-        {/* Header */}
-        <div className="mb-6 sm:mb-8">
+        {/* Header with Refresh Button */}
+        <div className="mb-6 sm:mb-8 flex items-center justify-between">
           <div className="max-w-4xl">
             <h1 className="text-transparent bg-gradient-to-r from-[#FFD700] to-[#FFED4E] bg-clip-text text-2xl sm:text-3xl lg:text-4xl font-bold leading-tight mb-2 sm:mb-3">
               Staff Reviews
@@ -106,6 +137,28 @@ export default function StaffPage({ params }) {
               Read what other travelers have to say about {staff.name} and our staff.
             </p>
           </div>
+          
+          {/* Refresh Button */}
+          <button
+            onClick={refreshStaff}
+            disabled={refreshing}
+            className="bg-gradient-to-r from-[#FFD700]/20 to-[#FFED4E]/20 hover:from-[#FFD700]/30 hover:to-[#FFED4E]/30 border border-[#FFD700]/30 hover:border-[#FFD700] text-[#FFD700] px-4 py-2 rounded-full font-semibold transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <svg
+              className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              />
+            </svg>
+            {refreshing ? 'Refreshing...' : 'Refresh'}
+          </button>
         </div>
 
         {/* Main Content */}

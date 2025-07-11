@@ -83,6 +83,14 @@ function StaffCard({ staff }) {
 export default function StaffPage() {
   const { allStaffData, loading, error, fetchStaffData } = useStaffContext();
 
+  // Debug logs
+  console.log('Staff Page Debug:', {
+    allStaffData,
+    dataLength: allStaffData?.length,
+    loading,
+    error
+  });
+
   // Retry function for error states
   const handleRetry = () => {
     fetchStaffData();
@@ -156,9 +164,25 @@ export default function StaffPage() {
 
         {/* Staff Grid */}
         <div className="space-y-6">
-          {allStaffData.map((staff) => (
-            <StaffCard key={staff.id} staff={staff} />
-          ))}
+          {allStaffData && allStaffData.length > 0 ? (
+            allStaffData.map((staff) => (
+              <StaffCard key={staff.id} staff={staff} />
+            ))
+          ) : (
+            <div className="text-center py-12">
+              <div className="text-[#FFD700] text-6xl mb-4">👥</div>
+              <h3 className="text-white text-xl font-bold mb-2">No Staff Members Found</h3>
+              <p className="text-white/60 mb-4">
+                We're currently updating our team information.
+              </p>
+              <button
+                onClick={handleRetry}
+                className="bg-gradient-to-r from-[#FFD700] to-[#FFED4E] hover:from-[#FFED4E] hover:to-[#FFD700] text-black px-6 py-3 rounded-full font-semibold transition-all"
+              >
+                Reload Team
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Call to Action */}

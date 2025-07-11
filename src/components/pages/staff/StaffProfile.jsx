@@ -24,27 +24,77 @@ export function StaffProfile({ staff }) {
           <p className="text-white/80 text-sm sm:text-base font-normal leading-normal">
             {staff.title}
           </p>
+          {staff.department && (
+            <p className="text-[#FFD700]/60 text-xs sm:text-sm mt-1">
+              {staff.department} Department
+            </p>
+          )}
         </div>
 
         {/* Rating */}
         <div className="flex flex-col items-center mb-4">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-transparent bg-gradient-to-r from-[#FFD700] to-[#FFED4E] bg-clip-text text-2xl sm:text-3xl font-black leading-tight tracking-[-0.033em]">
-              {staff.rating}
+              {staff.rating || 0}
             </span>
-            <StarRating rating={Math.floor(staff.rating)} size="20" />
+            <StarRating rating={Math.floor(staff.rating || 0)} size="20" />
           </div>
           <p className="text-white/80 text-sm">
-            {staff.totalReviews} reviews
+            {staff.totalReviews || 0} reviews
           </p>
         </div>
 
+        {/* Contact Info */}
+        {(staff.email || staff.phone) && (
+          <div className="w-full mb-4 p-3 bg-black/30 backdrop-blur-sm rounded-lg border border-[#FFD700]/10">
+            <h3 className="text-[#FFD700] text-sm font-semibold mb-2">Contact</h3>
+            {staff.email && (
+              <p className="text-white/70 text-xs mb-1">
+                📧 {staff.email}
+              </p>
+            )}
+            {staff.phone && (
+              <p className="text-white/70 text-xs">
+                📞 {staff.phone}
+              </p>
+            )}
+          </div>
+        )}
+
         {/* Bio */}
         {staff.bio && (
-          <div className="mb-4">
-            <p className="text-white/90 text-sm leading-relaxed">
+          <div className="mb-4 w-full">
+            <h3 className="text-[#FFD700] text-sm font-semibold mb-2">About</h3>
+            <p className="text-white/90 text-sm leading-relaxed text-left">
               {staff.bio}
             </p>
+          </div>
+        )}
+
+        {/* Experience */}
+        {staff.experience && (
+          <div className="w-full mb-4">
+            <h3 className="text-[#FFD700] text-sm font-semibold mb-2">Experience</h3>
+            <p className="text-white/80 text-sm">
+              {staff.experience}
+            </p>
+          </div>
+        )}
+
+        {/* Languages */}
+        {staff.languages && staff.languages.length > 0 && (
+          <div className="w-full mb-4">
+            <h3 className="text-[#FFD700] text-sm font-semibold mb-2">Languages</h3>
+            <div className="flex flex-wrap gap-1">
+              {staff.languages.map((language, index) => (
+                <span
+                  key={index}
+                  className="bg-gradient-to-r from-[#FFD700]/10 to-[#FFED4E]/10 backdrop-blur-sm text-[#FFD700] border border-[#FFD700]/20 px-2 py-1 rounded text-xs"
+                >
+                  {language}
+                </span>
+              ))}
+            </div>
           </div>
         )}
 
@@ -62,6 +112,15 @@ export function StaffProfile({ staff }) {
                 </span>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* Member Since */}
+        {staff.createdAt && (
+          <div className="w-full mt-4 pt-4 border-t border-[#FFD700]/10">
+            <p className="text-white/50 text-xs text-center">
+              Team Member Since {new Date(staff.createdAt).getFullYear()}
+            </p>
           </div>
         )}
       </div>

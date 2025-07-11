@@ -1,0 +1,129 @@
+{
+  "success": true,
+  "message": "Staff data retrieved successfully",
+  "data": {
+    "staff": [
+      {
+        "id": "cmcyy3f4f0002n7rgsg2cnljk",
+        "name": "James Wilson",
+        "firstName": "James",
+        "lastName": "Wilson",
+        "email": "james.wilson@solvatravel.com",
+        "phone": "0812345679",
+        "role": "STAFF",
+        "profileImage": null,
+        "isActive": true,
+        "createdAt": "2025-07-11T15:01:54.640Z",
+        "title": "Staff Member",
+        "department": "General",
+        "bio": "Experienced staff at Solva Travel",
+        "specialties": [],
+        "languages": ["English"],
+        "experience": "1+ years",
+        "rating": 4.5,
+        "totalReviews": 2,
+        "recentReviews": [
+          {
+            "id": "cmcyymkev000bn7u4m7w1dvkb",
+            "rating": 4,
+            "comment": "Professional and friendly service from our staff member. Made the booking process smooth and easy.",
+            "createdAt": "2025-07-11T15:16:47.959Z",
+            "reviewerName": "Test User",
+            "reviewerImage": null
+          },
+          {
+            "id": "cmcyymker0009n7u4lny2ujtz",
+            "rating": 5,
+            "comment": "Emily's attention to detail is amazing. She thought of everything for our European tour. Best travel experience ever!",
+            "createdAt": "2025-07-11T15:16:47.955Z",
+            "reviewerName": "Test User",
+            "reviewerImage": null
+          }
+        ]
+      },
+      {
+        "id": "cmcyy30kr0001n7rgn2zrsysj",
+        "name": "Emily Carter",
+        "firstName": "Emily",
+        "lastName": "Carter",
+        "email": "emily.carter@solvatravel.com",
+        "phone": "0812345678",
+        "role": "STAFF",
+        "profileImage": null,
+        "isActive": true,
+        "createdAt": "2025-07-11T15:01:35.787Z",
+        "title": "Staff Member",
+        "department": "General",
+        "bio": "Experienced staff at Solva Travel",
+        "specialties": [],
+        "languages": ["English"],
+        "experience": "1+ years",
+        "rating": 4.5,
+        "totalReviews": 2,
+        "recentReviews": [
+          {
+            "id": "cmcyymkem0007n7u4auv0pj1q",
+            "rating": 4,
+            "comment": "Emily was fantastic! Very organized and helped us plan the perfect family vacation. Kids loved her energy.",
+            "createdAt": "2025-07-11T15:16:47.951Z",
+            "reviewerName": "testt es",
+            "reviewerImage": null
+          },
+          {
+            "id": "cmcyymkej0005n7u4qc6dq2sw",
+            "rating": 5,
+            "comment": "Outstanding service! James went above and beyond to make our honeymoon trip perfect. Thank you so much!",
+            "createdAt": "2025-07-11T15:16:47.947Z",
+            "reviewerName": "testt es",
+            "reviewerImage": null
+          }
+        ]
+      },
+      {
+        "id": "cmcyxawvp0002n7lk5rnvpblh",
+        "name": "Staff Member",
+        "firstName": "Staff",
+        "lastName": "Member",
+        "email": "staff@example.com",
+        "phone": "0812345680",
+        "role": "STAFF",
+        "profileImage": null,
+        "isActive": true,
+        "createdAt": "2025-07-11T14:39:44.630Z",
+        "title": "Staff Member",
+        "department": "General",
+        "bio": "Experienced staff at Solva Travel",
+        "specialties": [],
+        "languages": ["English"],
+        "experience": "1+ years",
+        "rating": 4.5,
+        "totalReviews": 2,
+        "recentReviews": [
+          {
+            "id": "cmcyymkee0003n7u4fr0iqyj3",
+            "rating": 4,
+            "comment": "Great experience with James as our guide. He was professional and made sure we had everything we needed for our journey.",
+            "createdAt": "2025-07-11T15:16:47.943Z",
+            "reviewerName": "Test User",
+            "reviewerImage": null
+          },
+          {
+            "id": "cmcyymkdv0001n7u4g55pobix",
+            "rating": 5,
+            "comment": "James provided excellent service during our trip to Thailand. Very knowledgeable and helpful about local attractions and customs. Highly recommend!",
+            "createdAt": "2025-07-11T15:16:47.923Z",
+            "reviewerName": "Jane Doe",
+            "reviewerImage": null
+          }
+        ]
+      }
+    ],
+    "pagination": {
+      "currentPage": 1,
+      "totalPages": 1,
+      "totalCount": 3,
+      "hasNextPage": false,
+      "hasPrevPage": false
+    }
+  }
+}

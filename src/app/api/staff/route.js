@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import prisma from '../../../lib/prisma.js';
+import { staffData, reviewsData } from '../../../data/staffData.js';
 
 export async function GET(request) {
   try {
@@ -7,130 +7,45 @@ export async function GET(request) {
     const page = parseInt(searchParams.get('page')) || 1;
     const limit = parseInt(searchParams.get('limit')) || 10;
     const search = searchParams.get('search') || '';
-    const department = searchParams.get('department') || '';
-    const role = searchParams.get('role') || '';
 
-    // Calculate offset
-    const offset = (page - 1) * limit;
+    console.log('Staff API called with params:', { page, limit, search });
 
-    // Build where conditions
-    const whereConditions = {
-      isActive: true,
-      role: {
-        in: ['STAFF', 'ADMIN'] // Only show staff and admin users
-      }
-    };
+    // Start with all staff data
+    let filteredStaff = [...staffData];
 
     // Add search filter
     if (search) {
-      whereConditions.OR = [
-        { firstName: { contains: search, mode: 'insensitive' } },
-        { lastName: { contains: search, mode: 'insensitive' } },
-        { email: { contains: search, mode: 'insensitive' } }
-      ];
+      filteredStaff = filteredStaff.filter(staff =>
+        staff.name.toLowerCase().includes(search.toLowerCase()) ||
+        staff.title.toLowerCase().includes(search.toLowerCase()) ||
+        staff.bio.toLowerCase().includes(search.toLowerCase())
+      );
     }
 
-    // Add role filter
-    if (role && role !== 'ALL') {
-      whereConditions.role = role;
-    }
-
-    // Get staff with their profiles and reviews
-    const staff = await prisma.user.findMany({
-      where: whereConditions,
-      include: {
-        staffProfile: true,
-        reviewsReceived: {
-          include: {
-            reviewer: {
-              select: {
-                firstName: true,
-                lastName: true,
-                profileImage: true
-              }
-            }
-          },
-          orderBy: {
-            createdAt: 'desc'
-          }
-        },
-        _count: {
-          select: {
-            reviewsReceived: true
-          }
-        }
-      },
-      orderBy: {
-        createdAt: 'desc'
-      },
-      skip: offset,
-      take: limit
+    // Add reviews to each staff member
+    filteredStaff = filteredStaff.map(staff => {
+      const staffReviews = reviewsData.filter(review => review.staffId === staff.id);
+      return {
+        ...staff,
+        reviews: staffReviews
+      };
     });
 
-    // Calculate average ratings for each staff member
-    const staffWithRatings = await Promise.all(
-      staff.map(async (member) => {
-        const avgRating = await prisma.review.aggregate({
-          where: {
-            reviewedUserId: member.id
-          },
-          _avg: {
-            rating: true
-          }
-        });
+    // Apply pagination
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginatedStaff = filteredStaff.slice(startIndex, endIndex);
 
-        return {
-          id: member.id,
-          name: `${member.firstName} ${member.lastName}`,
-          firstName: member.firstName,
-          lastName: member.lastName,
-          email: member.email,
-          phone: member.phone,
-          role: member.role,
-          profileImage: member.profileImage,
-          isActive: member.isActive,
-          createdAt: member.createdAt,
-          
-          // Staff profile info
-          title: member.staffProfile?.position || 'Staff Member',
-          department: member.staffProfile?.department || 'General',
-          bio: member.staffProfile?.bio || `Experienced ${member.role.toLowerCase()} at Solva Travel`,
-          specialties: member.staffProfile?.specialties || [],
-          languages: member.staffProfile?.languages || ['English'],
-          experience: member.staffProfile?.experience || '1+ years',
-          employeeId: member.staffProfile?.employeeId,
-          
-          // Review stats
-          rating: avgRating._avg.rating ? Number(avgRating._avg.rating.toFixed(1)) : 0,
-          totalReviews: member._count.reviewsReceived,
-          
-          // Latest reviews
-          recentReviews: member.reviewsReceived.slice(0, 5).map(review => ({
-            id: review.id,
-            rating: review.rating,
-            comment: review.comment,
-            createdAt: review.createdAt,
-            reviewerName: `${review.reviewer.firstName} ${review.reviewer.lastName}`,
-            reviewerImage: review.reviewer.profileImage
-          }))
-        };
-      })
-    );
-
-    // Get total count for pagination
-    const totalCount = await prisma.user.count({
-      where: whereConditions
-    });
-
+    const totalCount = filteredStaff.length;
     const totalPages = Math.ceil(totalCount / limit);
 
-    console.log(`Retrieved ${staffWithRatings.length} staff members`);
+    console.log(`Retrieved ${paginatedStaff.length} staff members out of ${totalCount} total`);
 
     return NextResponse.json({
       success: true,
       message: 'Staff data retrieved successfully',
       data: {
-        staff: staffWithRatings,
+        staff: paginatedStaff,
         pagination: {
           currentPage: page,
           totalPages,
@@ -145,7 +60,8 @@ export async function GET(request) {
     console.error('Get staff error:', error);
     return NextResponse.json({
       success: false,
-      message: 'Internal server error'
+      message: 'Internal server error',
+      error: error.message
     }, { status: 500 });
   }
 }

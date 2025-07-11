@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useMemo, useEffect } from 'react';
+import { createContext, useContext, useState, useMemo, useEffect, useCallback } from 'react';
 
 const StaffContext = createContext();
 
@@ -20,7 +20,7 @@ export function StaffProvider({ children }) {
   });
 
   // Fetch all staff data from API
-  const fetchStaffData = async () => {
+  const fetchStaffData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -28,10 +28,13 @@ export function StaffProvider({ children }) {
       const response = await fetch('/api/staff?limit=100'); // Get all staff
       const result = await response.json();
 
+      console.log('API Response:', result);
+
       if (!response.ok) {
         throw new Error(result.message || 'Failed to fetch staff data');
       }
 
+      console.log('Setting staff data:', result.data.staff);
       setAllStaffData(result.data.staff);
       
       // Flatten all reviews from all staff
@@ -46,6 +49,7 @@ export function StaffProvider({ children }) {
       setAllReviewsData(allReviews);
 
       console.log('Staff data loaded:', result.data.staff.length, 'staff members');
+      console.log('Staff data details:', result.data.staff);
       
     } catch (err) {
       console.error('Error fetching staff data:', err);
@@ -53,10 +57,10 @@ export function StaffProvider({ children }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   // Fetch single staff member with full details
-  const fetchStaffById = async (id) => {
+  const fetchStaffById = useCallback(async (id) => {
     try {
       setLoading(true);
       setError(null);
@@ -77,15 +81,16 @@ export function StaffProvider({ children }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   // Load data on mount
   useEffect(() => {
+    console.log('useEffect triggered, calling fetchStaffData');
     fetchStaffData();
-  }, []);
+  }, [fetchStaffData]);
 
   // Get staff member by ID (with API call for full details)
-  const getStaffById = async (id) => {
+  const getStaffById = useCallback(async (id) => {
     // First check if we have it in local data
     const localStaff = allStaffData.find(member => member.id === id);
     if (localStaff && localStaff.reviews) {
@@ -94,10 +99,10 @@ export function StaffProvider({ children }) {
 
     // Fetch full details from API
     return await fetchStaffById(id);
-  };
+  }, [allStaffData, fetchStaffById]);
 
   // Get staff reviews with filters
-  const getStaffReviews = (staffId, filters = reviewFilters) => {
+  const getStaffReviews = useCallback((staffId, filters = reviewFilters) => {
     let filtered = allReviewsData.filter(review => review.staffId === staffId);
 
     // Apply filters
@@ -132,7 +137,7 @@ export function StaffProvider({ children }) {
     }
 
     return filtered;
-  };
+  }, [allReviewsData, reviewFilters]);
 
   // Get all reviews with filters
   const getAllReviews = (filters = reviewFilters) => {
@@ -259,9 +264,9 @@ export function StaffProvider({ children }) {
   };
 
   // Update review filters
-  const updateReviewFilters = (newFilters) => {
+  const updateReviewFilters = useCallback((newFilters) => {
     setReviewFilters(prev => ({ ...prev, ...newFilters }));
-  };
+  }, []);
 
   const value = {
     // Data
@@ -292,6 +297,14 @@ export function StaffProvider({ children }) {
     setLoading,
     setError,
   };
+
+  // Debug log
+  console.log('StaffContext value:', {
+    allStaffDataLength: allStaffData?.length,
+    loading,
+    error,
+    hasData: allStaffData && allStaffData.length > 0
+  });
 
   return (
     <StaffContext.Provider value={value}>
