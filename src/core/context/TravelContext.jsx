@@ -43,7 +43,7 @@ export function TravelProvider({ children }) {
       // Update price range based on actual data
       if (result.data.packages.length > 0) {
         const prices = result.data.packages
-          .map(pkg => parseFloat(pkg.price.replace(/[$,]/g, '')))
+          .map(pkg => parseFloat(pkg.price))
           .filter(price => !isNaN(price));
         
         const minPrice = Math.min(...prices);
@@ -124,8 +124,7 @@ export function TravelProvider({ children }) {
     const minPrice = filters.priceRange[0];
     const maxPrice = filters.priceRange[1];
     filtered = filtered.filter((item) => {
-      const priceStr = item.price.replace(/[$,]/g, "");
-      const price = parseInt(priceStr);
+      const price = parseFloat(item.price);
       return !isNaN(price) && price >= minPrice && price <= maxPrice;
     });
 
@@ -199,7 +198,7 @@ export function TravelProvider({ children }) {
     }
 
     const prices = allTravelData
-      .map(pkg => parseFloat(pkg.price.replace(/[$,]/g, '')))
+      .map(pkg => parseFloat(pkg.price))
       .filter(price => !isNaN(price));
 
     return {

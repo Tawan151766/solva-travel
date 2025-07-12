@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 // GET /api/custom-tour-requests/[id] - Get specific custom tour request
 export async function GET(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const token = request.headers.get('authorization')?.replace('Bearer ', '');
     
     const customTourRequest = await prisma.customTourRequest.findUnique({

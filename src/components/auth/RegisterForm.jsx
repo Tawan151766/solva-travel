@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContext-simple";
 
 export function RegisterForm({ onSwitchToLogin, onSwitchToOTP }) {
   const router = useRouter();

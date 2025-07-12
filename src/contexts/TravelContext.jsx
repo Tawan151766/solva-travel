@@ -38,17 +38,15 @@ export function TravelProvider({ children }) {
     const minPrice = filters.priceRange[0];
     const maxPrice = filters.priceRange[1];
     filtered = filtered.filter(item => {
-      // Extract price number from string like "$1,299"
-      const priceStr = item.price.replace(/[$,]/g, '');
-      const price = parseInt(priceStr);
+      // Convert Decimal price to number
+      const price = parseFloat(item.price);
       return !isNaN(price) && price >= minPrice && price <= maxPrice;
     });
 
     // Filter by recommended (mock implementation - using price as criteria)
     if (filters.isRecommendedOnly) {
       filtered = filtered.filter(item => {
-        const priceStr = item.price.replace(/[$,]/g, '');
-        const price = parseInt(priceStr);
+        const price = parseFloat(item.price);
         return !isNaN(price) && price >= 1000; // Consider packages >= $1000 as recommended
       });
     }

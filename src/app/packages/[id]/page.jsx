@@ -421,8 +421,8 @@ export default function PackagePage({ params }) {
                   <div>
                     <div className="text-3xl font-bold">
                       {travelPackage.groupPricing 
-                        ? `$${travelPackage.groupPricing[selectedGroupSize]?.price || travelPackage.price.replace(/[$,]/g, '')}` 
-                        : travelPackage.price
+                        ? `$${travelPackage.groupPricing[selectedGroupSize]?.price || travelPackage.price}` 
+                        : `$${travelPackage.price}`
                       }
                     </div>
                     <div className="text-sm opacity-80">per person</div>

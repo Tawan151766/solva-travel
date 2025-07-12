@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useLayoutEffect } from 'react';
 
 // Create Authentication Context
 const AuthContext = createContext();
@@ -16,28 +16,122 @@ export const useAuth = () => {
 
 // Auth Provider Component
 export function AuthProvider({ children }) {
+  console.log('🚀 AuthProvider: Component initialized - new session starting');
+  
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
 
-  // Check for existing session on mount
+  console.log('🚀 AuthProvider: State initialized, loading:', loading);
+
+  // Simple client-side check
   useEffect(() => {
-    checkAuthStatus();
+    console.log('AuthContext: === MAIN useEffect TRIGGERED ===');
+    
+    const initializeAuth = async () => {
+      try {
+        console.log('AuthContext: Initializing auth...');
+        console.log('AuthContext: typeof window:', typeof window);
+        
+        if (typeof window === 'undefined') {
+          console.log('AuthContext: Server-side detected, setting loading to false');
+          setLoading(false);
+          return;
+        }
+        
+        console.log('AuthContext: Client-side detected, checking localStorage...');
+        
+        // Get stored auth data
+        const storedUser = localStorage.getItem('user');
+        const storedToken = localStorage.getItem('token');
+        
+        console.log('AuthContext: Stored user:', storedUser ? 'EXISTS' : 'NOT_FOUND');
+        console.log('AuthContext: Stored token:', storedToken ? 'EXISTS' : 'NOT_FOUND');
+        
+        if (storedUser && storedToken) {
+          console.log('AuthContext: Found stored auth data, parsing...');
+          const userData = JSON.parse(storedUser);
+          setUser(userData);
+          setToken(storedToken);
+          console.log('AuthContext: ✅ Authentication restored from localStorage');
+          console.log('AuthContext: User ID:', userData.id);
+          console.log('AuthContext: User email:', userData.email);
+        } else {
+          console.log('AuthContext: ❌ No stored auth data found');
+        }
+        
+        setLoading(false);
+        console.log('AuthContext: Auth initialization complete');
+        
+      } catch (error) {
+        console.error('AuthContext: Error initializing auth:', error);
+        setLoading(false);
+      }
+    };
+    
+    // Run immediately
+    initializeAuth();
+    
+  }, []);
+
+  // Additional useEffect to ensure client-side initialization  
+  useEffect(() => {
+    console.log('AuthContext: === SECOND useEffect TRIGGERED ===');
+    console.log('AuthContext: typeof window:', typeof window);
+    
+    if (typeof window !== 'undefined') {
+      console.log('AuthContext: Client-side mounted, scheduling second check...');
+      const timer = setTimeout(() => {
+        console.log('AuthContext: Second check timer fired, calling checkAuthStatus');
+        checkAuthStatus();
+      }, 500);
+      return () => {
+        console.log('AuthContext: Cleanup second useEffect timer');
+        clearTimeout(timer);
+      };
+    }
   }, []);
 
   const checkAuthStatus = async () => {
     try {
-      // Check if user data exists in localStorage
+      console.log('AuthContext: ===== checkAuthStatus CALLED =====');
+      console.log('AuthContext: typeof window:', typeof window);
+      
+      // Check if we're in client-side environment
+      if (typeof window === 'undefined') {
+        console.log('AuthContext: Running on server-side, skipping localStorage check');
+        setLoading(false);
+        return;
+      }
+      
+      console.log('AuthContext: Client-side detected, checking localStorage...');
+      
+      // Check if user data exists in localStorage - use consistent key names
       const userData = localStorage.getItem('user');
-      const authToken = localStorage.getItem('authToken');
+      const authToken = localStorage.getItem('token'); // Changed from 'authToken' to 'token' for consistency
+      
+      console.log('AuthContext: localStorage contents:');
+      console.log('AuthContext: - user data:', userData ? 'EXISTS' : 'NOT_FOUND');
+      console.log('AuthContext: - token:', authToken ? 'EXISTS' : 'NOT_FOUND');
+      console.log('AuthContext: - token length:', authToken ? authToken.length : 0);
       
       if (userData && authToken) {
-        setUser(JSON.parse(userData));
+        const parsedUser = JSON.parse(userData);
+        console.log('AuthContext: AUTHENTICATION SUCCESS - Setting user:', parsedUser);
+        setUser(parsedUser);
         setToken(authToken);
+      } else {
+        console.log('AuthContext: NO VALID AUTH DATA - user will remain null');
+        setUser(null);
+        setToken(null);
       }
     } catch (error) {
-      console.error('Error checking auth status:', error);
+      console.error('AuthContext: ERROR in checkAuthStatus:', error);
+      setUser(null);
+      setToken(null);
     } finally {
+      console.log('AuthContext: Setting loading to false');
       setLoading(false);
     }
   };
@@ -45,6 +139,8 @@ export function AuthProvider({ children }) {
   const login = async (email, password) => {
     try {
       setLoading(true);
+      
+      console.log('AuthContext: Starting login for:', email);
       
       // Call your login API
       const response = await fetch('/api/auth/login', {
@@ -56,16 +152,26 @@ export function AuthProvider({ children }) {
       });
 
       const result = await response.json();
+      console.log('AuthContext: Login response:', { status: response.status, result });
 
       if (response.ok && result.success) {
-        // Store user data and token
-        localStorage.setItem('user', JSON.stringify(result.data.user));
-        localStorage.setItem('authToken', result.data.token);
+        console.log('AuthContext: Login successful, storing data...');
         
+        // Store user data and token (only on client-side)
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('user', JSON.stringify(result.data.user));
+          localStorage.setItem('token', result.data.token); // Changed from 'authToken' to 'token'
+          console.log('AuthContext: Data stored in localStorage with keys: user, token');
+        }
+        
+        console.log('AuthContext: Data stored, updating state...');
         setUser(result.data.user);
         setToken(result.data.token);
+        
+        console.log('AuthContext: Login complete, user state:', result.data.user);
         return { success: true, user: result.data.user };
       } else {
+        console.log('AuthContext: Login failed:', result.message);
         return { success: false, error: result.message };
       }
     } catch (error) {
@@ -78,14 +184,20 @@ export function AuthProvider({ children }) {
 
   const logout = async () => {
     try {
-      // Clear local storage
-      localStorage.removeItem('user');
-      localStorage.removeItem('authToken');
+      console.log('AuthContext: Logging out...');
+      
+      // Clear local storage (only on client-side)
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('user');
+        localStorage.removeItem('token'); // Changed from 'authToken' to 'token'
+        console.log('AuthContext: Cleared localStorage keys: user, token');
+      }
       
       // Clear user state
       setUser(null);
       setToken(null);
       
+      console.log('AuthContext: Logout complete');
       return { success: true };
     } catch (error) {
       console.error('Logout error:', error);
@@ -165,6 +277,15 @@ export function AuthProvider({ children }) {
     updateProfile,
     checkAuthStatus,
   };
+
+  // Debug logging
+  console.log('AuthContext: Current auth state:', {
+    hasUser: !!user,
+    hasToken: !!token,
+    isAuthenticated: !!user,
+    loading,
+    userEmail: user?.email
+  });
 
   return (
     <AuthContext.Provider value={value}>

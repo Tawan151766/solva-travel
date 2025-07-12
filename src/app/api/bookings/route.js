@@ -165,10 +165,10 @@ export async function POST(request) {
         if (groupPricing[selectedGroupSize]) {
           totalAmount = parseFloat(groupPricing[selectedGroupSize].price) * numberOfPeople;
         } else {
-          totalAmount = parseFloat(packageData.price.replace(/[$,]/g, '')) * numberOfPeople;
+          totalAmount = parseFloat(packageData.price) * numberOfPeople;
         }
       } else {
-        totalAmount = parseFloat(packageData.price.replace(/[$,]/g, '')) * numberOfPeople;
+        totalAmount = parseFloat(packageData.price) * numberOfPeople;
       }
     } else if (bookingType === 'CUSTOM') {
       customTourRequestData = await prisma.customTourRequest.findUnique({

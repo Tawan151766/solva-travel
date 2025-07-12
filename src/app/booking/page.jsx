@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext-simple';
 
 export default function BookingPage() {
   const router = useRouter();
@@ -134,7 +134,7 @@ export default function BookingPage() {
         return parseFloat(groupPricing.price) * formData.numberOfPeople;
       }
       // Fallback to regular price
-      return (packageData.priceNumber || parseFloat(packageData.price?.replace(/[$,]/g, '') || 0)) * formData.numberOfPeople;
+      return (packageData.priceNumber || parseFloat(packageData.price || 0)) * formData.numberOfPeople;
     } else if (bookingType === 'custom' && customTourData) {
       return customTourData.estimatedCost || 0;
     }

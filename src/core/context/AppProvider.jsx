@@ -3,7 +3,8 @@
 import { TravelProvider } from './TravelContext';
 import { StaffProvider } from './StaffContext';
 import { GalleryProvider } from './GalleryContext';
-import { AuthProvider } from '@/contexts/AuthContext';
+import { AuthProvider } from '@/contexts/AuthContext-simple';
+import ClientOnly from '@/components/ClientOnly';
 
 /**
  * Main App Provider that wraps all context providers
@@ -11,15 +12,17 @@ import { AuthProvider } from '@/contexts/AuthContext';
  */
 export function AppProvider({ children }) {
   return (
-    <AuthProvider>
-      <TravelProvider>
-        <StaffProvider>
-          <GalleryProvider>
-            {children}
-          </GalleryProvider>
-        </StaffProvider>
-      </TravelProvider>
-    </AuthProvider>
+    <ClientOnly>
+      <AuthProvider>
+        <TravelProvider>
+          <StaffProvider>
+            <GalleryProvider>
+              {children}
+            </GalleryProvider>
+          </StaffProvider>
+        </TravelProvider>
+      </AuthProvider>
+    </ClientOnly>
   );
 }
 
