@@ -37,11 +37,11 @@ export async function GET(request) {
     }
 
     // Fetch statistics
-    const [totalUsers, totalBookings, totalPackages, pendingBookings] = await Promise.all([
+    const [totalUsers, totalTourRequests, totalPackages, pendingTourRequests] = await Promise.all([
       prisma.user.count(),
-      prisma.booking.count(),
+      prisma.customTourRequest.count(),
       prisma.travelPackage.count(),
-      prisma.booking.count({
+      prisma.customTourRequest.count({
         where: { status: 'PENDING' }
       })
     ]);
@@ -50,9 +50,9 @@ export async function GET(request) {
       success: true,
       data: {
         totalUsers,
-        totalBookings,
+        totalBookings: totalTourRequests, // Keep the same key for compatibility
         totalPackages,
-        pendingBookings
+        pendingBookings: pendingTourRequests // Keep the same key for compatibility
       }
     });
 

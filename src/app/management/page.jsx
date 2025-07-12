@@ -102,7 +102,7 @@ export default function ManagementPage() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Bookings</CardTitle>
+              <CardTitle className="text-sm font-medium">Tour Requests</CardTitle>
               <Calendar className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -122,7 +122,7 @@ export default function ManagementPage() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Pending Bookings</CardTitle>
+              <CardTitle className="text-sm font-medium">Pending Requests</CardTitle>
               <BarChart3 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -140,7 +140,7 @@ export default function ManagementPage() {
             </TabsTrigger>
             <TabsTrigger value="bookings" className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
-              Booking Management
+              Tour Request Management
             </TabsTrigger>
             <TabsTrigger value="packages" className="flex items-center gap-2">
               <Package className="h-4 w-4" />
@@ -165,9 +165,9 @@ export default function ManagementPage() {
           <TabsContent value="bookings">
             <Card>
               <CardHeader>
-                <CardTitle>Booking Management</CardTitle>
+                <CardTitle>Tour Request Management</CardTitle>
                 <CardDescription>
-                  View and manage all bookings, update status, and handle customer requests
+                  View and manage all custom tour requests, update status, and handle customer requests
                 </CardDescription>
               </CardHeader>
               <CardContent>
