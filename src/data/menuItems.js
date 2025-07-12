@@ -25,6 +25,13 @@ export const menuItems = [
     iconColor: "text-[#FFD700]"
   },
   {
+    name: "การจองของฉัน",
+    href: "/my-bookings",
+    icon: "M216,72H56a16,16,0,0,0-16,16V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V88A16,16,0,0,0,216,72ZM56,88H216v16H56Zm0,112V120H216v80Z",
+    iconColor: "text-[#FFED4E]",
+    requireAuth: true
+  },
+  {
     name: "ติดตามคำขอ",
     href: "/track-request",
     icon: "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z",
