@@ -3,6 +3,7 @@
 import { TravelProvider } from './TravelContext';
 import { StaffProvider } from './StaffContext';
 import { GalleryProvider } from './GalleryContext';
+import { AuthProvider } from '@/contexts/AuthContext';
 
 /**
  * Main App Provider that wraps all context providers
@@ -10,13 +11,15 @@ import { GalleryProvider } from './GalleryContext';
  */
 export function AppProvider({ children }) {
   return (
-    <TravelProvider>
-      <StaffProvider>
-        <GalleryProvider>
-          {children}
-        </GalleryProvider>
-      </StaffProvider>
-    </TravelProvider>
+    <AuthProvider>
+      <TravelProvider>
+        <StaffProvider>
+          <GalleryProvider>
+            {children}
+          </GalleryProvider>
+        </StaffProvider>
+      </TravelProvider>
+    </AuthProvider>
   );
 }
 

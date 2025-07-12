@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function RegisterForm({ onSwitchToLogin, onSwitchToOTP }) {
   const router = useRouter();
+  const { register } = useAuth();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -82,40 +84,25 @@ export function RegisterForm({ onSwitchToLogin, onSwitchToOTP }) {
     setErrors({});
     
     try {
-      // Call registration API
-      const response = await fetch('/api/auth/register-prisma', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          email: formData.email,
-          password: formData.password,
-          phone: formData.phone,
-          role: formData.role
-        }),
+      // Use AuthContext register function
+      const result = await register({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        password: formData.password,
+        phone: formData.phone
       });
 
-      const result = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(result.message || 'Registration failed');
+      if (result.success) {
+        setSuccess("สมัครสมาชิกสำเร็จ! กำลังนำคุณเข้าสู่หน้าหลัก...");
+        
+        // Redirect to home page after 2 seconds
+        setTimeout(() => {
+          router.push('/');
+        }, 2000);
+      } else {
+        setErrors({ submit: result.error || "เกิดข้อผิดพลาดในการสมัครสมาชิก" });
       }
-      
-      console.log('Registration success:', result);
-      setSuccess("สมัครสมาชิกสำเร็จ! กำลังนำคุณเข้าสู่หน้าหลัก...");
-      
-      // Store token if provided
-      if (result.token) {
-        localStorage.setItem('token', result.token);
-      }
-      
-      // Redirect to home page after 2 seconds
-      setTimeout(() => {
-        router.push('/');
-      }, 2000);
       
     } catch (error) {
       console.error('Registration error:', error);

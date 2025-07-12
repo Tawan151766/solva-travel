@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function LoginForm({ onSwitchToRegister, onClose }) {
   const router = useRouter();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     password: ""
@@ -52,38 +54,20 @@ export function LoginForm({ onSwitchToRegister, onClose }) {
     setErrors({});
     
     try {
-      // Call login API
-      const response = await fetch('/api/auth/login-prisma', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password
-        }),
-      });
+      // Use AuthContext login function
+      const result = await login(formData.email, formData.password);
 
-      const result = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(result.message || 'Login failed');
+      if (result.success) {
+        setSuccess("เข้าสู่ระบบสำเร็จ! กำลังนำคุณเข้าสู่หน้าหลัก...");
+        
+        // Close modal and redirect after 1.5 seconds
+        setTimeout(() => {
+          onClose();
+          router.push('/');
+        }, 1500);
+      } else {
+        setErrors({ submit: result.error || "เกิดข้อผิดพลาดในการเข้าสู่ระบบ" });
       }
-      
-      console.log("Login success:", result);
-      setSuccess("เข้าสู่ระบบสำเร็จ! กำลังนำคุณเข้าสู่หน้าหลัก...");
-      
-      // Store token in localStorage
-      if (result.data.token) {
-        localStorage.setItem('token', result.data.token);
-        localStorage.setItem('user', JSON.stringify(result.data.user));
-      }
-      
-      // Close modal and redirect after 1.5 seconds
-      setTimeout(() => {
-        onClose();
-        router.push('/');
-      }, 1500);
       
     } catch (error) {
       console.error("Login error:", error);
