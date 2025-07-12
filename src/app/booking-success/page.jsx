@@ -11,17 +11,19 @@ export default function BookingSuccessPage() {
   const [loading, setLoading] = useState(true);
 
   const bookingNumber = searchParams.get('bookingNumber');
+  const bookingId = searchParams.get('bookingId');
+  const type = searchParams.get('type'); // 'custom' for custom bookings
 
   useEffect(() => {
-    if (bookingNumber) {
+    if (bookingNumber || bookingId) {
       // You could fetch booking details here if needed
-      // For now, we'll just show the booking number
+      // For now, we'll just show the booking number/ID
       setLoading(false);
     } else {
-      // Redirect to home if no booking number
+      // Redirect to home if no booking info
       router.push('/');
     }
-  }, [bookingNumber, router]);
+  }, [bookingNumber, bookingId, router]);
 
   if (loading) {
     return (
@@ -42,52 +44,99 @@ export default function BookingSuccessPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
               </svg>
             </div>
-            <h1 className="text-3xl font-bold mb-2">Booking Confirmed!</h1>
-            <p className="text-green-100">Thank you for choosing Solva Travel</p>
+            <h1 className="text-3xl font-bold mb-2">
+              {type === 'custom' ? 'ข้อเสนอถูกส่งแล้ว!' : 'Booking Confirmed!'}
+            </h1>
+            <p className="text-green-100">
+              {type === 'custom' ? 'ขอบคุณที่เลือกใช้บริการ Solva Travel' : 'Thank you for choosing Solva Travel'}
+            </p>
           </div>
 
           {/* Booking Details */}
           <div className="p-6 space-y-6">
             <div className="text-center">
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">Your Booking Number</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                {type === 'custom' ? 'รหัสข้อเสนอของคุณ' : 'Your Booking Number'}
+              </h2>
               <div className="bg-gray-100 rounded-lg py-4 px-6 inline-block">
-                <span className="text-2xl font-mono font-bold text-blue-600">{bookingNumber}</span>
+                <span className="text-2xl font-mono font-bold text-blue-600">
+                  {bookingNumber || bookingId || 'CB-PENDING'}
+                </span>
               </div>
               <p className="text-gray-600 mt-2">
-                Please save this booking number for your records
+                {type === 'custom' 
+                  ? 'กรุณาเก็บรหัสนี้ไว้เพื่อติดตามสถานะ' 
+                  : 'Please save this booking number for your records'
+                }
               </p>
             </div>
 
             <div className="border-t border-gray-200 pt-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">What happens next?</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                {type === 'custom' ? 'ขั้นตอนต่อไป?' : 'What happens next?'}
+              </h3>
               <div className="space-y-4">
-                <div className="flex items-start space-x-3">
-                  <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-sm font-semibold text-blue-600">1</span>
-                  </div>
-                  <div>
-                    <h4 className="font-medium text-gray-900">Confirmation Email</h4>
-                    <p className="text-gray-600 text-sm">You will receive a confirmation email with all booking details within the next few minutes.</p>
-                  </div>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-sm font-semibold text-blue-600">2</span>
-                  </div>
-                  <div>
-                    <h4 className="font-medium text-gray-900">Staff Review</h4>
-                    <p className="text-gray-600 text-sm">Our travel specialists will review your booking and contact you within 24 hours to confirm details.</p>
-                  </div>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-sm font-semibold text-blue-600">3</span>
-                  </div>
-                  <div>
-                    <h4 className="font-medium text-gray-900">Payment Instructions</h4>
-                    <p className="text-gray-600 text-sm">We will send you secure payment instructions and finalize your travel arrangements.</p>
-                  </div>
-                </div>
+                {type === 'custom' ? (
+                  <>
+                    <div className="flex items-start space-x-3">
+                      <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <span className="text-sm font-semibold text-blue-600">1</span>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-gray-900">การตรวจสอบข้อเสนอ</h4>
+                        <p className="text-gray-600 text-sm">ทีมงานจะตรวจสอบข้อเสนอของคุณและติดต่อกลับภายใน 24 ชั่วโมง</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start space-x-3">
+                      <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <span className="text-sm font-semibold text-blue-600">2</span>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-gray-900">ใบเสนอราคา</h4>
+                        <p className="text-gray-600 text-sm">เราจะส่งใบเสนอราคาและรายละเอียดแพ็คเกจที่ปรับแต่งให้คุณ</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start space-x-3">
+                      <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <span className="text-sm font-semibold text-blue-600">3</span>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-gray-900">การยืนยันและชำระเงิน</h4>
+                        <p className="text-gray-600 text-sm">เมื่อคุณพอใจกับข้อเสนอ เราจะดำเนินการจองและแจ้งวิธีชำระเงิน</p>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex items-start space-x-3">
+                      <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <span className="text-sm font-semibold text-blue-600">1</span>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-gray-900">Confirmation Email</h4>
+                        <p className="text-gray-600 text-sm">You will receive a confirmation email with all booking details within the next few minutes.</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start space-x-3">
+                      <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <span className="text-sm font-semibold text-blue-600">2</span>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-gray-900">Staff Review</h4>
+                        <p className="text-gray-600 text-sm">Our travel specialists will review your booking and contact you within 24 hours to confirm details.</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start space-x-3">
+                      <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <span className="text-sm font-semibold text-blue-600">3</span>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-gray-900">Payment Instructions</h4>
+                        <p className="text-gray-600 text-sm">We will send you secure payment instructions and finalize your travel arrangements.</p>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 

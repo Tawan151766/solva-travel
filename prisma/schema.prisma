@@ -26,6 +26,7 @@ model User {
   updatedAt              DateTime            @updatedAt
   bookings               Booking[]
   customTourRequests     CustomTourRequest[]
+  customBookings         CustomBooking[]
   galleryImages          Gallery[]
   reviewsReceived        Review[]            @relation("ReviewedUser")
   reviewsGiven           Review[]            @relation("ReviewerUser")
@@ -55,6 +56,7 @@ model StaffProfile {
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
   customTourRequests CustomTourRequest[]
+  customBookings     CustomBooking[]
   user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("staff_profiles")
@@ -162,6 +164,10 @@ model CustomTourRequest {
   id                  String              @id @default(cuid())
   trackingNumber      String              @unique
   userId              String?
+  packageId           Int?                // Reference to the package this request is based on
+  selectedGroupSize   Int?                // Group size selected from package pricing
+  pricePerPerson      Float?              // Price per person from package
+  totalPrice          Float?              // Total price from package pricing
   contactName         String
   contactEmail        String
   contactPhone        String
@@ -187,6 +193,38 @@ model CustomTourRequest {
   user                User?               @relation(fields: [userId], references: [id])
 
   @@map("custom_tour_requests")
+}
+
+model CustomBooking {
+  id                  String              @id @default(cuid())
+  customBookingId     String              @unique
+  userId              String?
+  contactName         String
+  contactEmail        String
+  contactPhone        String
+  destination         String
+  tripType            String?
+  startDate           DateTime
+  endDate             DateTime
+  numberOfPeople      Int
+  budget              Float
+  accommodation       String?
+  transportation      String?
+  specialRequirements String?
+  description         String?
+  requireGuide        Boolean             @default(false)
+  proposalType        String              @default("custom_booking")
+  status              CustomRequestStatus @default(PENDING)
+  assignedStaffId     String?
+  responseNotes       String?
+  quotedPrice         Float?
+  responseDate        DateTime?
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  assignedStaff       StaffProfile?       @relation(fields: [assignedStaffId], references: [id])
+  user                User?               @relation(fields: [userId], references: [id])
+
+  @@map("custom_bookings")
 }
 
 enum UserRole {

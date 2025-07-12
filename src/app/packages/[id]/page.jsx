@@ -4,10 +4,13 @@ import { notFound } from "next/navigation";
 import { use, useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useTravelContext } from "@/core/context";
+import { getRelevantGalleryImages } from "@/data/galleryData";
 
 export default function PackagePage({ params }) {
   // Unwrap params Promise using React.use()
   const { id } = use(params);
+  const { getTravelPackageById } = useTravelContext();
   
   // Local state for package data
   const [travelPackage, setTravelPackage] = useState(null);
@@ -16,46 +19,34 @@ export default function PackagePage({ params }) {
   const [error, setError] = useState(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(null);
   const [showAllImages, setShowAllImages] = useState(false);
-  const [selectedGroupSize, setSelectedGroupSize] = useState("6"); // Default to base pricing
+  const [selectedGroupSize, setSelectedGroupSize] = useState(2);
 
-  // Fetch individual package data from API
+  // Get package data from TravelContext instead of API
   useEffect(() => {
-    const fetchPackageData = async () => {
+    const loadPackageData = () => {
       try {
         setLoading(true);
         setError(null);
 
-        const response = await fetch(`/api/travel/packages/${id}`);
-        const result = await response.json();
-
-        console.log('Individual package API response:', result);
-
-        if (!response.ok) {
-          if (response.status === 404) {
-            notFound();
-          }
-          throw new Error(result.message || 'Failed to fetch package data');
+        // Convert string ID to number for comparison
+        const packageId = parseInt(id, 10);
+        
+        // Get package from TravelContext
+        const packageData = getTravelPackageById(packageId);
+        
+        if (!packageData) {
+          notFound();
+          return;
         }
 
-        setTravelPackage(result.data);
+        setTravelPackage(packageData);
         
-        // Fetch relevant gallery images based on package location
-        const galleryResponse = await fetch(`/api/gallery?search=${result.data.location}&limit=12`);
-        const galleryResult = await galleryResponse.json();
-        
-        if (galleryResponse.ok && galleryResult.success && galleryResult.data.images.length > 0) {
-          setGalleryImages(galleryResult.data.images);
-        } else {
-          // Fallback: get general gallery images if location-specific search fails
-          const fallbackResponse = await fetch(`/api/gallery?limit=12`);
-          const fallbackResult = await fallbackResponse.json();
-          if (fallbackResponse.ok && fallbackResult.success) {
-            setGalleryImages(fallbackResult.data.images);
-          }
-        }
+        // Get relevant gallery images using the helper function
+        const relevantImages = getRelevantGalleryImages(packageData);
+        setGalleryImages(relevantImages);
         
       } catch (err) {
-        console.error('Error fetching package data:', err);
+        console.error('Error loading package data:', err);
         setError(err.message);
       } finally {
         setLoading(false);
@@ -63,9 +54,9 @@ export default function PackagePage({ params }) {
     };
 
     if (id) {
-      fetchPackageData();
+      loadPackageData();
     }
-  }, [id]);
+  }, [id, getTravelPackageById]);
 
   // Loading state
   if (loading) {
@@ -178,7 +169,7 @@ export default function PackagePage({ params }) {
                     <span className="font-medium">{travelPackage.duration}</span>
                   </div>
                   <div className="text-3xl font-bold text-transparent bg-gradient-to-r from-[#FFD700] to-[#FFED4E] bg-clip-text">
-                    {travelPackage.groupPricing ? `From ${travelPackage.price}` : travelPackage.price}
+                    {travelPackage.price}
                   </div>
                 </div>
               </div>
@@ -394,45 +385,83 @@ export default function PackagePage({ params }) {
               <section className="bg-gradient-to-br from-[#FFD700] to-[#FFED4E] rounded-2xl p-6 text-black shadow-2xl shadow-[#FFD700]/30">
                 <h3 className="text-2xl font-bold mb-4">Pricing</h3>
                 
-                {/* Group Size Selection */}
-                {travelPackage.groupPricing && (
-                  <div className="mb-6">
-                    <h4 className="text-lg font-semibold mb-3">Select Group Size</h4>
-                    <div className="grid grid-cols-2 gap-2">
-                      {Object.entries(travelPackage.groupPricing).map(([size, pricing]) => (
-                        <button
-                          key={size}
-                          onClick={() => setSelectedGroupSize(size)}
-                          className={`p-3 rounded-lg border-2 transition-all text-sm font-medium ${
-                            selectedGroupSize === size
-                              ? 'border-black bg-black text-[#FFD700] shadow-lg'
-                              : 'border-black/20 bg-transparent text-black hover:border-black/50'
-                          }`}
-                        >
-                          <div className="font-bold">${pricing.price}</div>
-                          <div className="text-xs opacity-80">{pricing.label}</div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
                 <div className="space-y-4">
+                  {/* Group Size Selection */}
                   <div>
-                    <div className="text-3xl font-bold">
-                      {travelPackage.groupPricing 
-                        ? `$${travelPackage.groupPricing[selectedGroupSize]?.price || travelPackage.price}` 
-                        : `$${travelPackage.price}`
-                      }
+                    <h4 className="text-lg font-semibold mb-3">Group Size</h4>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        onClick={() => setSelectedGroupSize(2)}
+                        className={`p-3 rounded-lg border-2 transition-all ${
+                          selectedGroupSize === 2
+                            ? 'border-black bg-black text-[#FFD700] font-bold'
+                            : 'border-black/20 bg-transparent hover:border-black/40'
+                        }`}
+                      >
+                        <div className="text-sm font-medium">2 คน</div>
+                        <div className="text-xs opacity-80">฿2,000/คน</div>
+                      </button>
+                      <button
+                        onClick={() => setSelectedGroupSize(4)}
+                        className={`p-3 rounded-lg border-2 transition-all ${
+                          selectedGroupSize === 4
+                            ? 'border-black bg-black text-[#FFD700] font-bold'
+                            : 'border-black/20 bg-transparent hover:border-black/40'
+                        }`}
+                      >
+                        <div className="text-sm font-medium">4 คน</div>
+                        <div className="text-xs opacity-80">฿1,600/คน</div>
+                      </button>
+                      <button
+                        onClick={() => setSelectedGroupSize(6)}
+                        className={`p-3 rounded-lg border-2 transition-all ${
+                          selectedGroupSize === 6
+                            ? 'border-black bg-black text-[#FFD700] font-bold'
+                            : 'border-black/20 bg-transparent hover:border-black/40'
+                        }`}
+                      >
+                        <div className="text-sm font-medium">6 คน</div>
+                        <div className="text-xs opacity-80">฿1,400/คน</div>
+                      </button>
+                      <button
+                        onClick={() => setSelectedGroupSize(8)}
+                        className={`p-3 rounded-lg border-2 transition-all ${
+                          selectedGroupSize === 8
+                            ? 'border-black bg-black text-[#FFD700] font-bold'
+                            : 'border-black/20 bg-transparent hover:border-black/40'
+                        }`}
+                      >
+                        <div className="text-sm font-medium">8+ คน</div>
+                        <div className="text-xs opacity-80">฿1,200/คน</div>
+                      </button>
                     </div>
-                    <div className="text-sm opacity-80">per person</div>
                   </div>
-                  <div className="text-sm space-y-1">
+
+                  {/* Selected Price Display */}
+                  <div className="border-t border-black/20 pt-4">
+                    <div>
+                      <div className="text-3xl font-bold">
+                        ฿{selectedGroupSize === 2 ? '2,000' : selectedGroupSize === 4 ? '1,600' : selectedGroupSize === 6 ? '1,400' : '1,200'}
+                      </div>
+                      <div className="text-sm opacity-80">ต่อคน ({selectedGroupSize} คน)</div>
+                    </div>
+                    <div className="mt-2 p-3 bg-black/10 rounded-lg">
+                      <div className="text-sm font-medium">
+                        ราคารวม: ฿{(selectedGroupSize === 2 ? 2000 : selectedGroupSize === 4 ? 1600 : selectedGroupSize === 6 ? 1400 : 1200) * selectedGroupSize}
+                      </div>
+                      <div className="text-xs opacity-80">สำหรับ {selectedGroupSize} คน</div>
+                    </div>
+                  </div>
+
+                  <div className="text-sm space-y-1 border-t border-black/20 pt-4">
                     <div>Duration: {travelPackage.duration}</div>
-                    <div>Based on double occupancy</div>
-                    <div>*Prices may vary by travel dates</div>
+                    <div>ราคาลดตามจำนวนคน</div>
+                    <div>*ราคาอาจแตกต่างตามช่วงเวลา</div>
                   </div>
-                  <Link href={`/booking?type=package&packageId=${travelPackage.id}${travelPackage.groupPricing ? `&groupSize=${selectedGroupSize}` : ''}`} className="block">
+                  <Link 
+                    href={`/tour-request?packageId=${id}&groupSize=${selectedGroupSize}&pricePerPerson=${selectedGroupSize === 2 ? '2000' : selectedGroupSize === 4 ? '1600' : selectedGroupSize === 6 ? '1400' : '1200'}&totalPrice=${(selectedGroupSize === 2 ? 2000 : selectedGroupSize === 4 ? 1600 : selectedGroupSize === 6 ? 1400 : 1200) * selectedGroupSize}&packageTitle=${encodeURIComponent(travelPackage.title)}&destination=${encodeURIComponent(travelPackage.location)}`} 
+                    className="block"
+                  >
                     <button className="w-full bg-black text-[#FFD700] font-bold py-4 px-6 rounded-xl hover:bg-[#0a0804] transition-colors transform hover:scale-105 duration-200 shadow-lg">
                       Book Now
                     </button>

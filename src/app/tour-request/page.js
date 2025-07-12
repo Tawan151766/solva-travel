@@ -2,10 +2,21 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext-simple';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
 export default function TourRequestPage() {
   const { user, isAuthenticated } = useAuth();
+  const searchParams = useSearchParams();
+  
+  // Get package information from URL parameters
+  const packageId = searchParams.get('packageId');
+  const groupSize = searchParams.get('groupSize');
+  const pricePerPerson = searchParams.get('pricePerPerson');
+  const totalPrice = searchParams.get('totalPrice');
+  const packageTitle = searchParams.get('packageTitle');
+  const destination = searchParams.get('destination');
+
   const [formData, setFormData] = useState({
     contactName: '',
     contactEmail: '',
@@ -19,7 +30,11 @@ export default function TourRequestPage() {
     transportation: 'flight',
     activities: '',
     specialRequirements: '',
-    description: ''
+    description: '',
+    packageId: null,
+    selectedGroupSize: null,
+    pricePerPerson: null,
+    totalPrice: null
   });
 
   // Auto-fill form if user is logged in
@@ -33,6 +48,22 @@ export default function TourRequestPage() {
       }));
     }
   }, [isAuthenticated, user]);
+
+  // Auto-fill package information from URL parameters
+  useEffect(() => {
+    if (packageId) {
+      setFormData(prev => ({
+        ...prev,
+        destination: destination || prev.destination,
+        numberOfPeople: groupSize || prev.numberOfPeople,
+        budget: totalPrice || prev.budget,
+        packageId: packageId,
+        selectedGroupSize: groupSize,
+        pricePerPerson: pricePerPerson,
+        totalPrice: totalPrice
+      }));
+    }
+  }, [packageId, groupSize, pricePerPerson, totalPrice, destination]);
 
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
@@ -118,7 +149,11 @@ export default function TourRequestPage() {
         ...formData,
         userId: user ? user.id : null,
         numberOfPeople: parseInt(formData.numberOfPeople),
-        budget: formData.budget ? parseFloat(formData.budget) : null
+        budget: formData.budget ? parseFloat(formData.budget) : null,
+        packageId: formData.packageId ? parseInt(formData.packageId) : null,
+        selectedGroupSize: formData.selectedGroupSize ? parseInt(formData.selectedGroupSize) : null,
+        pricePerPerson: formData.pricePerPerson ? parseFloat(formData.pricePerPerson) : null,
+        totalPrice: formData.totalPrice ? parseFloat(formData.totalPrice) : null
       };
 
       const response = await fetch('/api/custom-tour-requests', {
@@ -153,13 +188,17 @@ export default function TourRequestPage() {
           destination: '',
           startDate: '',
           endDate: '',
-          numberOfPeople: '',
+          numberOfPeople: '2',
           budget: '',
-          accommodation: '',
-          transportation: '',
+          accommodation: 'hotel',
+          transportation: 'flight',
           activities: '',
           specialRequirements: '',
-          description: ''
+          description: '',
+          packageId: null,
+          selectedGroupSize: null,
+          pricePerPerson: null,
+          totalPrice: null
         });
       } else {
         setErrors({ submit: result.message || 'เกิดข้อผิดพลาดในการส่งคำขอ' });
@@ -244,6 +283,54 @@ export default function TourRequestPage() {
           </div>
         )}
 
+        {/* Package Information Display */}
+        {packageId && packageTitle && (
+          <div className="mb-8 bg-gradient-to-br from-[#FFD700]/10 to-[#FFED4E]/10 backdrop-blur-xl rounded-2xl border border-[#FFD700]/20 shadow-xl p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold text-[#FFD700] flex items-center">
+                <svg className="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 256 256">
+                  <path d="M128,64a40,40,0,1,0,40,40A40,40,0,0,0,128,64Zm0,64a24,24,0,1,1,24-24A24,24,0,0,1,128,128ZM176,40H80A16,16,0,0,0,64,56V200a16,16,0,0,0,16,16h96a16,16,0,0,0,16-16V56A16,16,0,0,0,176,40ZM160,200H96V56h64Z"/>
+                </svg>
+                แพ็กเกจที่เลือก
+              </h3>
+              <Link href={`/packages/${packageId}`} className="text-[#FFD700]/70 hover:text-[#FFD700] transition-colors text-sm">
+                ดูรายละเอียด →
+              </Link>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h4 className="text-white font-semibold text-lg mb-2">{decodeURIComponent(packageTitle)}</h4>
+                <p className="text-white/70 text-sm mb-3">จุดหมาย: {decodeURIComponent(destination || '')}</p>
+                <div className="flex items-center text-[#FFD700] text-sm">
+                  <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 256 256">
+                    <path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm40-68a12,12,0,0,1-12,12H128a12,12,0,0,1-12-12V88a12,12,0,0,1,24,0v48h28A12,12,0,0,1,168,148Z"/>
+                  </svg>
+                  Package ID: {packageId}
+                </div>
+              </div>
+              
+              <div className="bg-gradient-to-r from-[#FFD700] to-[#FFED4E] rounded-xl p-4 text-black">
+                <h5 className="font-bold text-lg mb-2">ข้อมูลราคา</h5>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span>จำนวนคน:</span>
+                    <span className="font-semibold">{groupSize} คน</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>ราคาต่อคน:</span>
+                    <span className="font-semibold">฿{parseInt(pricePerPerson || 0).toLocaleString()}</span>
+                  </div>
+                  <div className="border-t border-black/20 pt-2 flex justify-between font-bold">
+                    <span>ราคารวม:</span>
+                    <span>฿{parseInt(totalPrice || 0).toLocaleString()}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Form */}
         <div className="bg-gradient-to-br from-black/80 via-[#0a0804]/90 to-black/80 backdrop-blur-xl rounded-3xl border border-[#FFD700]/20 shadow-2xl shadow-black/50 p-8 lg:p-12">
           <form onSubmit={handleSubmit} className="space-y-8">
@@ -312,6 +399,17 @@ export default function TourRequestPage() {
                 </svg>
                 รายละเอียดการเดินทาง
               </h2>
+              
+              {packageId && (
+                <div className="mb-4 p-3 bg-[#FFD700]/10 border border-[#FFD700]/20 rounded-lg">
+                  <p className="text-[#FFD700] text-sm flex items-center">
+                    <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 256 256">
+                      <path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm16-40a8,8,0,0,1-8,8,16,16,0,0,1-16-16V128a8,8,0,0,1,0-16,16,16,0,0,1,16,16v40A8,8,0,0,1,144,176ZM112,84a12,12,0,1,1,12,12A12,12,0,0,1,112,84Z"/>
+                    </svg>
+                    ข้อมูลด้านล่างถูกกรอกล่วงหน้าจากแพ็กเกจที่คุณเลือก คุณสามารถแก้ไขได้
+                  </p>
+                </div>
+              )}
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="md:col-span-2">

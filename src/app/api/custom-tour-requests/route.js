@@ -16,6 +16,10 @@ export async function POST(request) {
   try {
     const {
       userId,
+      packageId,
+      selectedGroupSize,
+      pricePerPerson,
+      totalPrice,
       contactName,
       contactEmail,
       contactPhone,
@@ -98,6 +102,10 @@ export async function POST(request) {
     const customRequest = await prisma.customTourRequest.create({
       data: {
         userId: userId || null,
+        packageId: packageId ? parseInt(packageId) : null,
+        selectedGroupSize: selectedGroupSize ? parseInt(selectedGroupSize) : null,
+        pricePerPerson: pricePerPerson ? parseFloat(pricePerPerson) : null,
+        totalPrice: totalPrice ? parseFloat(totalPrice) : null,
         trackingNumber,
         contactName,
         contactEmail,

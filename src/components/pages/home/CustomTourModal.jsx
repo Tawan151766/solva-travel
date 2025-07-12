@@ -12,32 +12,39 @@ export default function CustomTourModal({ isOpen, onClose }) {
   const [formData, setFormData] = useState({
     destination: '', // ประเทศ
     city: '',        // เมือง
-    country: '',     // ประเภททริป
+    tripType: '',    // ประเภททริป
     startDate: '',
     endDate: '',
     numberOfPeople: 2,
-    contactEmail: user?.email || '',
-    contactPhone: user?.phone || '',
-    contactName: user ? `${user.firstName} ${user.lastName}` : '',
+    budget: '',      // งบประมาณที่ลูกค้าเสนอ
+    contactEmail: '',
+    contactPhone: '',
+    contactName: '',
     accommodation: '',
     transportation: '',
     specialRequirements: '',
     description: '',
-    requireGuide: false
+    requireGuide: false,
+    proposalType: 'custom_booking' // ระบุว่าเป็น custom booking proposal
   });
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Update form data when user changes
+  // Auto-fill contact info when user is available (but allow manual override)
   useEffect(() => {
     if (user) {
-      setFormData(prev => ({
-        ...prev,
-        contactEmail: user.email || '',
-        contactPhone: user.phone || '',
-        contactName: `${user.firstName} ${user.lastName}`.trim() || ''
-      }));
+      setFormData(prev => {
+        // Only auto-fill if fields are currently empty
+        const updates = {};
+        if (!prev.contactEmail && user.email) updates.contactEmail = user.email;
+        if (!prev.contactPhone && user.phone) updates.contactPhone = user.phone;
+        if (!prev.contactName && user.firstName && user.lastName) {
+          updates.contactName = `${user.firstName} ${user.lastName}`.trim();
+        }
+        
+        return Object.keys(updates).length > 0 ? { ...prev, ...updates } : prev;
+      });
     }
   }, [user]);
 
@@ -70,8 +77,8 @@ export default function CustomTourModal({ isOpen, onClose }) {
     try {
       // Validate required fields
       if (!formData.destination || !formData.city || !formData.startDate || !formData.endDate || 
-          !formData.contactEmail || !formData.contactPhone || !formData.contactName) {
-        setError('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน');
+          !formData.contactEmail || !formData.contactPhone || !formData.contactName || !formData.budget) {
+        setError('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน รวมถึงงบประมาณที่เสนอ');
         return;
       }
 
@@ -93,16 +100,18 @@ export default function CustomTourModal({ isOpen, onClose }) {
       const requestData = {
         ...formData,
         numberOfPeople: parseInt(formData.numberOfPeople),
+        budget: parseFloat(formData.budget),
         // รวม destination และ city เป็น location string
         destination: getFormattedLocation(formData.destination, formData.city),
-        description: `Custom tour to ${getFormattedLocation(formData.destination, formData.city)}${formData.country ? ` (${formData.country})` : ''}. ${formData.requireGuide ? 'Require tour guide. ' : ''}${formData.description}`.trim(),
+        description: `Custom booking proposal to ${getFormattedLocation(formData.destination, formData.city)}${formData.tripType ? ` (${formData.tripType})` : ''}. Budget: ฿${parseFloat(formData.budget).toLocaleString()}. ${formData.requireGuide ? 'Require tour guide. ' : ''}${formData.description}`.trim(),
         // เพิ่ม userId หากมีการ login
-        userId: user?.id || null
+        userId: user?.id || null,
+        proposalType: 'custom_booking'
       };
 
       console.log('Sending request data:', requestData);
 
-      const response = await fetch('/api/custom-tour-requests', {
+      const response = await fetch('/api/custom-bookings', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -124,26 +133,26 @@ export default function CustomTourModal({ isOpen, onClose }) {
       }
 
       if (response.ok && result.success) {
-        console.log('Custom tour request created successfully:', result);
+        console.log('Custom booking proposal created successfully:', result);
         
         // Close modal first
         onClose();
         
-        // Navigate to success page with the request ID - handle both possible response structures
-        const requestId = result.data?.id || result.request?.id;
-        if (requestId) {
-          router.push(`/tour-request-success?requestId=${requestId}`);
+        // Navigate to success page with the booking ID
+        const bookingId = result.data?.id || result.booking?.id;
+        if (bookingId) {
+          router.push(`/booking-success?bookingId=${bookingId}&type=custom`);
         } else {
           // Fallback to success page without ID
-          console.warn('No request ID found in response, redirecting to general success page');
-          router.push('/tour-request-success');
+          console.warn('No booking ID found in response, redirecting to general success page');
+          router.push('/booking-success?type=custom');
         }
       } else {
         console.error('Request failed:', result);
-        setError(result.error || result.message || 'เกิดข้อผิดพลาดในการส่งคำขอ');
+        setError(result.error || result.message || 'เกิดข้อผิดพลาดในการส่งข้อเสนอ');
       }
     } catch (error) {
-      console.error('Custom tour request error:', error);
+      console.error('Custom booking proposal error:', error);
       setError('เกิดข้อผิดพลาดในการเชื่อมต่อ');
     } finally {
       setLoading(false);
@@ -163,9 +172,9 @@ export default function CustomTourModal({ isOpen, onClose }) {
 
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold bg-gradient-to-r from-[#FFD700] to-[#FFED4E] bg-clip-text text-transparent mb-2">
-            Request Custom Tour Package
+            สร้างข้อเสนอการจองพิเศษ
           </h2>
-          <p className="text-[#cdc08e] text-sm">สร้างแพ็คเกจทัวร์ในฝันของคุณ</p>
+          <p className="text-[#cdc08e] text-sm">เสนอแพ็คเกจการเดินทางที่คุณต้องการให้เราจัดเตรียม</p>
         </div>
 
         {error && (
@@ -231,8 +240,8 @@ export default function CustomTourModal({ isOpen, onClose }) {
               <div>
                 <label className="block text-[#FFD700] text-sm font-medium mb-2">ประเภททริป</label>
                 <select
-                  name="country"
-                  value={formData.country}
+                  name="tripType"
+                  value={formData.tripType}
                   onChange={handleInputChange}
                   className="w-full px-4 py-3 bg-gradient-to-r from-black/60 to-[#0a0804]/60 backdrop-blur-xl border border-[#FFD700]/20 rounded-xl text-[#cdc08e] focus:border-[#FFD700] focus:outline-none focus:ring-1 focus:ring-[#FFD700]/30 transition-all duration-200"
                   disabled={loading}
@@ -293,6 +302,24 @@ export default function CustomTourModal({ isOpen, onClose }) {
                   disabled={loading}
                 />
               </div>
+            </div>
+
+            {/* Budget Section */}
+            <div className="mt-6">
+              <label className="block text-[#FFD700] text-sm font-medium mb-2">งบประมาณที่เสนอ (บาท) *</label>
+              <input
+                type="number"
+                name="budget"
+                value={formData.budget}
+                onChange={handleInputChange}
+                className="w-full px-4 py-3 bg-gradient-to-r from-black/60 to-[#0a0804]/60 backdrop-blur-xl border border-[#FFD700]/20 rounded-xl text-[#cdc08e] placeholder-[#B8860B]/60 focus:border-[#FFD700] focus:outline-none focus:ring-1 focus:ring-[#FFD700]/30 transition-all duration-200"
+                min="1000"
+                step="1000"
+                required
+                disabled={loading}
+                placeholder="เช่น 50000"
+              />
+              <p className="text-[#cdc08e]/60 text-xs mt-1">ระบุงบประมาณทั้งหมดสำหรับการเดินทางนี้</p>
             </div>
           </div>
 
@@ -480,10 +507,10 @@ export default function CustomTourModal({ isOpen, onClose }) {
               {loading ? (
                 <div className="flex items-center justify-center gap-2">
                   <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin"></div>
-                  <span>กำลังส่ง...</span>
+                  <span>กำลังส่งข้อเสนอ...</span>
                 </div>
               ) : (
-                <span>ส่งคำขอ</span>
+                <span>ส่งข้อเสนอการจอง</span>
               )}
             </button>
           </div>
