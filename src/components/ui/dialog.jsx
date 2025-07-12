@@ -1,6 +1,7 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 
 const DialogContext = createContext();
 
@@ -8,30 +9,29 @@ export function Dialog({ open, onOpenChange, children }) {
   return (
     <DialogContext.Provider value={{ open, onOpenChange }}>
       {children}
-      {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          {/* Backdrop */}
-          <div 
-            className="fixed inset-0 bg-black/50"
-            onClick={() => onOpenChange?.(false)}
-          />
-          {/* Dialog content will be rendered here */}
-        </div>
-      )}
     </DialogContext.Provider>
   );
 }
 
-export function DialogTrigger({ children, onClick }) {
+export function DialogTrigger({ children, asChild = false }) {
   const { onOpenChange } = useContext(DialogContext);
   
-  const handleClick = () => {
+  const handleClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     onOpenChange?.(true);
-    onClick?.();
   };
 
+  if (asChild && children) {
+    // Clone the child element and add onClick
+    return React.cloneElement(children, { 
+      onClick: handleClick,
+      style: { cursor: 'pointer', ...children.props.style }
+    });
+  }
+
   return (
-    <div onClick={handleClick} className="cursor-pointer">
+    <div onClick={handleClick} className="cursor-pointer inline-block">
       {children}
     </div>
   );
@@ -60,21 +60,29 @@ export function DialogContent({ children, className = "" }) {
 
   if (!open) return null;
 
-  return (
+  const modalContent = (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black/50"
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm"
         onClick={() => onOpenChange?.(false)}
       />
+      {/* Content */}
       <div className={`
-        relative z-50 w-full max-w-lg bg-white rounded-lg shadow-lg
+        relative z-50 w-full max-w-lg bg-white rounded-lg shadow-xl
         max-h-[90vh] overflow-y-auto
+        transform transition-all duration-200 ease-out
         ${className}
       `}>
         {children}
       </div>
     </div>
   );
+
+  // Use portal to render outside component tree
+  return typeof window !== 'undefined' ? 
+    createPortal(modalContent, document.body) : 
+    null;
 }
 
 export function DialogHeader({ children, className = "" }) {
@@ -90,5 +98,34 @@ export function DialogTitle({ children, className = "" }) {
     <h2 className={`text-lg font-semibold text-gray-900 ${className}`}>
       {children}
     </h2>
+  );
+}
+
+export function DialogDescription({ children, className = "" }) {
+  return (
+    <p className={`text-sm text-gray-600 ${className}`}>
+      {children}
+    </p>
+  );
+}
+
+export function DialogFooter({ children, className = "" }) {
+  return (
+    <div className={`px-6 py-4 border-t border-gray-200 flex justify-end gap-3 ${className}`}>
+      {children}
+    </div>
+  );
+}
+
+export function DialogClose({ children, className = "" }) {
+  const { onOpenChange } = useContext(DialogContext);
+  
+  return (
+    <button
+      onClick={() => onOpenChange?.(false)}
+      className={`px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors ${className}`}
+    >
+      {children || "ปิด"}
+    </button>
   );
 }

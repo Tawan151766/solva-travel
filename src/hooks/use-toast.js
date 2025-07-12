@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 
 // Toast state management
 let toastCount = 0;
@@ -18,14 +18,14 @@ export function useToast() {
   const [toasts, setToasts] = useState(toastState.toasts);
 
   // Subscribe to toast updates
-  useState(() => {
+  useEffect(() => {
     const callback = (newToasts) => setToasts([...newToasts]);
     toastSubscribers.add(callback);
     
     return () => {
       toastSubscribers.delete(callback);
     };
-  });
+  }, []);
 
   const toast = useCallback(({ title, description, variant = "default", duration = 5000 }) => {
     const id = (++toastCount).toString();

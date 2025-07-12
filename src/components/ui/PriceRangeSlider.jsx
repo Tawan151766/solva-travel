@@ -1,22 +1,31 @@
 import React from "react";
 import { Range } from "react-range";
 
-const STEP = 10;
+const STEP = 100;
 
 export default function PriceRangeSlider({ 
-  value = [0, 3000], 
+  value = [0, 10000], 
   onChange, 
   min = 0, 
-  max = 3000 
+  max = 30000 
 }) {
+  const formatPrice = (price) => {
+    if (price === null || price === undefined || !isFinite(price)) {
+      return '0';
+    }
+    return price.toLocaleString();
+  };
+
   const handleChange = (vals) => {
-    onChange?.(vals);
+    // Ensure values are valid numbers
+    const validVals = vals.map(val => isFinite(val) ? val : 0);
+    onChange?.(validVals);
   };
 
   return (
     <div className="w-full max-w-xl px-4">
       <label className="text-[#FFD700] font-medium text-sm mb-2 block">
-        Price Range: ${value[0]} - ${value[1]}
+        Price Range: ${formatPrice(value[0])} - ${formatPrice(value[1])}
       </label>
       <Range
         values={value}
@@ -33,8 +42,8 @@ export default function PriceRangeSlider({
             <div
               className="absolute h-1 bg-gradient-to-r from-[#FFD700] to-[#FFED4E] rounded shadow-lg shadow-[#FFD700]/30"
               style={{
-                left: `${((value[0] - min) / (max - min)) * 100}%`,
-                width: `${((value[1] - value[0]) / (max - min)) * 100}%`,
+                left: `${Math.max(0, Math.min(100, ((value[0] - min) / (max - min)) * 100))}%`,
+                width: `${Math.max(0, Math.min(100, ((value[1] - value[0]) / (max - min)) * 100))}%`,
               }}
             />
             {children}
@@ -52,8 +61,8 @@ export default function PriceRangeSlider({
         }}
       />
       <div className="flex justify-between text-[#FFD700] text-sm mt-2">
-        <span>${value[0]}</span>
-        <span>${value[1]}</span>
+        <span>${formatPrice(value[0])}</span>
+        <span>${formatPrice(value[1])}</span>
       </div>
     </div>
   );

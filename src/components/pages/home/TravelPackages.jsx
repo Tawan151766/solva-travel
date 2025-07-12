@@ -61,12 +61,12 @@ export function TravelPackages() {
           <TravelCard
             key={travel.id}
             id={travel.id}
-            title={travel.title}
+            title={travel.name || travel.title}
             location={travel.location}
             price={travel.price}
             duration={travel.duration}
-            imageUrl={travel.imageUrl}
-            groupPricing={travel.groupPricing}
+            imageUrl={travel.images?.[0] || '/placeholder-image.jpg'}
+            groupPricing={false} // Set based on your business logic
           />
         ))}
       </div>

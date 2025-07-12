@@ -1,10 +1,13 @@
 "use client";
 
-import { createContext, useContext, useState, useMemo, useEffect, useCallback } from "react";
+import React, { createContext, useContext, useState, useMemo, useEffect, useCallback } from "react";
 
 const TravelContext = createContext();
 
 export function TravelProvider({ children }) {
+  console.log('🚀 TravelProvider: Component initialized');
+  console.log('🚀 TravelProvider: useEffect about to be defined');
+  
   // States
   const [allTravelData, setAllTravelData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -14,7 +17,7 @@ export function TravelProvider({ children }) {
   const [filters, setFilters] = useState({
     country: "",
     city: "",
-    priceRange: [0, 5000],
+    priceRange: [0, 10000],
     isRecommendedOnly: false,
     category: "",
   });
@@ -22,54 +25,94 @@ export function TravelProvider({ children }) {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
-  // Fetch all travel packages from API
-  const fetchTravelData = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
+  console.log('🚀 TravelProvider: About to define useEffect');
 
-      const response = await fetch('/api/travel/packages?limit=100'); // Get all packages
-      const result = await response.json();
-
-      console.log('Travel API Response:', result);
-
-      if (!response.ok) {
-        throw new Error(result.message || 'Failed to fetch travel data');
-      }
-
-      console.log('Setting travel data:', result.data.packages);
-      setAllTravelData(result.data.packages);
-
-      // Update price range based on actual data
-      if (result.data.packages.length > 0) {
-        const prices = result.data.packages
-          .map(pkg => parseFloat(pkg.price))
-          .filter(price => !isNaN(price));
-        
-        const minPrice = Math.min(...prices);
-        const maxPrice = Math.max(...prices);
-        
-        setFilters(prev => ({
-          ...prev,
-          priceRange: [minPrice, maxPrice]
-        }));
-      }
-
-      console.log('Travel data loaded:', result.data.packages.length, 'packages');
+  // Direct initialization approach - call immediately
+  React.useMemo(() => {
+    console.log('🔄 TravelContext useMemo triggered for initialization');
+    
+    if (allTravelData.length === 0 && !loading) {
+      console.log('🔄 TravelContext: Starting immediate data fetch...');
       
-    } catch (err) {
-      console.error('Error fetching travel data:', err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
+      const loadData = async () => {
+        console.log('🔄 TravelContext: Starting fetchTravelData...');
+        try {
+          setLoading(true);
+          setError(null);
+
+          // Check if we're on the client side
+          const baseURL = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3001';
+          console.log('🔄 TravelContext: Making API call to /api/travel/packages?limit=100');
+          const response = await fetch(`${baseURL}/api/travel/packages?limit=100`);
+          console.log('📡 TravelContext: API response status:', response.status, response.statusText);
+          
+          const result = await response.json();
+          console.log('📦 TravelContext: API Response:', result);
+
+          if (!response.ok) {
+            throw new Error(result.message || 'Failed to fetch travel data');
+          }
+
+          console.log('📦 TravelContext: Setting travel data:', result.data.packages);
+          setAllTravelData(result.data.packages);
+
+          console.log('✅ TravelContext: Travel data loaded:', result.data.packages.length, 'packages');
+          
+        } catch (err) {
+          console.error('❌ TravelContext: Error fetching travel data:', err);
+          setError(err.message);
+        } finally {
+          console.log('🏁 TravelContext: fetchTravelData finished, setting loading to false');
+          setLoading(false);
+        }
+      };
+
+      loadData();
     }
+    
+    return true;
+  }, [allTravelData.length, loading]);
+
+  // Load data immediately without useEffect to test
+  React.useLayoutEffect(() => {
+    console.log('🔄 TravelContext useLayoutEffect triggered!!!');
+    
+    const loadData = async () => {
+      console.log('🔄 TravelContext: Starting fetchTravelData...');        try {
+          setLoading(true);
+          setError(null);
+
+          // Check if we're on the client side  
+          const baseURL = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3001';
+          console.log('🔄 TravelContext: Making API call to /api/travel/packages?limit=100');
+          const response = await fetch(`${baseURL}/api/travel/packages?limit=100`);
+        console.log('📡 TravelContext: API response status:', response.status, response.statusText);
+        
+        const result = await response.json();
+        console.log('📦 TravelContext: API Response:', result);
+
+        if (!response.ok) {
+          throw new Error(result.message || 'Failed to fetch travel data');
+        }
+
+        console.log('📦 TravelContext: Setting travel data:', result.data.packages);
+        setAllTravelData(result.data.packages);
+
+        console.log('✅ TravelContext: Travel data loaded:', result.data.packages.length, 'packages');
+        
+      } catch (err) {
+        console.error('❌ TravelContext: Error fetching travel data:', err);
+        setError(err.message);
+      } finally {
+        console.log('🏁 TravelContext: fetchTravelData finished, setting loading to false');
+        setLoading(false);
+      }
+    };
+
+    loadData();
   }, []);
 
-  // Load data on mount
-  useEffect(() => {
-    console.log('useEffect triggered, calling fetchTravelData');
-    fetchTravelData();
-  }, [fetchTravelData]);
+  console.log('🚀 TravelProvider: useLayoutEffect defined, continuing with rest of component');
 
   // Get travel package by ID (with API call if needed)
   const getTravelPackageById = useCallback(async (id) => {
@@ -98,6 +141,12 @@ export function TravelProvider({ children }) {
   // Filter the travel data based on current filters
   const filteredData = useMemo(() => {
     let filtered = [...allTravelData];
+    
+    console.log('Filtering data:', {
+      totalItems: allTravelData.length,
+      filters: filters,
+      sampleData: allTravelData[0]
+    });
 
     // Filter by country
     if (filters.country) {
@@ -124,7 +173,11 @@ export function TravelProvider({ children }) {
     const minPrice = filters.priceRange[0];
     const maxPrice = filters.priceRange[1];
     filtered = filtered.filter((item) => {
-      const price = parseFloat(item.price);
+      // Handle price strings like "$1599.99" or already numeric values
+      const priceValue = typeof item.price === 'string' 
+        ? item.price.replace(/[$,]/g, '') 
+        : item.price;
+      const price = parseFloat(priceValue) || item.priceNumber || 0;
       return !isNaN(price) && price >= minPrice && price <= maxPrice;
     });
 
@@ -132,6 +185,12 @@ export function TravelProvider({ children }) {
     if (filters.isRecommendedOnly) {
       filtered = filtered.filter((item) => item.isRecommended);
     }
+
+    console.log('Filtered data result:', {
+      originalCount: allTravelData.length,
+      filteredCount: filtered.length,
+      filters: filters
+    });
 
     return filtered;
   }, [allTravelData, filters]);
@@ -194,12 +253,22 @@ export function TravelProvider({ children }) {
   // Get price statistics
   const getPriceStats = useCallback(() => {
     if (allTravelData.length === 0) {
-      return { min: 0, max: 5000, average: 0 };
+      return { min: 0, max: 30000, average: 0 };
     }
 
     const prices = allTravelData
-      .map(pkg => parseFloat(pkg.price))
-      .filter(price => !isNaN(price));
+      .map(pkg => {
+        // Handle price strings like "$1599.99" or already numeric values
+        const priceValue = typeof pkg.price === 'string' 
+          ? pkg.price.replace(/[$,]/g, '') 
+          : pkg.price;
+        return parseFloat(priceValue) || pkg.priceNumber || 0;
+      })
+      .filter(price => !isNaN(price) && price > 0);
+
+    if (prices.length === 0) {
+      return { min: 0, max: 30000, average: 0 };
+    }
 
     return {
       min: Math.min(...prices),
@@ -274,7 +343,6 @@ export function TravelProvider({ children }) {
     getPriceStats,
     getCountries,
     getCities,
-    fetchTravelData,
 
     // Actions
     setLoading,

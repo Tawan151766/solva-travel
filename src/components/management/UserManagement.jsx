@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -91,7 +91,7 @@ export default function UserManagement() {
       isActive: true,
       password: ""
     });
-    setIsCreateModalOpen(true);
+    // DialogTrigger จะจัดการการเปิด modal เอง
   };
 
   const handleSubmit = async (isEdit = false) => {
@@ -257,20 +257,14 @@ export default function UserManagement() {
         <Label htmlFor="isActive">Active</Label>
       </div>
 
-      <div className="flex justify-end space-x-2">
-        <Button 
-          variant="outline" 
-          onClick={() => {
-            setIsEditModalOpen(false);
-            setIsCreateModalOpen(false);
-          }}
-        >
+      <DialogFooter>
+        <DialogClose>
           Cancel
-        </Button>
+        </DialogClose>
         <Button onClick={() => handleSubmit(isEdit)}>
           {isEdit ? 'Update' : 'Create'} User
         </Button>
-      </div>
+      </DialogFooter>
     </div>
   );
 
@@ -293,7 +287,7 @@ export default function UserManagement() {
         </div>
         <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
           <DialogTrigger asChild>
-            <Button onClick={handleCreate} className="flex items-center gap-2">
+            <Button className="flex items-center gap-2">
               <Plus className="h-4 w-4" />
               Create User
             </Button>

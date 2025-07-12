@@ -66,8 +66,8 @@ export function SearchFilters() {
           <PriceRangeSlider
             value={filters.priceRange}
             onChange={handlePriceRangeChange}
-            min={priceStats.min}
-            max={priceStats.max}
+            min={priceStats.min || 0}
+            max={priceStats.max || 30000}
           />
         </div>
       </div>
