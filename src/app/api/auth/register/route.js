@@ -48,7 +48,7 @@ export async function POST(request) {
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    // Create user
+    // Create user - FORCE role to be USER only
     const user = await prisma.user.create({
       data: {
         firstName,
@@ -56,7 +56,7 @@ export async function POST(request) {
         email: email.toLowerCase(),
         password: hashedPassword,
         phone: phone || null,
-        role: 'USER',
+        role: 'USER', // Always force USER role for registration
         isActive: true
       }
     });

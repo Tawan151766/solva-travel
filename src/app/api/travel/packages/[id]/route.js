@@ -42,8 +42,8 @@ export async function GET(request, { params }) {
       title: travelPackage.name,
       name: travelPackage.name,
       description: travelPackage.description,
-      price: `$${travelPackage.price.toFixed(2)}`,
-      priceNumber: travelPackage.price,
+      price: travelPackage.price.toString(), // Keep as string for display
+      priceNumber: parseFloat(travelPackage.price), // Add numeric version for calculations
       duration: `${travelPackage.duration} days`,
       durationDays: travelPackage.duration,
       maxCapacity: travelPackage.maxCapacity,

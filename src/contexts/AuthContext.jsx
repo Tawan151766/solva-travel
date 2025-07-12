@@ -17,6 +17,7 @@ export const useAuth = () => {
 // Auth Provider Component
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
 
   // Check for existing session on mount
@@ -28,10 +29,11 @@ export function AuthProvider({ children }) {
     try {
       // Check if user data exists in localStorage
       const userData = localStorage.getItem('user');
-      const token = localStorage.getItem('authToken');
+      const authToken = localStorage.getItem('authToken');
       
-      if (userData && token) {
+      if (userData && authToken) {
         setUser(JSON.parse(userData));
+        setToken(authToken);
       }
     } catch (error) {
       console.error('Error checking auth status:', error);
@@ -61,6 +63,7 @@ export function AuthProvider({ children }) {
         localStorage.setItem('authToken', result.data.token);
         
         setUser(result.data.user);
+        setToken(result.data.token);
         return { success: true, user: result.data.user };
       } else {
         return { success: false, error: result.message };
@@ -81,6 +84,7 @@ export function AuthProvider({ children }) {
       
       // Clear user state
       setUser(null);
+      setToken(null);
       
       return { success: true };
     } catch (error) {
@@ -152,6 +156,7 @@ export function AuthProvider({ children }) {
 
   const value = {
     user,
+    token,
     loading,
     isAuthenticated: !!user,
     login,

@@ -432,7 +432,7 @@ export default function PackagePage({ params }) {
                     <div>Based on double occupancy</div>
                     <div>*Prices may vary by travel dates</div>
                   </div>
-                  <Link href="/tour-request" className="block">
+                  <Link href={`/booking?type=package&packageId=${travelPackage.id}`} className="block">
                     <button className="w-full bg-black text-[#FFD700] font-bold py-4 px-6 rounded-xl hover:bg-[#0a0804] transition-colors transform hover:scale-105 duration-200 shadow-lg">
                       Book Now
                     </button>

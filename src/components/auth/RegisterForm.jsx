@@ -14,7 +14,6 @@ export function RegisterForm({ onSwitchToLogin, onSwitchToOTP }) {
     password: "",
     confirmPassword: "",
     phone: "",
-    role: "USER",
     agreeToTerms: false
   });
   const [errors, setErrors] = useState({});
@@ -196,26 +195,6 @@ export function RegisterForm({ onSwitchToLogin, onSwitchToOTP }) {
           />
           {errors.phone && (
             <p className="text-red-400 text-xs mt-1">{errors.phone}</p>
-          )}
-        </div>
-
-        {/* Role Selection */}
-        <div>
-          <label className="block text-[#FFD700] text-sm font-medium mb-2">
-            ประเภทบัญชี
-          </label>
-          <select
-            name="role"
-            value={formData.role}
-            onChange={handleInputChange}
-            className="w-full px-4 py-3 bg-black/50 border border-[#FFD700]/30 rounded-xl text-white focus:outline-none focus:border-[#FFD700] focus:bg-black/70 transition-all"
-          >
-            <option value="USER">ลูกค้าทั่วไป</option>
-            <option value="STAFF">พนักงาน</option>
-            <option value="ADMIN">ผู้ดูแลระบบ</option>
-          </select>
-          {errors.role && (
-            <p className="text-red-400 text-xs mt-1">{errors.role}</p>
           )}
         </div>
 
