@@ -135,7 +135,15 @@ export default function TourRequestPage() {
         setSuccess('คำขอทัวร์แบบกำหนดเองของคุณได้รับการส่งเรียบร้อยแล้ว! ทีมงานจะติดต่อกลับไปในเร็วๆ นี้');
         
         // Store the custom tour request ID for potential booking
-        window.customTourRequestId = result.request.id;
+        const requestId = result.data?.id || result.request?.id;
+        if (requestId) {
+          window.customTourRequestId = requestId;
+          
+          // Navigate to success page with request ID
+          setTimeout(() => {
+            window.location.href = `/tour-request-success?requestId=${requestId}`;
+          }, 2000);
+        }
         
         // Reset form
         setFormData({

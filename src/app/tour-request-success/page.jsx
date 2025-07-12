@@ -72,12 +72,21 @@ export default function TourRequestSuccessPage() {
                 <div className="mt-4">
                   <Link 
                     href="/track-request"
-                    className="inline-flex items-center gap-2 bg-[#FFD700]/20 border border-[#FFD700]/40 text-[#FFD700] py-2 px-4 rounded-lg hover:bg-[#FFD700]/30 transition-colors text-sm"
+                    className="inline-flex items-center gap-2 bg-[#FFD700]/20 border border-[#FFD700]/40 text-[#FFD700] py-2 px-4 rounded-lg hover:bg-[#FFD700]/30 transition-colors text-sm mr-4"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                     ติดตามสถานะคำขอ
+                  </Link>
+                  <Link 
+                    href={`/booking?type=custom&customTourRequestId=${request.id}`}
+                    className="inline-flex items-center gap-2 bg-gradient-to-r from-[#FFD700] to-[#FFED4E] text-black py-2 px-4 rounded-lg hover:shadow-lg hover:shadow-[#FFD700]/30 transition-all duration-200 text-sm font-semibold"
+                  >
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 256 256">
+                      <path d="M231.4,44.34s0,0,0,0l-58.25,191.94a15.88,15.88,0,0,1-27.4,5.54L116.35,213.9a4,4,0,0,0-5.65-.27L63.5,235.73a15.86,15.86,0,0,1-22.29-18.08L98.75,28.37a15.88,15.88,0,0,1,27.4-5.54l29.4,27.92a4,4,0,0,0,5.65.27L208.4,28.92A15.86,15.86,0,0,1,231.4,44.34Z"/>
+                    </svg>
+                    ดำเนินการจองทันที
                   </Link>
                 </div>
               </div>

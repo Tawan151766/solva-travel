@@ -127,8 +127,8 @@ export default function CustomTourModal({ isOpen, onClose }) {
         // Close modal first
         onClose();
         
-        // Navigate to success page with the request ID
-        const requestId = result.data?.id;
+        // Navigate to success page with the request ID - handle both possible response structures
+        const requestId = result.data?.id || result.request?.id;
         if (requestId) {
           router.push(`/tour-request-success?requestId=${requestId}`);
         } else {

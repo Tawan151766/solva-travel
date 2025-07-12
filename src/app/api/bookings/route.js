@@ -72,6 +72,7 @@ export async function POST(request) {
       bookingType,
       packageId,
       customTourRequestId,
+      selectedGroupSize,
       startDate,
       endDate,
       numberOfPeople,
@@ -158,7 +159,17 @@ export async function POST(request) {
         );
       }
 
-      totalAmount = parseFloat(packageData.price) * numberOfPeople;
+      // Calculate price based on group pricing if available
+      if (packageData.groupPricing && selectedGroupSize) {
+        const groupPricing = JSON.parse(packageData.groupPricing);
+        if (groupPricing[selectedGroupSize]) {
+          totalAmount = parseFloat(groupPricing[selectedGroupSize].price) * numberOfPeople;
+        } else {
+          totalAmount = parseFloat(packageData.price.replace(/[$,]/g, '')) * numberOfPeople;
+        }
+      } else {
+        totalAmount = parseFloat(packageData.price.replace(/[$,]/g, '')) * numberOfPeople;
+      }
     } else if (bookingType === 'CUSTOM') {
       customTourRequestData = await prisma.customTourRequest.findUnique({
         where: { id: customTourRequestId }
@@ -186,6 +197,7 @@ export async function POST(request) {
         bookingType,
         packageId: bookingType === 'PACKAGE' ? packageId : null,
         customTourRequestId: bookingType === 'CUSTOM' ? customTourRequestId : null,
+        selectedGroupSize: bookingType === 'PACKAGE' && selectedGroupSize ? selectedGroupSize : null,
         startDate: new Date(startDate),
         endDate: new Date(endDate),
         numberOfPeople: parseInt(numberOfPeople),

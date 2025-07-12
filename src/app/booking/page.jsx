@@ -30,6 +30,7 @@ export default function BookingPage() {
   const bookingType = searchParams.get('type'); // 'package' or 'custom'
   const packageId = searchParams.get('packageId');
   const customTourRequestId = searchParams.get('customTourRequestId');
+  const selectedGroupSize = searchParams.get('groupSize'); // For package bookings
 
   useEffect(() => {
     // Auto-fill user data if logged in
@@ -127,7 +128,13 @@ export default function BookingPage() {
 
   const calculateTotalAmount = () => {
     if (bookingType === 'package' && packageData) {
-      return (packageData.priceNumber || parseFloat(packageData.price || 0)) * formData.numberOfPeople;
+      // Check if package has group pricing and a group size is selected
+      if (packageData.groupPricing && selectedGroupSize && packageData.groupPricing[selectedGroupSize]) {
+        const groupPricing = packageData.groupPricing[selectedGroupSize];
+        return parseFloat(groupPricing.price) * formData.numberOfPeople;
+      }
+      // Fallback to regular price
+      return (packageData.priceNumber || parseFloat(packageData.price?.replace(/[$,]/g, '') || 0)) * formData.numberOfPeople;
     } else if (bookingType === 'custom' && customTourData) {
       return customTourData.estimatedCost || 0;
     }
@@ -144,6 +151,7 @@ export default function BookingPage() {
         bookingType: bookingType.toUpperCase(),
         packageId: bookingType === 'package' ? packageId : null,
         customTourRequestId: bookingType === 'custom' ? customTourRequestId : null,
+        selectedGroupSize: bookingType === 'package' && selectedGroupSize ? selectedGroupSize : null,
         ...formData,
         numberOfPeople: parseInt(formData.numberOfPeople)
       };
@@ -174,10 +182,10 @@ export default function BookingPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-[#0a0804] via-[#1a1611] to-[#0a0804] flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading booking information...</p>
+          <div className="w-16 h-16 border-4 border-[#FFD700]/20 border-t-[#FFD700] rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-[#cdc08e] text-lg">กำลังโหลดข้อมูลการจอง...</p>
         </div>
       </div>
     );
@@ -185,15 +193,15 @@ export default function BookingPage() {
 
   if (!bookingType || (!packageData && !customTourData)) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Invalid Booking Request</h2>
-          <p className="text-gray-600 mb-4">The booking information could not be found.</p>
+      <div className="min-h-screen bg-gradient-to-br from-[#0a0804] via-[#1a1611] to-[#0a0804] flex items-center justify-center">
+        <div className="text-center bg-gradient-to-br from-black/80 via-[#0a0804]/90 to-black/80 backdrop-blur-xl rounded-2xl border border-[#FFD700]/20 p-8">
+          <h2 className="text-2xl font-bold text-[#FFD700] mb-4">ข้อมูลการจองไม่ถูกต้อง</h2>
+          <p className="text-[#cdc08e] mb-6">ไม่พบข้อมูลการจองที่ต้องการ</p>
           <button
             onClick={() => router.push('/')}
-            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
+            className="bg-gradient-to-r from-[#FFD700] to-[#FFED4E] text-black px-6 py-3 rounded-xl hover:shadow-lg hover:shadow-[#FFD700]/30 font-semibold transition-all duration-200"
           >
-            Go Back Home
+            กลับไปหน้าหลัก
           </button>
         </div>
       </div>
@@ -201,64 +209,84 @@ export default function BookingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-[#0a0804] via-[#1a1611] to-[#0a0804] py-12">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-gradient-to-br from-black/80 via-[#0a0804]/90 to-black/80 backdrop-blur-xl rounded-2xl border border-[#FFD700]/20 shadow-2xl overflow-hidden">
           {/* Header */}
-          <div className="bg-blue-600 text-white px-6 py-4">
-            <h1 className="text-2xl font-bold">
-              {bookingType === 'package' ? 'Package Booking' : 'Custom Tour Booking'}
+          <div className="bg-gradient-to-r from-[#FFD700] to-[#FFED4E] text-black px-8 py-6">
+            <h1 className="text-3xl font-bold">
+              {bookingType === 'package' ? 'จองแพ็คเกจทัวร์' : 'จองทัวร์แบบกำหนดเอง'}
             </h1>
-            <p className="text-blue-100">Complete your booking information</p>
+            <p className="text-black/80 mt-1">กรอกข้อมูลการจองของคุณให้ครบถ้วน</p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-8">
             {/* Booking Details */}
             <div className="space-y-6">
               <div>
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                  {bookingType === 'package' ? 'Package Details' : 'Tour Details'}
+                <h2 className="text-xl font-semibold bg-gradient-to-r from-[#FFD700] to-[#FFED4E] bg-clip-text text-transparent mb-4">
+                  {bookingType === 'package' ? 'รายละเอียดแพ็คเกจ' : 'รายละเอียดทัวร์'}
                 </h2>
                 
                 {packageData && (
-                  <div className="bg-gray-50 rounded-lg p-4 space-y-3">
-                    <h3 className="font-semibold text-lg">{packageData.name}</h3>
-                    <p className="text-gray-600">{packageData.description}</p>
+                  <div className="bg-gradient-to-r from-black/40 to-[#0a0804]/40 backdrop-blur-xl border border-[#FFD700]/20 rounded-xl p-6 space-y-4">
+                    <h3 className="font-semibold text-xl text-white">{packageData.title || packageData.name}</h3>
+                    <p className="text-[#cdc08e]">{packageData.description}</p>
                     <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <span className="font-medium">Duration:</span> {packageData.durationDays || 7} days
+                      <div className="text-white">
+                        <span className="text-[#FFD700] font-medium">ระยะเวลา:</span> {packageData.duration}
                       </div>
-                      <div>
-                        <span className="font-medium">Location:</span> {packageData.location}
+                      <div className="text-white">
+                        <span className="text-[#FFD700] font-medium">สถานที่:</span> {packageData.location}
                       </div>
-                      <div>
-                        <span className="font-medium">Price per person:</span> ฿{(packageData.priceNumber || parseFloat(packageData.price || 0)).toLocaleString()}
-                      </div>
-                      <div>
-                        <span className="font-medium">Max capacity:</span> {packageData.maxCapacity} people
-                      </div>
+                      {packageData.groupPricing && selectedGroupSize ? (
+                        <>
+                          <div className="text-white">
+                            <span className="text-[#FFD700] font-medium">แพ็คเกจ:</span> {packageData.groupPricing[selectedGroupSize]?.label || `Group of ${selectedGroupSize}`}
+                          </div>
+                          <div className="text-white">
+                            <span className="text-[#FFD700] font-medium">ราคาต่อคน:</span> ${packageData.groupPricing[selectedGroupSize]?.price}
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="text-white">
+                            <span className="text-[#FFD700] font-medium">ราคาต่อคน:</span> {packageData.price}
+                          </div>
+                          <div className="text-white">
+                            <span className="text-[#FFD700] font-medium">จำนวนที่รับได้:</span> {packageData.maxCapacity} คน
+                          </div>
+                        </>
+                      )}
                     </div>
+                    {packageData.groupPricing && selectedGroupSize && (
+                      <div className="mt-4 p-3 bg-[#FFD700]/10 border border-[#FFD700]/30 rounded-lg">
+                        <p className="text-sm text-[#FFD700]">
+                          คุณเลือกแพ็คเกจกลุ่ม: {packageData.groupPricing[selectedGroupSize]?.label} ในราคา ${packageData.groupPricing[selectedGroupSize]?.price} ต่อคน
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
 
                 {customTourData && (
-                  <div className="bg-gray-50 rounded-lg p-4 space-y-3">
-                    <h3 className="font-semibold text-lg">Custom Tour to {customTourData.destination}</h3>
+                  <div className="bg-gradient-to-r from-black/40 to-[#0a0804]/40 backdrop-blur-xl border border-[#FFD700]/20 rounded-xl p-6 space-y-4">
+                    <h3 className="font-semibold text-xl text-white">ทัวร์แบบกำหนดเอง - {customTourData.destination}</h3>
                     {customTourData.description && (
-                      <p className="text-gray-600">{customTourData.description}</p>
+                      <p className="text-[#cdc08e]">{customTourData.description}</p>
                     )}
-                    <div className="grid grid-cols-1 gap-2 text-sm">
-                      <div><span className="font-medium">Destination:</span> {customTourData.destination}</div>
-                      <div><span className="font-medium">Duration:</span> {Math.ceil((new Date(customTourData.endDate) - new Date(customTourData.startDate)) / (1000 * 60 * 60 * 24))} days</div>
-                      <div><span className="font-medium">Number of people:</span> {customTourData.numberOfPeople}</div>
+                    <div className="grid grid-cols-1 gap-3 text-sm">
+                      <div className="text-white"><span className="text-[#FFD700] font-medium">จุดหมาย:</span> {customTourData.destination}</div>
+                      <div className="text-white"><span className="text-[#FFD700] font-medium">ระยะเวลา:</span> {Math.ceil((new Date(customTourData.endDate) - new Date(customTourData.startDate)) / (1000 * 60 * 60 * 24))} วัน</div>
+                      <div className="text-white"><span className="text-[#FFD700] font-medium">จำนวนคน:</span> {customTourData.numberOfPeople} คน</div>
                       {customTourData.accommodation && (
-                        <div><span className="font-medium">Accommodation:</span> {customTourData.accommodation}</div>
+                        <div className="text-white"><span className="text-[#FFD700] font-medium">ที่พัก:</span> {customTourData.accommodation}</div>
                       )}
                       {customTourData.transportation && (
-                        <div><span className="font-medium">Transportation:</span> {customTourData.transportation}</div>
+                        <div className="text-white"><span className="text-[#FFD700] font-medium">การเดินทาง:</span> {customTourData.transportation}</div>
                       )}
                       {customTourData.estimatedCost && (
-                        <div><span className="font-medium">Estimated cost:</span> ฿{customTourData.estimatedCost.toLocaleString()}</div>
+                        <div className="text-white"><span className="text-[#FFD700] font-medium">ราคาประเมิน:</span> ฿{customTourData.estimatedCost.toLocaleString()}</div>
                       )}
                     </div>
                   </div>
@@ -266,28 +294,33 @@ export default function BookingPage() {
               </div>
 
               {/* Price Summary */}
-              <div className="bg-blue-50 rounded-lg p-4">
-                <h3 className="font-semibold text-lg mb-3">Price Summary</h3>
-                <div className="space-y-2 text-sm">
+              <div className="bg-gradient-to-r from-[#FFD700]/10 to-[#FFED4E]/10 border border-[#FFD700]/30 rounded-xl p-6">
+                <h3 className="font-semibold text-lg text-[#FFD700] mb-4">สรุปราคา</h3>
+                <div className="space-y-3 text-sm">
                   {bookingType === 'package' ? (
                     <>
-                      <div className="flex justify-between">
-                        <span>Price per person:</span>
-                        <span>฿{(packageData?.priceNumber || parseFloat(packageData?.price || 0)).toLocaleString()}</span>
+                      <div className="flex justify-between text-white">
+                        <span>ราคาต่อคน:</span>
+                        <span>
+                          {packageData?.groupPricing && selectedGroupSize 
+                            ? `$${packageData.groupPricing[selectedGroupSize]?.price}` 
+                            : packageData?.price
+                          }
+                        </span>
                       </div>
-                      <div className="flex justify-between">
-                        <span>Number of people:</span>
-                        <span>{formData.numberOfPeople}</span>
+                      <div className="flex justify-between text-white">
+                        <span>จำนวนคน:</span>
+                        <span>{formData.numberOfPeople} คน</span>
                       </div>
-                      <hr className="my-2" />
-                      <div className="flex justify-between font-semibold text-lg">
-                        <span>Total:</span>
-                        <span>฿{calculateTotalAmount().toLocaleString()}</span>
+                      <hr className="border-[#FFD700]/20" />
+                      <div className="flex justify-between font-semibold text-lg text-[#FFD700]">
+                        <span>รวมทั้งหมด:</span>
+                        <span>${calculateTotalAmount().toLocaleString()}</span>
                       </div>
                     </>
                   ) : (
-                    <div className="flex justify-between font-semibold text-lg">
-                      <span>Total estimated cost:</span>
+                    <div className="flex justify-between font-semibold text-lg text-[#FFD700]">
+                      <span>ราคาประเมินทั้งหมด:</span>
                       <span>฿{calculateTotalAmount().toLocaleString()}</span>
                     </div>
                   )}
@@ -297,18 +330,18 @@ export default function BookingPage() {
 
             {/* Booking Form */}
             <div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Customer Information</h2>
+              <h2 className="text-xl font-semibold bg-gradient-to-r from-[#FFD700] to-[#FFED4E] bg-clip-text text-transparent mb-6">ข้อมูลลูกค้า</h2>
               
               {error && (
-                <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-4">
-                  {error}
+                <div className="mb-6 p-4 bg-red-500/20 border border-red-500/50 rounded-xl">
+                  <p className="text-red-400 text-sm">{error}</p>
                 </div>
               )}
 
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Full Name *
+                  <label className="block text-[#FFD700] text-sm font-medium mb-2">
+                    ชื่อ-นามสกุล *
                   </label>
                   <input
                     type="text"
@@ -316,13 +349,14 @@ export default function BookingPage() {
                     value={formData.customerName}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-4 py-3 bg-gradient-to-r from-black/60 to-[#0a0804]/60 backdrop-blur-xl border border-[#FFD700]/20 rounded-xl text-[#cdc08e] placeholder-[#B8860B]/60 focus:border-[#FFD700] focus:outline-none focus:ring-1 focus:ring-[#FFD700]/30 transition-all duration-200"
+                    placeholder="กรอกชื่อ-นามสกุล"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Email *
+                  <label className="block text-[#FFD700] text-sm font-medium mb-2">
+                    อีเมล *
                   </label>
                   <input
                     type="email"
@@ -330,13 +364,14 @@ export default function BookingPage() {
                     value={formData.customerEmail}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-4 py-3 bg-gradient-to-r from-black/60 to-[#0a0804]/60 backdrop-blur-xl border border-[#FFD700]/20 rounded-xl text-[#cdc08e] placeholder-[#B8860B]/60 focus:border-[#FFD700] focus:outline-none focus:ring-1 focus:ring-[#FFD700]/30 transition-all duration-200"
+                    placeholder="example@email.com"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Phone Number *
+                  <label className="block text-[#FFD700] text-sm font-medium mb-2">
+                    หมายเลขโทรศัพท์ *
                   </label>
                   <input
                     type="tel"
@@ -344,14 +379,15 @@ export default function BookingPage() {
                     value={formData.customerPhone}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-4 py-3 bg-gradient-to-r from-black/60 to-[#0a0804]/60 backdrop-blur-xl border border-[#FFD700]/20 rounded-xl text-[#cdc08e] placeholder-[#B8860B]/60 focus:border-[#FFD700] focus:outline-none focus:ring-1 focus:ring-[#FFD700]/30 transition-all duration-200"
+                    placeholder="08X-XXX-XXXX"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Start Date *
+                    <label className="block text-[#FFD700] text-sm font-medium mb-2">
+                      วันที่เริ่ม *
                     </label>
                     <input
                       type="date"
@@ -360,12 +396,12 @@ export default function BookingPage() {
                       onChange={handleInputChange}
                       required
                       min={new Date().toISOString().split('T')[0]}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-4 py-3 bg-gradient-to-r from-black/60 to-[#0a0804]/60 backdrop-blur-xl border border-[#FFD700]/20 rounded-xl text-[#cdc08e] focus:border-[#FFD700] focus:outline-none focus:ring-1 focus:ring-[#FFD700]/30 transition-all duration-200"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      End Date *
+                    <label className="block text-[#FFD700] text-sm font-medium mb-2">
+                      วันที่สิ้นสุด *
                     </label>
                     <input
                       type="date"
@@ -374,26 +410,26 @@ export default function BookingPage() {
                       onChange={handleInputChange}
                       required
                       min={formData.startDate}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-4 py-3 bg-gradient-to-r from-black/60 to-[#0a0804]/60 backdrop-blur-xl border border-[#FFD700]/20 rounded-xl text-[#cdc08e] focus:border-[#FFD700] focus:outline-none focus:ring-1 focus:ring-[#FFD700]/30 transition-all duration-200"
                     />
                   </div>
                 </div>
 
                 {bookingType === 'package' && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Number of People *
+                    <label className="block text-[#FFD700] text-sm font-medium mb-2">
+                      จำนวนคน *
                     </label>
                     <select
                       name="numberOfPeople"
                       value={formData.numberOfPeople}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-4 py-3 bg-gradient-to-r from-black/60 to-[#0a0804]/60 backdrop-blur-xl border border-[#FFD700]/20 rounded-xl text-[#cdc08e] focus:border-[#FFD700] focus:outline-none focus:ring-1 focus:ring-[#FFD700]/30 transition-all duration-200"
                     >
                       {[...Array(Math.min(packageData?.maxCapacity || 10, 10))].map((_, i) => (
-                        <option key={i + 1} value={i + 1}>
-                          {i + 1} {i === 0 ? 'person' : 'people'}
+                        <option key={i + 1} value={i + 1} className="bg-black text-white">
+                          {i + 1} {i === 0 ? 'คน' : 'คน'}
                         </option>
                       ))}
                     </select>
@@ -402,8 +438,8 @@ export default function BookingPage() {
 
                 {bookingType === 'custom' && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Number of People *
+                    <label className="block text-[#FFD700] text-sm font-medium mb-2">
+                      จำนวนคน *
                     </label>
                     <input
                       type="number"
@@ -413,36 +449,37 @@ export default function BookingPage() {
                       required
                       min="1"
                       max="50"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-4 py-3 bg-gradient-to-r from-black/60 to-[#0a0804]/60 backdrop-blur-xl border border-[#FFD700]/20 rounded-xl text-[#cdc08e] placeholder-[#B8860B]/60 focus:border-[#FFD700] focus:outline-none focus:ring-1 focus:ring-[#FFD700]/30 transition-all duration-200"
+                      placeholder="จำนวนคน"
                     />
                   </div>
                 )}
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Special Requirements
+                  <label className="block text-[#FFD700] text-sm font-medium mb-2">
+                    ความต้องการพิเศษ
                   </label>
                   <textarea
                     name="specialRequirements"
                     value={formData.specialRequirements}
                     onChange={handleInputChange}
                     rows="3"
-                    placeholder="Any dietary restrictions, accessibility needs, or other special requirements..."
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="ความต้องการด้านอาหาร, การเข้าถึง, หรือความต้องการพิเศษอื่นๆ..."
+                    className="w-full px-4 py-3 bg-gradient-to-r from-black/60 to-[#0a0804]/60 backdrop-blur-xl border border-[#FFD700]/20 rounded-xl text-[#cdc08e] placeholder-[#B8860B]/60 focus:border-[#FFD700] focus:outline-none focus:ring-1 focus:ring-[#FFD700]/30 resize-none transition-all duration-200"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Additional Notes
+                  <label className="block text-[#FFD700] text-sm font-medium mb-2">
+                    หมายเหตุเพิ่มเติม
                   </label>
                   <textarea
                     name="notes"
                     value={formData.notes}
                     onChange={handleInputChange}
                     rows="3"
-                    placeholder="Any additional information or requests..."
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="ข้อมูลเพิ่มเติมหรือคำขออื่นๆ..."
+                    className="w-full px-4 py-3 bg-gradient-to-r from-black/60 to-[#0a0804]/60 backdrop-blur-xl border border-[#FFD700]/20 rounded-xl text-[#cdc08e] placeholder-[#B8860B]/60 focus:border-[#FFD700] focus:outline-none focus:ring-1 focus:ring-[#FFD700]/30 resize-none transition-all duration-200"
                   />
                 </div>
 
@@ -450,16 +487,23 @@ export default function BookingPage() {
                   <button
                     type="button"
                     onClick={() => router.back()}
-                    className="flex-1 bg-gray-300 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-400 transition-colors"
+                    className="flex-1 bg-gradient-to-r from-black/60 to-[#0a0804]/60 backdrop-blur-xl border border-[#FFD700]/20 text-[#cdc08e] font-medium py-4 px-6 rounded-xl hover:border-[#FFD700]/40 transition-all duration-200"
                   >
-                    Back
+                    ย้อนกลับ
                   </button>
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                    className="flex-1 bg-gradient-to-r from-[#FFD700] to-[#FFED4E] text-black font-semibold py-4 px-6 rounded-xl hover:shadow-lg hover:shadow-[#FFD700]/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2"
                   >
-                    {submitting ? 'Processing...' : 'Confirm Booking'}
+                    {submitting ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin"></div>
+                        <span>กำลังดำเนินการ...</span>
+                      </div>
+                    ) : (
+                      <span>ยืนยันการจอง</span>
+                    )}
                   </button>
                 </div>
               </form>
