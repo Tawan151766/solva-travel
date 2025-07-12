@@ -4,11 +4,17 @@ import { Range } from "react-range";
 const STEP = 100;
 
 export default function PriceRangeSlider({ 
-  value = [0, 10000], 
+  value = [549, 2299], 
   onChange, 
-  min = 0, 
-  max = 30000 
+  min = 549, 
+  max = 2299 
 }) {
+  // Ensure values are within bounds
+  const safeValue = [
+    Math.max(min, Math.min(max, value[0] || min)),
+    Math.max(min, Math.min(max, value[1] || max))
+  ];
+
   const formatPrice = (price) => {
     if (price === null || price === undefined || !isFinite(price)) {
       return '0';
@@ -17,18 +23,20 @@ export default function PriceRangeSlider({
   };
 
   const handleChange = (vals) => {
-    // Ensure values are valid numbers
-    const validVals = vals.map(val => isFinite(val) ? val : 0);
+    // Ensure values are valid numbers within bounds
+    const validVals = vals.map(val => 
+      Math.max(min, Math.min(max, isFinite(val) ? val : min))
+    );
     onChange?.(validVals);
   };
 
   return (
     <div className="w-full max-w-xl px-4">
       <label className="text-[#FFD700] font-medium text-sm mb-2 block">
-        Price Range: ${formatPrice(value[0])} - ${formatPrice(value[1])}
+        Price Range: ${formatPrice(safeValue[0])} - ${formatPrice(safeValue[1])}
       </label>
       <Range
-        values={value}
+        values={safeValue}
         step={STEP}
         min={min}
         max={max}
@@ -42,8 +50,8 @@ export default function PriceRangeSlider({
             <div
               className="absolute h-1 bg-gradient-to-r from-[#FFD700] to-[#FFED4E] rounded shadow-lg shadow-[#FFD700]/30"
               style={{
-                left: `${Math.max(0, Math.min(100, ((value[0] - min) / (max - min)) * 100))}%`,
-                width: `${Math.max(0, Math.min(100, ((value[1] - value[0]) / (max - min)) * 100))}%`,
+                left: `${Math.max(0, Math.min(100, ((safeValue[0] - min) / (max - min)) * 100))}%`,
+                width: `${Math.max(0, Math.min(100, ((safeValue[1] - safeValue[0]) / (max - min)) * 100))}%`,
               }}
             />
             {children}

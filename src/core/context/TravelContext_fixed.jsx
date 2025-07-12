@@ -109,7 +109,26 @@ const travelMockData = [
 const TravelContext = createContext();
 
 export function TravelProvider({ children }) {
-  // Calculate initial price range from data first
+  // States
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  
+  // Filter states
+  const [filters, setFilters] = useState({
+    country: "",
+    city: "",
+    priceRange: [0, 10000],
+    isRecommendedOnly: false,
+    category: "",
+  });
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  // Use mock data directly
+  const allTravelData = travelMockData;
+
+  // Calculate initial price range from data
   const initialPriceStats = useMemo(() => {
     const prices = travelMockData
       .map((item) => {
@@ -123,25 +142,6 @@ export function TravelProvider({ children }) {
       max: Math.max(...prices),
     };
   }, []);
-
-  // States
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  
-  // Filter states with dynamic initial price range
-  const [filters, setFilters] = useState({
-    country: "",
-    city: "",
-    priceRange: [initialPriceStats.min, initialPriceStats.max],
-    isRecommendedOnly: false,
-    category: "",
-  });
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
-
-  // Use mock data directly
-  const allTravelData = travelMockData;
 
   // Filter the travel data based on current filters
   const filteredData = useMemo(() => {

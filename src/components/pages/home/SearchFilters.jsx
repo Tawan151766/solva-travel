@@ -17,6 +17,19 @@ export function SearchFilters() {
   const cityOptions = useMemo(() => getCities(), []);
   const priceStats = useMemo(() => getPriceStats(), []);
 
+  // Ensure price range is valid
+  const safePriceRange = useMemo(() => {
+    if (!filters.priceRange || filters.priceRange.length !== 2) {
+      return [priceStats.min || 549, priceStats.max || 2299];
+    }
+    
+    const [min, max] = filters.priceRange;
+    const safeMin = Math.max(min, priceStats.min || 549);
+    const safeMax = Math.min(max, priceStats.max || 2299);
+    
+    return [safeMin, safeMax];
+  }, [filters.priceRange, priceStats]);
+
   const handleCountryChange = (value) => {
     updateFilters({ country: value });
   };
@@ -64,10 +77,10 @@ export function SearchFilters() {
       <div className="@container">
         <div className="flex h-[38px] w-full pt-1.5">
           <PriceRangeSlider
-            value={filters.priceRange}
+            value={safePriceRange}
             onChange={handlePriceRangeChange}
-            min={priceStats.min || 0}
-            max={priceStats.max || 30000}
+            min={priceStats.min || 549}
+            max={priceStats.max || 2299}
           />
         </div>
       </div>
