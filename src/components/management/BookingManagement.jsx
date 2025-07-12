@@ -179,7 +179,7 @@ export default function BookingManagement() {
   });
 
   if (loading) {
-    return <div className="text-center py-8">Loading custom tour requests...</div>;
+    return <div className="text-center py-8 text-white">Loading custom tour requests...</div>;
   }
 
   return (
@@ -187,24 +187,24 @@ export default function BookingManagement() {
       {/* Filters */}
       <div className="flex justify-between items-center gap-4">
         <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#FFD700]" />
           <Input
             placeholder="Search requests..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
+            className="pl-10 bg-black/50 border-[#FFD700]/20 text-white placeholder:text-white/50"
           />
         </div>
         <div className="flex items-center gap-2">
-          <Filter className="h-4 w-4 text-gray-400" />
+          <Filter className="h-4 w-4 text-[#FFD700]" />
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-40">
+            <SelectTrigger className="w-40 bg-black/50 border-[#FFD700]/20 text-white">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">All Status</SelectItem>
+            <SelectContent className="bg-black/90 border-[#FFD700]/20">
+              <SelectItem value="ALL" className="text-white hover:bg-[#FFD700]/20">All Status</SelectItem>
               {statusOptions.map(option => (
-                <SelectItem key={option.value} value={option.value}>
+                <SelectItem key={option.value} value={option.value} className="text-white hover:bg-[#FFD700]/20">
                   {option.label}
                 </SelectItem>
               ))}
@@ -214,56 +214,56 @@ export default function BookingManagement() {
       </div>
 
       {/* Custom Tour Requests Table */}
-      <div className="border rounded-lg">
+      <div className="border border-[#FFD700]/20 rounded-lg bg-black/50 backdrop-blur-xl">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>Tracking Number</TableHead>
-              <TableHead>Customer</TableHead>
-              <TableHead>Destination</TableHead>
-              <TableHead>Travel Date</TableHead>
-              <TableHead>Travelers</TableHead>
-              <TableHead>Budget</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Created</TableHead>
-              <TableHead>Actions</TableHead>
+            <TableRow className="border-[#FFD700]/20">
+              <TableHead className="text-[#FFD700]">Tracking Number</TableHead>
+              <TableHead className="text-[#FFD700]">Customer</TableHead>
+              <TableHead className="text-[#FFD700]">Destination</TableHead>
+              <TableHead className="text-[#FFD700]">Travel Date</TableHead>
+              <TableHead className="text-[#FFD700]">Travelers</TableHead>
+              <TableHead className="text-[#FFD700]">Budget</TableHead>
+              <TableHead className="text-[#FFD700]">Status</TableHead>
+              <TableHead className="text-[#FFD700]">Created</TableHead>
+              <TableHead className="text-[#FFD700]">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredRequests.map((request) => (
-              <TableRow key={request.id}>
-                <TableCell className="font-mono text-sm">
+              <TableRow key={request.id} className="border-[#FFD700]/10 hover:bg-[#FFD700]/5">
+                <TableCell className="font-mono text-sm text-white">
                   {request.trackingNumber}
                 </TableCell>
                 <TableCell>
                   <div>
-                    <div className="font-medium">
+                    <div className="font-medium text-white">
                       {request.contactName}
                     </div>
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-white/70">
                       {request.contactEmail}
                     </div>
                   </div>
                 </TableCell>
                 <TableCell>
-                  <div className="font-medium">{request.destination}</div>
+                  <div className="font-medium text-white">{request.destination}</div>
                 </TableCell>
                 <TableCell>
                   <div>
-                    <div className="text-sm">
+                    <div className="text-sm text-white">
                       {new Date(request.startDate).toLocaleDateString()} - 
                     </div>
-                    <div className="text-sm">
+                    <div className="text-sm text-white">
                       {new Date(request.endDate).toLocaleDateString()}
                     </div>
                   </div>
                 </TableCell>
-                <TableCell>{request.numberOfPeople}</TableCell>
-                <TableCell className="font-medium">
+                <TableCell className="text-white">{request.numberOfPeople}</TableCell>
+                <TableCell className="font-medium text-[#FFD700]">
                   ฿{request.budget?.toLocaleString() || 'N/A'}
                 </TableCell>
                 <TableCell>{getStatusBadge(request.status)}</TableCell>
-                <TableCell>
+                <TableCell className="text-white">
                   {new Date(request.createdAt).toLocaleDateString()}
                 </TableCell>
                 <TableCell>
@@ -272,6 +272,7 @@ export default function BookingManagement() {
                       variant="outline"
                       size="sm"
                       onClick={() => handleView(request)}
+                      className="border-[#FFD700]/30 text-[#FFD700] hover:bg-[#FFD700]/20"
                     >
                       <Eye className="h-4 w-4" />
                     </Button>
@@ -279,6 +280,7 @@ export default function BookingManagement() {
                       variant="outline"
                       size="sm"
                       onClick={() => handleEdit(request)}
+                      className="border-[#FFD700]/30 text-[#FFD700] hover:bg-[#FFD700]/20"
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
@@ -286,6 +288,7 @@ export default function BookingManagement() {
                       variant="outline"
                       size="sm"
                       onClick={() => handleDelete(request.id)}
+                      className="border-red-500/30 text-red-400 hover:bg-red-500/20"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>

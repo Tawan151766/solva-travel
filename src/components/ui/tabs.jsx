@@ -4,7 +4,13 @@ import { createContext, useContext, useState } from "react";
 
 const TabsContext = createContext();
 
-export function Tabs({ defaultValue, value, onValueChange, children, className = "" }) {
+export function Tabs({
+  defaultValue,
+  value,
+  onValueChange,
+  children,
+  className = "",
+}) {
   const [selectedTab, setSelectedTab] = useState(defaultValue || value);
 
   const handleTabChange = (newValue) => {
@@ -15,17 +21,19 @@ export function Tabs({ defaultValue, value, onValueChange, children, className =
   };
 
   return (
-    <TabsContext.Provider value={{ selectedTab, setSelectedTab: handleTabChange }}>
-      <div className={className}>
-        {children}
-      </div>
+    <TabsContext.Provider
+      value={{ selectedTab, setSelectedTab: handleTabChange }}
+    >
+      <div className={className}>{children}</div>
     </TabsContext.Provider>
   );
 }
 
 export function TabsList({ children, className = "" }) {
   return (
-    <div className={`flex space-x-1 rounded-lg bg-gray-100 p-1 ${className}`}>
+    <div
+      className={`flex space-x-1 border border-[#FFD700]/20 rounded-lg bg-black/60 backdrop-blur-xl p-1 shadow-inner ${className}`}
+    >
       {children}
     </div>
   );
@@ -37,12 +45,14 @@ export function TabsTrigger({ value, children, className = "" }) {
 
   return (
     <button
+      type="button"
       onClick={() => setSelectedTab(value)}
-      className={`
-        flex-1 rounded-md px-3 py-2 text-sm font-medium transition-all
-        ${isActive 
-          ? "bg-white text-gray-900 shadow-sm" 
-          : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+      aria-selected={isActive}
+      className={`inline-flex items-center gap-2 text-sm font-semibold py-2 px-4 transition-all duration-200 focus:outline-none
+        ${
+          isActive
+            ? "bg-gradient-to-r from-[#FFD700] to-[#FFED4E] text-black shadow-md rounded-lg hover:shadow-[#FFD700]/30"
+            : "border border-[#FFD700]/20 text-white/80 hover:text-white bg-black/50 backdrop-blur-xl rounded-lg"
         }
         ${className}
       `}
@@ -54,14 +64,10 @@ export function TabsTrigger({ value, children, className = "" }) {
 
 export function TabsContent({ value, children, className = "" }) {
   const { selectedTab } = useContext(TabsContext);
-  
+
   if (selectedTab !== value) {
     return null;
   }
 
-  return (
-    <div className={`mt-4 ${className}`}>
-      {children}
-    </div>
-  );
+  return <div className={`mt-4 text-white ${className}`}>{children}</div>;
 }

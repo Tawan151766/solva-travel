@@ -178,70 +178,75 @@ export default function UserManagement() {
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <Label htmlFor="firstName">First Name</Label>
+          <Label htmlFor="firstName" className="text-white">First Name</Label>
           <Input
             id="firstName"
             value={formData.firstName}
             onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
             placeholder="Enter first name"
+            className="bg-black/50 border-[#FFD700]/20 text-white placeholder:text-white/50"
           />
         </div>
         <div>
-          <Label htmlFor="lastName">Last Name</Label>
+          <Label htmlFor="lastName" className="text-white">Last Name</Label>
           <Input
             id="lastName"
             value={formData.lastName}
             onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
             placeholder="Enter last name"
+            className="bg-black/50 border-[#FFD700]/20 text-white placeholder:text-white/50"
           />
         </div>
       </div>
       
       <div>
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email" className="text-white">Email</Label>
         <Input
           id="email"
           type="email"
           value={formData.email}
           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
           placeholder="Enter email"
+          className="bg-black/50 border-[#FFD700]/20 text-white placeholder:text-white/50"
         />
       </div>
       
       <div>
-        <Label htmlFor="phone">Phone</Label>
+        <Label htmlFor="phone" className="text-white">Phone</Label>
         <Input
           id="phone"
           value={formData.phone}
           onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
           placeholder="Enter phone number"
+          className="bg-black/50 border-[#FFD700]/20 text-white placeholder:text-white/50"
         />
       </div>
 
       {!isEdit && (
         <div>
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password" className="text-white">Password</Label>
           <Input
             id="password"
             type="password"
             value={formData.password}
             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
             placeholder="Enter password"
+            className="bg-black/50 border-[#FFD700]/20 text-white placeholder:text-white/50"
           />
         </div>
       )}
       
       <div>
-        <Label htmlFor="role">Role</Label>
+        <Label htmlFor="role" className="text-white">Role</Label>
         <Select value={formData.role} onValueChange={(value) => setFormData({ ...formData, role: value })}>
-          <SelectTrigger>
+          <SelectTrigger className="bg-black/50 border-[#FFD700]/20 text-white">
             <SelectValue placeholder="Select role" />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="USER">User</SelectItem>
-            <SelectItem value="STAFF">Staff</SelectItem>
-            <SelectItem value="OPERATOR">Operator</SelectItem>
-            <SelectItem value="ADMIN">Admin</SelectItem>
+          <SelectContent className="bg-black/90 border-[#FFD700]/20">
+            <SelectItem value="USER" className="text-white hover:bg-[#FFD700]/20">User</SelectItem>
+            <SelectItem value="STAFF" className="text-white hover:bg-[#FFD700]/20">Staff</SelectItem>
+            <SelectItem value="OPERATOR" className="text-white hover:bg-[#FFD700]/20">Operator</SelectItem>
+            <SelectItem value="ADMIN" className="text-white hover:bg-[#FFD700]/20">Admin</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -252,16 +257,18 @@ export default function UserManagement() {
           id="isActive"
           checked={formData.isActive}
           onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-          className="rounded"
+          className="rounded accent-[#FFD700]"
         />
-        <Label htmlFor="isActive">Active</Label>
+        <Label htmlFor="isActive" className="text-white">Active</Label>
       </div>
 
       <DialogFooter>
-        <DialogClose>
-          Cancel
+        <DialogClose asChild>
+          <Button variant="outline" className="border-[#FFD700]/30 text-[#FFD700] hover:bg-[#FFD700]/20">
+            Cancel
+          </Button>
         </DialogClose>
-        <Button onClick={() => handleSubmit(isEdit)}>
+        <Button onClick={() => handleSubmit(isEdit)} className="bg-[#FFD700] text-black hover:bg-[#FFD700]/90">
           {isEdit ? 'Update' : 'Create'} User
         </Button>
       </DialogFooter>
@@ -269,7 +276,7 @@ export default function UserManagement() {
   );
 
   if (loading) {
-    return <div className="text-center py-8">Loading users...</div>;
+    return <div className="text-center py-8 text-white">Loading users...</div>;
   }
 
   return (
@@ -277,24 +284,24 @@ export default function UserManagement() {
       {/* Header with search and create button */}
       <div className="flex justify-between items-center">
         <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#FFD700]" />
           <Input
             placeholder="Search users..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
+            className="pl-10 bg-black/50 border-[#FFD700]/20 text-white placeholder:text-white/50"
           />
         </div>
         <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
           <DialogTrigger asChild>
-            <Button className="flex items-center gap-2">
+            <Button className="flex items-center gap-2 bg-[#FFD700] text-black hover:bg-[#FFD700]/90">
               <Plus className="h-4 w-4" />
               Create User
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md bg-gradient-to-br from-black/95 via-[#0a0804]/95 to-black/95 border border-[#FFD700]/20">
             <DialogHeader>
-              <DialogTitle>Create New User</DialogTitle>
+              <DialogTitle className="text-white">Create New User</DialogTitle>
             </DialogHeader>
             <UserForm isEdit={false} />
           </DialogContent>
@@ -302,27 +309,27 @@ export default function UserManagement() {
       </div>
 
       {/* Users Table */}
-      <div className="border rounded-lg">
+      <div className="border border-[#FFD700]/20 rounded-lg bg-black/50 backdrop-blur-xl">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Phone</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Created</TableHead>
-              <TableHead>Actions</TableHead>
+            <TableRow className="border-[#FFD700]/20">
+              <TableHead className="text-[#FFD700]">Name</TableHead>
+              <TableHead className="text-[#FFD700]">Email</TableHead>
+              <TableHead className="text-[#FFD700]">Phone</TableHead>
+              <TableHead className="text-[#FFD700]">Role</TableHead>
+              <TableHead className="text-[#FFD700]">Status</TableHead>
+              <TableHead className="text-[#FFD700]">Created</TableHead>
+              <TableHead className="text-[#FFD700]">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredUsers.map((user) => (
-              <TableRow key={user.id}>
-                <TableCell className="font-medium">
+              <TableRow key={user.id} className="border-[#FFD700]/10 hover:bg-[#FFD700]/5">
+                <TableCell className="font-medium text-white">
                   {user.firstName} {user.lastName}
                 </TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell>{user.phone}</TableCell>
+                <TableCell className="text-white">{user.email}</TableCell>
+                <TableCell className="text-white">{user.phone}</TableCell>
                 <TableCell>
                   <Badge variant={user.role === 'ADMIN' ? 'destructive' : user.role === 'OPERATOR' ? 'default' : 'secondary'}>
                     {user.role}
@@ -333,7 +340,7 @@ export default function UserManagement() {
                     {user.isActive ? 'Active' : 'Inactive'}
                   </Badge>
                 </TableCell>
-                <TableCell>
+                <TableCell className="text-white">
                   {new Date(user.createdAt).toLocaleDateString()}
                 </TableCell>
                 <TableCell>
@@ -342,12 +349,14 @@ export default function UserManagement() {
                       variant="outline"
                       size="sm"
                       onClick={() => handleEdit(user)}
+                      className="border-[#FFD700]/30 text-[#FFD700] hover:bg-[#FFD700]/20"
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
+                      className="border-red-500/30 text-red-400 hover:bg-red-500/20"
                       onClick={() => handleDelete(user.id)}
                       disabled={user.role === 'ADMIN'}
                     >
@@ -363,9 +372,9 @@ export default function UserManagement() {
 
       {/* Edit Modal */}
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md bg-gradient-to-br from-black/95 via-[#0a0804]/95 to-black/95 border border-[#FFD700]/20">
           <DialogHeader>
-            <DialogTitle>Edit User</DialogTitle>
+            <DialogTitle className="text-white">Edit User</DialogTitle>
           </DialogHeader>
           <UserForm isEdit={true} />
         </DialogContent>
