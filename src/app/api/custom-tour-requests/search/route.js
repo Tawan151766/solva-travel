@@ -16,19 +16,37 @@ export async function GET(request) {
       );
     }
 
-    // Search by partial ID match (case insensitive)
+    // Clean query (remove #, convert to uppercase for tracking number)
+    const cleanQuery = query.replace('#', '').trim();
+    
+    // Search by tracking number or partial ID match (case insensitive)
     const customTourRequest = await prisma.customTourRequest.findFirst({
       where: {
         OR: [
+          // Search by tracking number (exact match, case insensitive)
+          {
+            trackingNumber: {
+              equals: cleanQuery.toUpperCase(),
+              mode: 'insensitive'
+            }
+          },
+          // Search by partial tracking number
+          {
+            trackingNumber: {
+              contains: cleanQuery.toUpperCase(),
+              mode: 'insensitive'
+            }
+          },
+          // Search by partial ID match (case insensitive)
           {
             id: {
-              endsWith: query.toLowerCase(),
+              endsWith: cleanQuery.toLowerCase(),
               mode: 'insensitive'
             }
           },
           {
             id: {
-              contains: query.toLowerCase(),
+              contains: cleanQuery.toLowerCase(),
               mode: 'insensitive'
             }
           }

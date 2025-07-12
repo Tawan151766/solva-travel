@@ -160,6 +160,7 @@ model Gallery {
 
 model CustomTourRequest {
   id                  String              @id @default(cuid())
+  trackingNumber      String              @unique
   userId              String?
   contactName         String
   contactEmail        String

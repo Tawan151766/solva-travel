@@ -1,6 +1,17 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '../../../../lib/prisma.js';
 
+// Function to generate unique tracking number
+function generateTrackingNumber() {
+  const date = new Date();
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const random = Math.random().toString(36).substring(2, 7).toUpperCase();
+  
+  return `CTR-${year}${month}${day}-${random}`;
+}
+
 export async function POST(request) {
   try {
     const {
@@ -68,10 +79,26 @@ export async function POST(request) {
       );
     }
 
+    // Generate unique tracking number
+    let trackingNumber;
+    let isUnique = false;
+    
+    // Ensure tracking number is unique
+    while (!isUnique) {
+      trackingNumber = generateTrackingNumber();
+      const existing = await prisma.customTourRequest.findFirst({
+        where: { trackingNumber }
+      });
+      if (!existing) {
+        isUnique = true;
+      }
+    }
+
     // Create custom tour request
     const customRequest = await prisma.customTourRequest.create({
       data: {
         userId: userId || null,
+        trackingNumber,
         contactName,
         contactEmail,
         contactPhone,

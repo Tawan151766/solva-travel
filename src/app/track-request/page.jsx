@@ -13,7 +13,7 @@ export default function TrackRequestPage() {
   const handleSearch = async (e) => {
     e.preventDefault();
     if (!requestId.trim()) {
-      setError('กรุณาใส่หมายเลขคำขอ');
+      setError('กรุณาใส่หมายเลขติดตาม');
       return;
     }
 
@@ -79,7 +79,7 @@ export default function TrackRequestPage() {
           <form onSubmit={handleSearch} className="space-y-6">
             <div>
               <label htmlFor="requestId" className="block text-[#FFD700] text-sm font-medium mb-2">
-                หมายเลขคำขอ
+                หมายเลขติดตาม
               </label>
               <div className="relative">
                 <input
@@ -88,7 +88,7 @@ export default function TrackRequestPage() {
                   value={requestId}
                   onChange={(e) => setRequestId(e.target.value)}
                   className="w-full px-4 py-3 bg-gradient-to-r from-black/60 to-[#0a0804]/60 backdrop-blur-xl border border-[#FFD700]/20 rounded-xl text-[#cdc08e] placeholder-[#B8860B]/60 focus:border-[#FFD700] focus:outline-none focus:ring-1 focus:ring-[#FFD700]/30 transition-all duration-200"
-                  placeholder="เช่น: ABC12345 หรือ #ABC12345"
+                  placeholder="เช่น: CTR-20241212-ABC12 หรือ #CTR-20241212-ABC12"
                   disabled={loading}
                 />
                 <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
@@ -134,7 +134,7 @@ export default function TrackRequestPage() {
             <div className="bg-gradient-to-r from-[#FFD700] to-[#FFED4E] text-black px-6 py-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-xl font-bold">คำขอ #{request.id.slice(-8).toUpperCase()}</h2>
+                  <h2 className="text-xl font-bold">หมายเลขติดตาม: {request.trackingNumber}</h2>
                   <p className="text-black/70">สร้างเมื่อ {new Date(request.createdAt).toLocaleDateString('th-TH', {
                     year: 'numeric',
                     month: 'long',

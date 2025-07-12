@@ -62,9 +62,9 @@ export default function TourRequestSuccessPage() {
           <div className="p-6 space-y-6">
             {request && (
               <div className="text-center">
-                <h2 className="text-xl font-semibold text-white mb-2">หมายเลขคำขอของคุณ</h2>
+                <h2 className="text-xl font-semibold text-white mb-2">หมายเลขติดตามของคุณ</h2>
                 <div className="bg-[#FFD700]/10 border border-[#FFD700]/30 rounded-lg py-4 px-6 inline-block">
-                  <span className="text-2xl font-mono font-bold text-[#FFD700]">#{request.id.slice(-8).toUpperCase()}</span>
+                  <span className="text-2xl font-mono font-bold text-[#FFD700]">{request.trackingNumber}</span>
                 </div>
                 <p className="text-white/70 mt-2">
                   กรุณาเก็บหมายเลขนี้ไว้เพื่อติดตามสถานะ

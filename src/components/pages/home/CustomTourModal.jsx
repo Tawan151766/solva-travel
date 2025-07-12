@@ -95,7 +95,9 @@ export default function CustomTourModal({ isOpen, onClose }) {
         numberOfPeople: parseInt(formData.numberOfPeople),
         // รวม destination และ city เป็น location string
         destination: getFormattedLocation(formData.destination, formData.city),
-        description: `Custom tour to ${getFormattedLocation(formData.destination, formData.city)}${formData.country ? ` (${formData.country})` : ''}. ${formData.requireGuide ? 'Require tour guide. ' : ''}${formData.description}`.trim()
+        description: `Custom tour to ${getFormattedLocation(formData.destination, formData.city)}${formData.country ? ` (${formData.country})` : ''}. ${formData.requireGuide ? 'Require tour guide. ' : ''}${formData.description}`.trim(),
+        // เพิ่ม userId หากมีการ login
+        userId: user?.id || null
       };
 
       console.log('Sending request data:', requestData);
