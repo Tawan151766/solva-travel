@@ -81,8 +81,16 @@ export function RegisterForm({ onSwitchToLogin, onSwitchToOTP }) {
 
     setIsLoading(true);
     setErrors({});
+    setSuccess("");
     
     try {
+      console.log('RegisterForm: Attempting registration with data:', {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phone: formData.phone
+      });
+      
       // Use AuthContext register function
       const result = await register({
         firstName: formData.firstName,
@@ -92,6 +100,8 @@ export function RegisterForm({ onSwitchToLogin, onSwitchToOTP }) {
         phone: formData.phone
       });
 
+      console.log('RegisterForm: Registration result:', result);
+
       if (result.success) {
         setSuccess("สมัครสมาชิกสำเร็จ! กำลังนำคุณเข้าสู่หน้าหลัก...");
         
@@ -100,11 +110,12 @@ export function RegisterForm({ onSwitchToLogin, onSwitchToOTP }) {
           router.push('/');
         }, 2000);
       } else {
+        console.error('RegisterForm: Registration failed:', result.error);
         setErrors({ submit: result.error || "เกิดข้อผิดพลาดในการสมัครสมาชิก" });
       }
       
     } catch (error) {
-      console.error('Registration error:', error);
+      console.error('RegisterForm: Registration error:', error);
       setErrors({ submit: error.message || "เกิดข้อผิดพลาดในการสมัครสมาชิก กรุณาลองใหม่อีกครั้ง" });
     } finally {
       setIsLoading(false);

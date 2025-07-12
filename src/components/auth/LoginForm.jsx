@@ -52,10 +52,15 @@ export function LoginForm({ onSwitchToRegister, onClose }) {
     
     setIsLoading(true);
     setErrors({});
+    setSuccess("");
     
     try {
+      console.log('LoginForm: Attempting login with email:', formData.email);
+      
       // Use AuthContext login function
       const result = await login(formData.email, formData.password);
+
+      console.log('LoginForm: Login result:', result);
 
       if (result.success) {
         setSuccess("เข้าสู่ระบบสำเร็จ! กำลังนำคุณเข้าสู่หน้าหลัก...");
@@ -66,11 +71,12 @@ export function LoginForm({ onSwitchToRegister, onClose }) {
           router.push('/');
         }, 1500);
       } else {
+        console.error('LoginForm: Login failed:', result.error);
         setErrors({ submit: result.error || "เกิดข้อผิดพลาดในการเข้าสู่ระบบ" });
       }
       
     } catch (error) {
-      console.error("Login error:", error);
+      console.error('LoginForm: Login error:', error);
       setErrors({ submit: error.message || "เกิดข้อผิดพลาดในการเข้าสู่ระบบ กรุณาลองใหม่อีกครั้ง" });
     } finally {
       setIsLoading(false);

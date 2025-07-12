@@ -124,8 +124,8 @@ export function AuthProvider({ children }) {
       
       if (!response.ok) {
         const errorData = await response.json();
-        console.log('AuthContext: Login failed:', errorData.error);
-        throw new Error(errorData.error || 'Login failed');
+        console.log('AuthContext: Login failed:', errorData);
+        throw new Error(errorData.message || errorData.error || 'Login failed');
       }
 
       const data = await response.json();
@@ -182,15 +182,39 @@ export function AuthProvider({ children }) {
       
       if (!response.ok) {
         const errorData = await response.json();
-        console.log('AuthContext: Registration failed:', errorData.error);
-        throw new Error(errorData.error || 'Registration failed');
+        console.log('AuthContext: Registration failed:', errorData);
+        throw new Error(errorData.message || errorData.error || 'Registration failed');
       }
 
       const data = await response.json();
-      console.log('AuthContext: Registration successful');
+      console.log('AuthContext: Registration successful, raw response:', data);
       
+      // The API returns data in data.data format like login
+      const userData = data.data?.user;
+      const tokenData = data.data?.token;
+      
+      if (!userData || !tokenData) {
+        console.error('AuthContext: Invalid registration response structure:', data);
+        throw new Error('Invalid response from server');
+      }
+      
+      console.log('AuthContext: Parsed user data:', userData);
+      console.log('AuthContext: Token present:', !!tokenData);
+      
+      // Store user data and token in localStorage (auto-login after registration)
+      localStorage.setItem('user', JSON.stringify(userData));
+      localStorage.setItem('token', tokenData);
+      
+      // Update context state
+      setUser(userData);
+      setToken(tokenData);
       setLoading(false);
-      return { success: true, user: data.user };
+      
+      console.log('AuthContext: ✅ Registration completed successfully with auto-login');
+      console.log('AuthContext: User ID:', userData.id);
+      console.log('AuthContext: User email:', userData.email);
+      
+      return { success: true, user: userData };
       
     } catch (error) {
       console.error('AuthContext: Registration error:', error);
