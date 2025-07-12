@@ -2,6 +2,7 @@ import { Plus_Jakarta_Sans, Noto_Sans } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { AppProvider } from "@/core/context/AppProvider";
+import { Toaster } from "@/components/ui/toast";
 import {
   generateOrganizationSchema,
   generateWebsiteSchema,
@@ -152,6 +153,7 @@ export default function RootLayout({ children }) {
               <div className="w-full">{children}</div>
             </main>
           </div>
+          <Toaster />
         </AppProvider>
       </body>
     </html>

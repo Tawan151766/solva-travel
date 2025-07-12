@@ -106,14 +106,14 @@ export function UserProfile({ onOpenAuthModal }) {
                   ตั้งค่า
                 </Link>
                 
-                {user.role === 'ADMIN' || user.role === 'STAFF' ? (
-                  <Link href="/admin" className="flex items-center px-4 py-2 text-white/80 hover:text-[#FFD700] hover:bg-[#FFD700]/10 transition-all">
+                {(user.role === 'ADMIN' || user.role === 'OPERATOR' || user.role === 'STAFF') && (
+                  <Link href="/management" className="flex items-center px-4 py-2 text-white/80 hover:text-[#FFD700] hover:bg-[#FFD700]/10 transition-all">
                     <svg className="w-4 h-4 mr-3" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
                     </svg>
-                    แดชบอร์ด
+                    จัดการระบบ
                   </Link>
-                ) : null}
+                )}
                 
                 <div className="border-t border-[#FFD700]/20 my-2"></div>
                 

@@ -191,6 +191,7 @@ model CustomTourRequest {
 enum UserRole {
   USER
   STAFF
+  OPERATOR
   ADMIN
   SUPER_ADMIN
 }
