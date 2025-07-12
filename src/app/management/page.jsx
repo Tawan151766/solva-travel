@@ -88,11 +88,12 @@ export default function ManagementPage() {
 
   return (
     <div className="relative flex w-full min-h-screen flex-col bg-gradient-to-br from-black via-[#0a0804] to-black overflow-x-hidden font-['Plus_Jakarta_Sans','Noto_Sans',sans-serif]">
+      {/* Luxury Background Overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-[#FFD700]/5 via-transparent to-[#FFD700]/5 opacity-50"></div>
 
       <div className="layout-container flex h-full grow flex-col relative">
         <div className="flex flex-1 justify-center py-5 px-4 sm:px-6 lg:px-8">
-          <div className="layout-content-container flex flex-col max-w-7xl flex-1">
+          <div className="layout-content-container flex flex-col max-w-6xl flex-1">
             {/* Header */}
             <div className="mb-8">
               <h1 className="text-3xl font-bold text-white mb-2">
@@ -124,7 +125,7 @@ export default function ManagementPage() {
               ].map((item, idx) => (
                 <div
                   key={idx}
-                  className="border border-[#FFD700]/20 rounded-lg bg-black/50 backdrop-blur-xl p-6"
+                  className="border border-[#FFD700]/20 rounded-lg bg-black/60 backdrop-blur-xl p-6 hover:bg-black/70 transition-all duration-300 shadow-lg"
                 >
                   <div className="flex items-center justify-between pb-2">
                     <h3 className="text-sm font-medium text-white">{item.title}</h3>
@@ -141,46 +142,52 @@ export default function ManagementPage() {
             <Tabs defaultValue="users" className="space-y-6">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="users">
-                  <Users className="h-4 w-4" />
+                  <Users className="h-4 w-4 mr-2" />
                   จัดการผู้ใช้งาน
                 </TabsTrigger>
                 <TabsTrigger value="bookings">
-                  <Calendar className="h-4 w-4" />
+                  <Calendar className="h-4 w-4 mr-2" />
                   จัดการคำขอทัวร์
                 </TabsTrigger>
                 <TabsTrigger value="packages">
-                  <Package className="h-4 w-4" />
+                  <Package className="h-4 w-4 mr-2" />
                   จัดการแพ็คเกจ
                 </TabsTrigger>
               </TabsList>
 
               <TabsContent value="users">
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-white mb-2">จัดการผู้ใช้งาน</h3>
-                  <p className="text-white/70 text-sm mb-4">
-                    จัดการผู้ใช้งานทั้งหมด ดูรายละเอียด และอัปเดตข้อมูลผู้ใช้
-                  </p>
-                  <UserManagement />
+                  <div className="border border-[#FFD700]/20 rounded-lg bg-black/60 backdrop-blur-xl p-6">
+                    <h3 className="text-lg font-semibold text-white mb-2">จัดการผู้ใช้งาน</h3>
+                    <p className="text-white/70 text-sm mb-4">
+                      จัดการผู้ใช้งานทั้งหมด ดูรายละเอียด และอัปเดตข้อมูลผู้ใช้
+                    </p>
+                    <UserManagement />
+                  </div>
                 </div>
               </TabsContent>
 
               <TabsContent value="bookings">
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-white mb-2">จัดการคำขอทัวร์</h3>
-                  <p className="text-white/70 text-sm mb-4">
-                    ดูและจัดการคำขอทัวร์ส่วนตัวทั้งหมด อัปเดตสถานะ และจัดการคำขอของลูกค้า
-                  </p>
-                  <BookingManagement />
+                  <div className="border border-[#FFD700]/20 rounded-lg bg-black/60 backdrop-blur-xl p-6">
+                    <h3 className="text-lg font-semibold text-white mb-2">จัดการคำขอทัวร์</h3>
+                    <p className="text-white/70 text-sm mb-4">
+                      ดูและจัดการคำขอทัวร์ส่วนตัวทั้งหมด อัปเดตสถานะ และจัดการคำขอของลูกค้า
+                    </p>
+                    <BookingManagement />
+                  </div>
                 </div>
               </TabsContent>
 
               <TabsContent value="packages">
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-white mb-2">จัดการแพ็คเกจ</h3>
-                  <p className="text-white/70 text-sm mb-4">
-                    สร้าง แก้ไข และจัดการแพ็คเกจการท่องเที่ยวและรายละเอียด
-                  </p>
-                  <PackageManagement />
+                  <div className="border border-[#FFD700]/20 rounded-lg bg-black/60 backdrop-blur-xl p-6">
+                    <h3 className="text-lg font-semibold text-white mb-2">จัดการแพ็คเกจ</h3>
+                    <p className="text-white/70 text-sm mb-4">
+                      สร้าง แก้ไข และจัดการแพ็คเกจการท่องเที่ยวและรายละเอียด
+                    </p>
+                    <PackageManagement />
+                  </div>
                 </div>
               </TabsContent>
             </Tabs>
