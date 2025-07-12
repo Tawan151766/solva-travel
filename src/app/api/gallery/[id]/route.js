@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { galleryImages } from '../../../../data/galleryData.js';
+import { prisma } from '../../../../lib/prisma.js';
 
 export async function GET(request, { params }) {
   try {
@@ -7,11 +7,22 @@ export async function GET(request, { params }) {
 
     console.log('Individual gallery image API called for ID:', id);
 
-    // Convert string ID to number for comparison
-    const imageId = parseInt(id, 10);
-
     // Find the gallery image by ID
-    const galleryImage = galleryImages.find(img => img.id === imageId);
+    const galleryImage = await prisma.gallery.findUnique({
+      where: { 
+        id: id,
+        isActive: true 
+      },
+      include: {
+        uploader: {
+          select: {
+            firstName: true,
+            lastName: true,
+            profileImage: true,
+          },
+        },
+      },
+    });
 
     if (!galleryImage) {
       return NextResponse.json({
@@ -20,12 +31,27 @@ export async function GET(request, { params }) {
       }, { status: 404 });
     }
 
-    console.log(`Retrieved gallery image: ${galleryImage.title}`);
+    // Transform data to match frontend expectations
+    const transformedImage = {
+      id: galleryImage.id,
+      title: galleryImage.title,
+      description: galleryImage.description,
+      imageUrl: galleryImage.imageUrl,
+      category: galleryImage.category.toLowerCase(),
+      location: galleryImage.location,
+      tags: galleryImage.tags,
+      uploadedBy: galleryImage.uploader ? `${galleryImage.uploader.firstName} ${galleryImage.uploader.lastName}` : 'System',
+      uploaderImage: galleryImage.uploader?.profileImage,
+      createdAt: galleryImage.createdAt,
+      updatedAt: galleryImage.updatedAt,
+    };
+
+    console.log(`Retrieved gallery image: ${transformedImage.title}`);
 
     return NextResponse.json({
       success: true,
       message: 'Gallery image retrieved successfully',
-      data: galleryImage
+      data: transformedImage
     }, { status: 200 });
 
   } catch (error) {

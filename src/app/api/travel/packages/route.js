@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { travelData } from '../../../../data/travelData.js';
+import { prisma } from '../../../../lib/prisma.js';
 
 export async function GET(request) {
   try {
@@ -10,63 +10,86 @@ export async function GET(request) {
     const minPrice = parseFloat(searchParams.get('minPrice')) || 0;
     const maxPrice = parseFloat(searchParams.get('maxPrice')) || 10000;
     const location = searchParams.get('location') || '';
-    const duration = searchParams.get('duration') || '';
+    const durationFilter = searchParams.get('duration') || '';
 
     console.log('Travel packages API called with params:', { 
-      page, limit, search, minPrice, maxPrice, location, duration 
+      page, limit, search, minPrice, maxPrice, location, durationFilter 
     });
 
-    // Start with all travel data
-    let filteredPackages = [...travelData];
+    // Build where clause for filtering
+    const where = {
+      isActive: true,
+      ...(search && {
+        OR: [
+          { name: { contains: search, mode: 'insensitive' } },
+          { description: { contains: search, mode: 'insensitive' } },
+          { location: { contains: search, mode: 'insensitive' } },
+        ],
+      }),
+      ...(location && {
+        location: { contains: location, mode: 'insensitive' },
+      }),
+      ...(durationFilter && {
+        duration: parseInt(durationFilter),
+      }),
+      price: {
+        gte: minPrice,
+        lte: maxPrice,
+      },
+    };
 
-    // Apply search filter
-    if (search) {
-      filteredPackages = filteredPackages.filter(pkg =>
-        pkg.title.toLowerCase().includes(search.toLowerCase()) ||
-        pkg.location.toLowerCase().includes(search.toLowerCase()) ||
-        pkg.description.toLowerCase().includes(search.toLowerCase())
-      );
-    }
+    // Get total count for pagination
+    const totalPackages = await prisma.travelPackage.count({ where });
 
-    // Apply location filter
-    if (location) {
-      filteredPackages = filteredPackages.filter(pkg =>
-        pkg.location.toLowerCase().includes(location.toLowerCase())
-      );
-    }
-
-    // Apply duration filter
-    if (duration) {
-      filteredPackages = filteredPackages.filter(pkg =>
-        pkg.duration.toLowerCase().includes(duration.toLowerCase())
-      );
-    }
-
-    // Apply price filter
-    filteredPackages = filteredPackages.filter(pkg => {
-      const packagePrice = parseFloat(pkg.price.replace(/[$,]/g, ''));
-      return packagePrice >= minPrice && packagePrice <= maxPrice;
+    // Get packages with pagination
+    const packages = await prisma.travelPackage.findMany({
+      where,
+      include: {
+        bookings: {
+          select: {
+            id: true,
+            status: true,
+          },
+        },
+      },
+      skip: (page - 1) * limit,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
     });
 
-    // Apply pagination
-    const startIndex = (page - 1) * limit;
-    const endIndex = startIndex + limit;
-    const paginatedPackages = filteredPackages.slice(startIndex, endIndex);
+    // Transform data to match frontend expectations
+    const transformedPackages = packages.map(pkg => ({
+      id: pkg.id,
+      title: pkg.name,
+      name: pkg.name,
+      description: pkg.description,
+      price: `$${pkg.price.toFixed(2)}`,
+      priceNumber: pkg.price,
+      duration: `${pkg.duration} days`,
+      durationDays: pkg.duration,
+      maxCapacity: pkg.maxCapacity,
+      location: pkg.location,
+      images: pkg.images,
+      isActive: pkg.isActive,
+      totalBookings: pkg.bookings.length,
+      activeBookings: pkg.bookings.filter(b => b.status === 'CONFIRMED').length,
+      createdAt: pkg.createdAt,
+      updatedAt: pkg.updatedAt,
+    }));
 
-    const totalCount = filteredPackages.length;
-    const totalPages = Math.ceil(totalCount / limit);
+    const totalPages = Math.ceil(totalPackages / limit);
 
-    console.log(`Retrieved ${paginatedPackages.length} packages out of ${totalCount} total`);
+    console.log(`Retrieved ${transformedPackages.length} packages out of ${totalPackages} total`);
 
     return NextResponse.json({
       success: true,
       message: 'Travel packages retrieved successfully',
       data: {
-        packages: paginatedPackages,
+        packages: transformedPackages,
         pagination: {
           currentPage: page,
           totalPages,
-          totalCount,
+          totalCount: totalPackages,
           hasNextPage: page < totalPages,
           hasPrevPage: page > 1
         }

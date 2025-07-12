@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { galleryImages } from '../../../data/galleryData.js';
+import { prisma } from '../../../lib/prisma.js';
 
 export async function GET(request) {
   try {
@@ -11,48 +11,77 @@ export async function GET(request) {
 
     console.log('Gallery API called with params:', { page, limit, category, search });
 
-    // Start with all gallery images
-    let filteredImages = [...galleryImages];
+    // Build where clause for filtering
+    const where = {
+      isActive: true,
+      ...(category && category !== 'all' && {
+        category: category.toUpperCase(),
+      }),
+      ...(search && {
+        OR: [
+          { title: { contains: search, mode: 'insensitive' } },
+          { description: { contains: search, mode: 'insensitive' } },
+          { location: { contains: search, mode: 'insensitive' } },
+          { tags: { hasSome: [search.toLowerCase()] } },
+        ],
+      }),
+    };
 
-    // Apply category filter
-    if (category && category !== 'all') {
-      filteredImages = filteredImages.filter(image =>
-        image.category.toLowerCase() === category.toLowerCase()
-      );
-    }
+    // Get total count for pagination
+    const totalImages = await prisma.gallery.count({ where });
 
-    // Apply search filter
-    if (search) {
-      filteredImages = filteredImages.filter(image =>
-        image.title.toLowerCase().includes(search.toLowerCase()) ||
-        image.location.toLowerCase().includes(search.toLowerCase()) ||
-        image.category.toLowerCase().includes(search.toLowerCase())
-      );
-    }
+    // Get images with pagination
+    const images = await prisma.gallery.findMany({
+      where,
+      include: {
+        uploader: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+      skip: (page - 1) * limit,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+    });
 
-    // Apply pagination
-    const startIndex = (page - 1) * limit;
-    const endIndex = startIndex + limit;
-    const paginatedImages = filteredImages.slice(startIndex, endIndex);
+    // Transform data to match frontend expectations
+    const transformedImages = images.map(img => ({
+      id: img.id,
+      title: img.title,
+      description: img.description,
+      imageUrl: img.imageUrl,
+      category: img.category.toLowerCase(),
+      location: img.location,
+      tags: img.tags,
+      uploadedBy: img.uploader ? `${img.uploader.firstName} ${img.uploader.lastName}` : 'System',
+      createdAt: img.createdAt,
+    }));
 
-    const totalCount = filteredImages.length;
-    const totalPages = Math.ceil(totalCount / limit);
+    // Get all categories for filtering
+    const allCategories = await prisma.gallery.findMany({
+      where: { isActive: true },
+      select: { category: true },
+      distinct: ['category'],
+    });
 
-    // Get unique categories for filtering
-    const categories = [...new Set(galleryImages.map(img => img.category))];
+    const categories = allCategories.map(cat => cat.category.toLowerCase());
 
-    console.log(`Retrieved ${paginatedImages.length} images out of ${totalCount} total`);
+    const totalPages = Math.ceil(totalImages / limit);
+
+    console.log(`Retrieved ${transformedImages.length} images out of ${totalImages} total`);
 
     return NextResponse.json({
       success: true,
       message: 'Gallery images retrieved successfully',
       data: {
-        images: paginatedImages,
+        images: transformedImages,
         categories: categories,
         pagination: {
           currentPage: page,
           totalPages,
-          totalCount,
+          totalCount: totalImages,
           hasNextPage: page < totalPages,
           hasPrevPage: page > 1
         }

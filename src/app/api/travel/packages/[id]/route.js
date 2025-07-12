@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { travelData } from '../../../../../data/travelData.js';
+import { prisma } from '../../../../../lib/prisma.js';
 
 export async function GET(request, { params }) {
   try {
@@ -7,11 +7,27 @@ export async function GET(request, { params }) {
 
     console.log('Individual travel package API called for ID:', id);
 
-    // Convert string ID to number for comparison
-    const packageId = parseInt(id, 10);
-
-    // Find the travel package by ID
-    const travelPackage = travelData.find(pkg => pkg.id === packageId);
+    // Find the travel package by ID using Prisma
+    const travelPackage = await prisma.travelPackage.findUnique({
+      where: { 
+        id: id,
+        isActive: true 
+      },
+      include: {
+        bookings: {
+          select: {
+            id: true,
+            status: true,
+            customer: {
+              select: {
+                firstName: true,
+                lastName: true,
+              },
+            },
+          },
+        },
+      },
+    });
 
     if (!travelPackage) {
       return NextResponse.json({
@@ -20,12 +36,60 @@ export async function GET(request, { params }) {
       }, { status: 404 });
     }
 
-    console.log(`Retrieved travel package: ${travelPackage.title}`);
+    // Transform data to match frontend expectations
+    const transformedPackage = {
+      id: travelPackage.id,
+      title: travelPackage.name,
+      name: travelPackage.name,
+      description: travelPackage.description,
+      price: `$${travelPackage.price.toFixed(2)}`,
+      priceNumber: travelPackage.price,
+      duration: `${travelPackage.duration} days`,
+      durationDays: travelPackage.duration,
+      maxCapacity: travelPackage.maxCapacity,
+      location: travelPackage.location,
+      images: travelPackage.images,
+      imageUrl: travelPackage.images[0] || '/images/default-package.jpg',
+      isActive: travelPackage.isActive,
+      totalBookings: travelPackage.bookings.length,
+      activeBookings: travelPackage.bookings.filter(b => b.status === 'CONFIRMED').length,
+      createdAt: travelPackage.createdAt,
+      updatedAt: travelPackage.updatedAt,
+      // Add default highlights if not in database
+      highlights: [
+        "Premium accommodation with modern amenities",
+        "Expert local guides and cultural experiences", 
+        "Authentic local cuisine and dining experiences",
+        "Carefully curated activities and excursions",
+        "24/7 customer support throughout your journey"
+      ],
+      // Group pricing options
+      groupPricing: {
+        "2": {
+          price: (travelPackage.price * 1.5).toFixed(0),
+          label: "2 People"
+        },
+        "4": {
+          price: (travelPackage.price * 1.2).toFixed(0),
+          label: "4 People"
+        },
+        "6": {
+          price: travelPackage.price.toFixed(0),
+          label: "6 People"
+        },
+        "8": {
+          price: (travelPackage.price * 0.9).toFixed(0),
+          label: "8+ People"
+        }
+      }
+    };
+
+    console.log(`Retrieved travel package: ${transformedPackage.title}`);
 
     return NextResponse.json({
       success: true,
       message: 'Travel package retrieved successfully',
-      data: travelPackage
+      data: transformedPackage
     }, { status: 200 });
 
   } catch (error) {

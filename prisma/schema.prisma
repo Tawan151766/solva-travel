@@ -43,6 +43,9 @@ model User {
   
   // System logs
   systemLogs        SystemLog[]
+  
+  // Gallery images uploaded
+  galleryImages     Gallery[]
 
   @@map("users")
 }
@@ -167,6 +170,24 @@ model SystemLog {
   @@map("system_logs")
 }
 
+model Gallery {
+  id          String      @id @default(cuid())
+  title       String
+  description String?
+  imageUrl    String
+  category    GalleryCategory
+  location    String
+  tags        String[]    // Tags for better searchability
+  isActive    Boolean     @default(true)
+  uploadedBy  String?     // User ID who uploaded
+  uploader    User?       @relation(fields: [uploadedBy], references: [id])
+  
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@map("gallery_images")
+}
+
 // Enums
 enum UserRole {
   USER          // Regular customer
@@ -198,4 +219,17 @@ enum BookingStatus {
   CANCELLED
   COMPLETED
   REFUNDED
+}
+
+enum GalleryCategory {
+  BEACH
+  MOUNTAIN
+  CITY
+  FOREST
+  DESERT
+  CULTURAL
+  ADVENTURE
+  LUXURY
+  WILDLIFE
+  OTHER
 }

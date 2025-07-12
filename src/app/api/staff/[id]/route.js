@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { staffData, reviewsData } from '../../../../data/staffData.js';
+import { prisma } from '../../../../lib/prisma.js';
 
 export async function GET(request, { params }) {
   try {
@@ -8,25 +8,71 @@ export async function GET(request, { params }) {
     console.log('Individual staff API called for ID:', id);
 
     // Find the staff member by ID
-    const staff = staffData.find(member => member.id === id);
+    const user = await prisma.user.findUnique({
+      where: { 
+        id: id,
+        role: 'STAFF' 
+      },
+      include: {
+        staffProfile: true,
+        reviewsReceived: {
+          select: {
+            id: true,
+            rating: true,
+            comment: true,
+            reviewType: true,
+            reviewer: {
+              select: {
+                firstName: true,
+                lastName: true,
+                profileImage: true,
+              },
+            },
+            createdAt: true,
+          },
+          orderBy: { createdAt: 'desc' },
+        },
+      },
+    });
 
-    if (!staff) {
+    if (!user) {
       return NextResponse.json({
         success: false,
         message: 'Staff member not found'
       }, { status: 404 });
     }
 
-    // Get reviews for this staff member
-    const staffReviews = reviewsData.filter(review => review.staffId === id);
-
-    // Combine staff data with reviews
+    // Transform data to match frontend expectations
     const staffWithReviews = {
-      ...staff,
-      reviews: staffReviews
+      id: user.id,
+      name: `${user.firstName} ${user.lastName}`,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      phone: user.phone,
+      profileImage: user.profileImage,
+      title: user.staffProfile?.position || 'Staff Member',
+      department: user.staffProfile?.department || 'GENERAL',
+      bio: user.staffProfile?.bio || '',
+      specializations: user.staffProfile?.specializations || [],
+      languages: user.staffProfile?.languages || [],
+      rating: user.staffProfile?.rating || 0,
+      totalReviews: user.staffProfile?.totalReviews || 0,
+      hireDate: user.staffProfile?.hireDate,
+      isAvailable: user.staffProfile?.isAvailable || true,
+      employeeId: user.staffProfile?.employeeId,
+      reviews: user.reviewsReceived.map(review => ({
+        id: review.id,
+        rating: review.rating,
+        comment: review.comment,
+        reviewType: review.reviewType,
+        reviewer: `${review.reviewer.firstName} ${review.reviewer.lastName}`,
+        reviewerImage: review.reviewer.profileImage,
+        date: review.createdAt,
+      })),
     };
 
-    console.log(`Retrieved staff member: ${staff.name} with ${staffReviews.length} reviews`);
+    console.log(`Retrieved staff member: ${staffWithReviews.name} with ${staffWithReviews.reviews.length} reviews`);
 
     return NextResponse.json({
       success: true,

@@ -2,7 +2,6 @@
 
 import { notFound } from "next/navigation";
 import { use, useState, useEffect } from "react";
-import { galleryImages, getRelevantGalleryImages } from "@/data/galleryData";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -12,11 +11,12 @@ export default function PackagePage({ params }) {
   
   // Local state for package data
   const [travelPackage, setTravelPackage] = useState(null);
+  const [galleryImages, setGalleryImages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(null);
   const [showAllImages, setShowAllImages] = useState(false);
-  const [selectedGroupSize, setSelectedGroupSize] = useState("7"); // Default to smallest group
+  const [selectedGroupSize, setSelectedGroupSize] = useState("6"); // Default to base pricing
 
   // Fetch individual package data from API
   useEffect(() => {
@@ -38,6 +38,22 @@ export default function PackagePage({ params }) {
         }
 
         setTravelPackage(result.data);
+        
+        // Fetch relevant gallery images based on package location
+        const galleryResponse = await fetch(`/api/gallery?search=${result.data.location}&limit=12`);
+        const galleryResult = await galleryResponse.json();
+        
+        if (galleryResponse.ok && galleryResult.success && galleryResult.data.images.length > 0) {
+          setGalleryImages(galleryResult.data.images);
+        } else {
+          // Fallback: get general gallery images if location-specific search fails
+          const fallbackResponse = await fetch(`/api/gallery?limit=12`);
+          const fallbackResult = await fallbackResponse.json();
+          if (fallbackResponse.ok && fallbackResult.success) {
+            setGalleryImages(fallbackResult.data.images);
+          }
+        }
+        
       } catch (err) {
         console.error('Error fetching package data:', err);
         setError(err.message);
@@ -84,8 +100,8 @@ export default function PackagePage({ params }) {
     notFound();
   }
 
-  // Get relevant gallery images using the helper function
-  const relevantImages = getRelevantGalleryImages(travelPackage);
+  // Get relevant gallery images
+  const relevantImages = galleryImages.length > 0 ? galleryImages : [];
   const displayImages = showAllImages ? relevantImages : relevantImages.slice(0, 6);
 
   const openImageModal = (index) => {
@@ -174,39 +190,41 @@ export default function PackagePage({ params }) {
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-12">
             {/* Gallery Section */}
-            <section className="bg-gradient-to-br from-black/80 via-[#0a0804]/80 to-black/80 backdrop-blur-xl rounded-2xl p-8 border border-[#FFD700]/20 shadow-2xl shadow-black/50">
-              <div className="flex items-center justify-between mb-8">
-                <h2 className="text-3xl font-bold text-transparent bg-gradient-to-r from-[#FFD700] to-[#FFED4E] bg-clip-text">Gallery</h2>
-                <button
-                  onClick={() => setShowAllImages(!showAllImages)}
-                  className="text-[#FFD700] hover:text-[#FFED4E] transition-colors font-medium"
-                >
-                  {showAllImages ? 'Show Less' : `View All (${relevantImages.length})`}
-                </button>
-              </div>
-              
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {displayImages.map((image, index) => (
-                  <div 
-                    key={image.id} 
-                    className="group relative aspect-[4/3] rounded-xl overflow-hidden cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-2xl"
-                    onClick={() => openImageModal(index)}
+            {relevantImages.length > 0 && (
+              <section className="bg-gradient-to-br from-black/80 via-[#0a0804]/80 to-black/80 backdrop-blur-xl rounded-2xl p-8 border border-[#FFD700]/20 shadow-2xl shadow-black/50">
+                <div className="flex items-center justify-between mb-8">
+                  <h2 className="text-3xl font-bold text-transparent bg-gradient-to-r from-[#FFD700] to-[#FFED4E] bg-clip-text">Gallery</h2>
+                  <button
+                    onClick={() => setShowAllImages(!showAllImages)}
+                    className="text-[#FFD700] hover:text-[#FFED4E] transition-colors font-medium"
                   >
-                    <Image
-                      src={image.imageUrl}
-                      alt={image.title}
-                      fill
-                      className="object-cover transition-transform duration-300 group-hover:scale-110"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    <div className="absolute bottom-3 left-3 right-3 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                      <h3 className="text-white font-semibold text-sm truncate">{image.title}</h3>
-                      <p className="text-gray-300 text-xs">{image.category}</p>
+                    {showAllImages ? 'Show Less' : `View All (${relevantImages.length})`}
+                  </button>
+                </div>
+                
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {displayImages.map((image, index) => (
+                    <div 
+                      key={image.id} 
+                      className="group relative aspect-[4/3] rounded-xl overflow-hidden cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-2xl"
+                      onClick={() => openImageModal(index)}
+                    >
+                      <Image
+                        src={image.imageUrl}
+                        alt={image.title}
+                        fill
+                        className="object-cover transition-transform duration-300 group-hover:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      <div className="absolute bottom-3 left-3 right-3 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                        <h3 className="text-white font-semibold text-sm truncate">{image.title}</h3>
+                        <p className="text-gray-300 text-xs">{image.category}</p>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            </section>
+                  ))}
+                </div>
+              </section>
+            )}
 
             {/* Overview */}
             <section className="bg-gradient-to-br from-black/80 via-[#0a0804]/80 to-black/80 backdrop-blur-xl rounded-2xl p-8 border border-[#FFD700]/20 shadow-2xl shadow-black/50">

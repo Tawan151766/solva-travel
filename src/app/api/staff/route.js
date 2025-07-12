@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { staffData, reviewsData } from '../../../data/staffData.js';
+import { prisma } from '../../../lib/prisma.js';
 
 export async function GET(request) {
   try {
@@ -10,46 +10,87 @@ export async function GET(request) {
 
     console.log('Staff API called with params:', { page, limit, search });
 
-    // Start with all staff data
-    let filteredStaff = [...staffData];
+    // Build where clause for search
+    const where = {
+      role: 'STAFF',
+      ...(search && {
+        OR: [
+          { firstName: { contains: search, mode: 'insensitive' } },
+          { lastName: { contains: search, mode: 'insensitive' } },
+          { staffProfile: { position: { contains: search, mode: 'insensitive' } } },
+          { staffProfile: { department: { contains: search, mode: 'insensitive' } } },
+        ],
+      }),
+    };
 
-    // Add search filter
-    if (search) {
-      filteredStaff = filteredStaff.filter(staff =>
-        staff.name.toLowerCase().includes(search.toLowerCase()) ||
-        staff.title.toLowerCase().includes(search.toLowerCase()) ||
-        staff.bio.toLowerCase().includes(search.toLowerCase())
-      );
-    }
+    // Get total count for pagination
+    const totalStaff = await prisma.user.count({ where });
 
-    // Add reviews to each staff member
-    filteredStaff = filteredStaff.map(staff => {
-      const staffReviews = reviewsData.filter(review => review.staffId === staff.id);
-      return {
-        ...staff,
-        reviews: staffReviews
-      };
+    // Get staff with pagination
+    const staff = await prisma.user.findMany({
+      where,
+      include: {
+        staffProfile: true,
+        reviewsReceived: {
+          select: {
+            rating: true,
+            comment: true,
+            reviewer: {
+              select: {
+                firstName: true,
+                lastName: true,
+              },
+            },
+            createdAt: true,
+          },
+          orderBy: { createdAt: 'desc' },
+          take: 5, // Latest 5 reviews
+        },
+      },
+      skip: (page - 1) * limit,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
     });
 
-    // Apply pagination
-    const startIndex = (page - 1) * limit;
-    const endIndex = startIndex + limit;
-    const paginatedStaff = filteredStaff.slice(startIndex, endIndex);
+    // Transform data to match frontend expectations
+    const transformedStaff = staff.map(user => ({
+      id: user.id,
+      name: `${user.firstName} ${user.lastName}`,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      phone: user.phone,
+      profileImage: user.profileImage,
+      title: user.staffProfile?.position || 'Staff Member',
+      department: user.staffProfile?.department || 'GENERAL',
+      bio: user.staffProfile?.bio || '',
+      specializations: user.staffProfile?.specializations || [],
+      languages: user.staffProfile?.languages || [],
+      rating: user.staffProfile?.rating || 0,
+      totalReviews: user.staffProfile?.totalReviews || 0,
+      hireDate: user.staffProfile?.hireDate,
+      isAvailable: user.staffProfile?.isAvailable || true,
+      reviews: user.reviewsReceived.map(review => ({
+        rating: review.rating,
+        comment: review.comment,
+        reviewer: `${review.reviewer.firstName} ${review.reviewer.lastName}`,
+        date: review.createdAt,
+      })),
+    }));
 
-    const totalCount = filteredStaff.length;
-    const totalPages = Math.ceil(totalCount / limit);
+    const totalPages = Math.ceil(totalStaff / limit);
 
-    console.log(`Retrieved ${paginatedStaff.length} staff members out of ${totalCount} total`);
+    console.log(`Retrieved ${transformedStaff.length} staff members out of ${totalStaff} total`);
 
     return NextResponse.json({
       success: true,
       message: 'Staff data retrieved successfully',
       data: {
-        staff: paginatedStaff,
+        staff: transformedStaff,
         pagination: {
           currentPage: page,
           totalPages,
-          totalCount,
+          totalCount: totalStaff,
           hasNextPage: page < totalPages,
           hasPrevPage: page > 1
         }
