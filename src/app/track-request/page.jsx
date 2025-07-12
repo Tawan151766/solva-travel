@@ -7,6 +7,7 @@ export default function TrackRequestPage() {
   const router = useRouter();
   const [requestId, setRequestId] = useState('');
   const [request, setRequest] = useState(null);
+  const [requestType, setRequestType] = useState(null); // 'booking' or 'custom_tour'
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -20,21 +21,55 @@ export default function TrackRequestPage() {
     setLoading(true);
     setError('');
     setRequest(null);
+    setRequestType(null);
 
     try {
-      // Clean the request ID (remove # and convert to lowercase)
-      const cleanRequestId = requestId.replace('#', '').toLowerCase();
+      // Clean the request ID (remove # and convert to uppercase for proper search)
+      const cleanRequestId = requestId.replace('#', '').trim();
       
-      const response = await fetch(`/api/custom-tour-requests/search?query=${cleanRequestId}`);
-      const data = await response.json();
+      let foundData = null;
+      let foundType = null;
 
-      if (response.ok && data.success) {
-        setRequest(data.data);
+      // Try searching in bookings first (if it looks like a booking number: BK...)
+      if (cleanRequestId.toUpperCase().startsWith('BK')) {
+        try {
+          const bookingResponse = await fetch(`/api/bookings/search?query=${cleanRequestId}`);
+          const bookingData = await bookingResponse.json();
+          
+          if (bookingResponse.ok && bookingData.success) {
+            foundData = bookingData.data;
+            foundType = 'booking';
+            console.log('Found booking:', foundData);
+          }
+        } catch (bookingError) {
+          console.log('No booking found, trying custom tour requests...');
+        }
+      }
+
+      // If not found in bookings, try custom tour requests (if it looks like CTR... or not found yet)
+      if (!foundData) {
+        try {
+          const tourResponse = await fetch(`/api/custom-tour-requests/search?query=${cleanRequestId}`);
+          const tourData = await tourResponse.json();
+          
+          if (tourResponse.ok && tourData.success) {
+            foundData = tourData.data;
+            foundType = 'custom_tour';
+            console.log('Found custom tour request:', foundData);
+          }
+        } catch (tourError) {
+          console.log('No custom tour request found either');
+        }
+      }
+
+      if (foundData && foundType) {
+        setRequest(foundData);
+        setRequestType(foundType);
       } else {
-        setError(data.error || 'ไม่พบคำขอที่ต้องการ');
+        setError('ไม่พบหมายเลขติดตามที่ท่านระบุ กรุณาตรวจสอบหมายเลขอีกครั้ง');
       }
     } catch (error) {
-      console.error('Error searching request:', error);
+      console.error('Error searching:', error);
       setError('เกิดข้อผิดพลาดในการค้นหา');
     } finally {
       setLoading(false);
@@ -42,22 +77,38 @@ export default function TrackRequestPage() {
   };
 
   const getStatusColor = (status) => {
-    switch (status) {
+    const lowerStatus = status?.toLowerCase();
+    switch (lowerStatus) {
       case 'pending': return 'text-yellow-400 bg-yellow-400/10';
-      case 'processing': return 'text-blue-400 bg-blue-400/10';
+      case 'processing': 
+      case 'in_progress': return 'text-blue-400 bg-blue-400/10';
+      case 'confirmed': return 'text-green-400 bg-green-400/10';
       case 'completed': return 'text-green-400 bg-green-400/10';
       case 'cancelled': return 'text-red-400 bg-red-400/10';
+      case 'quoted': return 'text-purple-400 bg-purple-400/10';
+      case 'paid': return 'text-green-400 bg-green-400/10';
+      case 'partial': return 'text-orange-400 bg-orange-400/10';
+      case 'refunded': return 'text-gray-400 bg-gray-400/10';
+      case 'failed': return 'text-red-400 bg-red-400/10';
       default: return 'text-gray-400 bg-gray-400/10';
     }
   };
 
   const getStatusText = (status) => {
-    switch (status) {
+    const lowerStatus = status?.toLowerCase();
+    switch (lowerStatus) {
       case 'pending': return 'รอดำเนินการ';
       case 'processing': return 'กำลังดำเนินการ';
+      case 'in_progress': return 'กำลังดำเนินการ';
+      case 'confirmed': return 'ยืนยันแล้ว';
       case 'completed': return 'เสร็จสิ้น';
       case 'cancelled': return 'ยกเลิก';
-      default: return status;
+      case 'quoted': return 'ได้รับใบเสนอราคา';
+      case 'paid': return 'ชำระแล้ว';
+      case 'partial': return 'ชำระบางส่วน';
+      case 'refunded': return 'คืนเงินแล้ว';
+      case 'failed': return 'ไม่สำเร็จ';
+      default: return status || 'ไม่ทราบสถานะ';
     }
   };
 
@@ -67,10 +118,10 @@ export default function TrackRequestPage() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-[#FFD700] to-[#FFED4E] bg-clip-text text-transparent mb-4">
-            ติดตามคำขอ Custom Tour
+            ติดตามการจองและคำขอ
           </h1>
           <p className="text-white/70 text-lg">
-            ใส่หมายเลขคำขอของคุณเพื่อตรวจสอบสถานะ
+            ใส่หมายเลขการจองหรือหมายเลขคำขอของคุณเพื่อตรวจสอบสถานะ
           </p>
         </div>
 
@@ -88,7 +139,7 @@ export default function TrackRequestPage() {
                   value={requestId}
                   onChange={(e) => setRequestId(e.target.value)}
                   className="w-full px-4 py-3 bg-gradient-to-r from-black/60 to-[#0a0804]/60 backdrop-blur-xl border border-[#FFD700]/20 rounded-xl text-[#cdc08e] placeholder-[#B8860B]/60 focus:border-[#FFD700] focus:outline-none focus:ring-1 focus:ring-[#FFD700]/30 transition-all duration-200"
-                  placeholder="เช่น: CTR-20241212-ABC12 หรือ #CTR-20241212-ABC12"
+                  placeholder="เช่น: BK1734567890123 (การจอง) หรือ CTR-20241212-ABC12 (คำขอ)"
                   disabled={loading}
                 />
                 <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
@@ -127,21 +178,28 @@ export default function TrackRequestPage() {
           </form>
         </div>
 
-        {/* Request Details */}
+        {/* Request/Booking Details */}
         {request && (
           <div className="bg-gradient-to-br from-black/80 via-[#0a0804]/90 to-black/80 backdrop-blur-xl rounded-2xl border border-[#FFD700]/20 shadow-2xl overflow-hidden">
             {/* Header */}
             <div className="bg-gradient-to-r from-[#FFD700] to-[#FFED4E] text-black px-6 py-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-xl font-bold">หมายเลขติดตาม: {request.trackingNumber}</h2>
-                  <p className="text-black/70">สร้างเมื่อ {new Date(request.createdAt).toLocaleDateString('th-TH', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })}</p>
+                  <h2 className="text-xl font-bold">
+                    {requestType === 'booking' 
+                      ? `หมายเลขการจอง: ${request.bookingNumber}` 
+                      : `หมายเลขติดตาม: ${request.trackingNumber}`
+                    }
+                  </h2>
+                  <p className="text-black/70">
+                    {requestType === 'booking' ? 'การจอง' : 'คำขอทัวร์'} สร้างเมื่อ {new Date(request.createdAt).toLocaleDateString('th-TH', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </p>
                 </div>
                 <div className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(request.status)}`}>
                   {getStatusText(request.status)}
@@ -151,16 +209,23 @@ export default function TrackRequestPage() {
 
             {/* Content */}
             <div className="p-6 space-y-6">
-              {/* Request Details */}
+              {/* Basic Details */}
               <div>
-                <h3 className="text-lg font-semibold text-[#FFD700] mb-4">รายละเอียดคำขอ</h3>
+                <h3 className="text-lg font-semibold text-[#FFD700] mb-4">
+                  {requestType === 'booking' ? 'รายละเอียดการจอง' : 'รายละเอียดคำขอ'}
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="bg-[#FFD700]/5 border border-[#FFD700]/20 rounded-lg p-4">
                     <h4 className="font-medium text-white mb-2">ข้อมูลทั่วไป</h4>
                     <div className="space-y-2 text-sm">
                       <div>
                         <span className="text-white/60">จุดหมาย:</span>
-                        <span className="text-white ml-2">{request.destination}</span>
+                        <span className="text-white ml-2">
+                          {requestType === 'booking' 
+                            ? (request.package?.location || request.customTourRequest?.destination || 'ไม่ระบุ')
+                            : request.destination
+                          }
+                        </span>
                       </div>
                       <div>
                         <span className="text-white/60">จำนวนคน:</span>
@@ -172,6 +237,12 @@ export default function TrackRequestPage() {
                           {new Date(request.startDate).toLocaleDateString('th-TH')} - {new Date(request.endDate).toLocaleDateString('th-TH')}
                         </span>
                       </div>
+                      {requestType === 'booking' && request.totalAmount && (
+                        <div>
+                          <span className="text-white/60">ราคารวม:</span>
+                          <span className="text-white ml-2">฿{parseFloat(request.totalAmount).toLocaleString()}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -180,23 +251,44 @@ export default function TrackRequestPage() {
                     <div className="space-y-2 text-sm">
                       <div>
                         <span className="text-white/60">ชื่อ:</span>
-                        <span className="text-white ml-2">{request.contactName}</span>
+                        <span className="text-white ml-2">
+                          {requestType === 'booking' ? request.customerName : request.contactName}
+                        </span>
                       </div>
                       <div>
                         <span className="text-white/60">อีเมล:</span>
-                        <span className="text-white ml-2">{request.contactEmail}</span>
+                        <span className="text-white ml-2">
+                          {requestType === 'booking' ? request.customerEmail : request.contactEmail}
+                        </span>
                       </div>
                       <div>
                         <span className="text-white/60">โทรศัพท์:</span>
-                        <span className="text-white ml-2">{request.contactPhone}</span>
+                        <span className="text-white ml-2">
+                          {requestType === 'booking' ? request.customerPhone : request.contactPhone}
+                        </span>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Additional Details */}
-              {(request.accommodation || request.transportation) && (
+              {/* Package/Tour Details */}
+              {requestType === 'booking' && request.package && (
+                <div>
+                  <h3 className="text-lg font-semibold text-[#FFD700] mb-4">รายละเอียดแพ็คเกจ</h3>
+                  <div className="bg-[#FFD700]/5 border border-[#FFD700]/20 rounded-lg p-4">
+                    <h4 className="font-medium text-white mb-2">{request.package.name}</h4>
+                    <p className="text-white/70 text-sm mb-2">{request.package.description}</p>
+                    <div className="text-sm">
+                      <span className="text-white/60">ระยะเวลา:</span>
+                      <span className="text-white ml-2">{request.package.duration} วัน</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Additional Details for Custom Tour Requests */}
+              {requestType === 'custom_tour' && (request.accommodation || request.transportation || request.budget) && (
                 <div>
                   <h3 className="text-lg font-semibold text-[#FFD700] mb-4">รายละเอียดเพิ่มเติม</h3>
                   <div className="bg-[#FFD700]/5 border border-[#FFD700]/20 rounded-lg p-4">
@@ -211,6 +303,18 @@ export default function TrackRequestPage() {
                         <div>
                           <span className="text-white/60">การเดินทาง:</span>
                           <span className="text-white ml-2">{request.transportation}</span>
+                        </div>
+                      )}
+                      {request.budget && (
+                        <div>
+                          <span className="text-white/60">งบประมาณ:</span>
+                          <span className="text-white ml-2">฿{parseFloat(request.budget).toLocaleString()}</span>
+                        </div>
+                      )}
+                      {request.activities && (
+                        <div>
+                          <span className="text-white/60">กิจกรรม:</span>
+                          <span className="text-white ml-2">{request.activities}</span>
                         </div>
                       )}
                     </div>
@@ -230,78 +334,40 @@ export default function TrackRequestPage() {
                 </div>
               )}
 
-              {/* Status Timeline */}
-              <div>
-                <h3 className="text-lg font-semibold text-[#FFD700] mb-4">สถานะคำขอ</h3>
-                <div className="space-y-4">
-                  <div className="flex items-start space-x-3">
-                    <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${
-                      request.status === 'pending' ? 'bg-yellow-400 text-black' : 'bg-yellow-400/20 text-yellow-400'
-                    }`}>
-                      <span className="text-sm font-semibold">1</span>
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-white">คำขอได้รับการส่ง</h4>
-                      <p className="text-white/70 text-sm">
-                        เมื่อ {new Date(request.createdAt).toLocaleDateString('th-TH', {
-                          month: 'short',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start space-x-3">
-                    <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${
-                      ['processing', 'completed'].includes(request.status) ? 'bg-blue-400 text-black' : 'bg-gray-400/20 text-gray-400'
-                    }`}>
-                      <span className="text-sm font-semibold">2</span>
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-white">กำลังดำเนินการ</h4>
-                      <p className="text-white/70 text-sm">
-                        {['processing', 'completed'].includes(request.status) 
-                          ? 'ทีมงานกำลังจัดเตรียมโปรแกรมให้คุณ' 
-                          : 'รอการดำเนินการ'
-                        }
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start space-x-3">
-                    <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${
-                      request.status === 'completed' ? 'bg-green-400 text-black' : 'bg-gray-400/20 text-gray-400'
-                    }`}>
-                      <span className="text-sm font-semibold">3</span>
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-white">เสร็จสิ้น</h4>
-                      <p className="text-white/70 text-sm">
-                        {request.status === 'completed' 
-                          ? 'คำขอเสร็จสิ้นแล้ว' 
-                          : 'รอการดำเนินการ'
-                        }
-                      </p>
+              {/* Payment Status for Bookings */}
+              {requestType === 'booking' && request.paymentStatus && (
+                <div>
+                  <h3 className="text-lg font-semibold text-[#FFD700] mb-4">สถานะการชำระเงิน</h3>
+                  <div className="bg-[#FFD700]/5 border border-[#FFD700]/20 rounded-lg p-4">
+                    <div className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(request.paymentStatus)}`}>
+                      {getStatusText(request.paymentStatus)}
                     </div>
                   </div>
                 </div>
-              </div>
+              )}
 
-              {/* Contact Info */}
-              <div className="border-t border-[#FFD700]/20 pt-6">
-                <div className="bg-[#FFD700]/10 border border-[#FFD700]/30 rounded-lg p-4">
-                  <h4 className="font-medium text-white mb-2">ต้องการความช่วยเหลือ?</h4>
-                  <p className="text-white/80 text-sm mb-2">
-                    หากมีคำถามเพิ่มเติม กรุณาติดต่อเรา:
-                  </p>
-                  <div className="space-y-1 text-sm text-white/70">
-                    <p>📧 custom@solvatravel.com</p>
-                    <p>📞 +66 2-123-4567</p>
-                    <p>💬 Line: @solvatravel</p>
-                  </div>
-                </div>
+              {/* Actions */}
+              <div className="flex flex-wrap gap-4 pt-4 border-t border-[#FFD700]/20">
+                {requestType === 'booking' && (
+                  <button
+                    onClick={() => router.push(`/booking-details/${request.id}`)}
+                    className="flex items-center gap-2 bg-gradient-to-r from-[#FFD700] to-[#FFED4E] text-black py-2 px-4 rounded-lg hover:shadow-lg hover:shadow-[#FFD700]/30 transition-all duration-200 text-sm font-semibold"
+                  >
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 256 256">
+                      <path d="M216,40H72A16,16,0,0,0,56,56V72H40A16,16,0,0,0,24,88V200a16,16,0,0,0,16,16H184a16,16,0,0,0,16-16V184h16a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40ZM72,56H216V152H200V88a16,16,0,0,0-16-16H72ZM184,200H40V88H184Z"/>
+                    </svg>
+                    ดูรายละเอียดการจอง
+                  </button>
+                )}
+                <button
+                  onClick={() => window.location.reload()}
+                  className="flex items-center gap-2 bg-[#FFD700]/20 border border-[#FFD700]/40 text-[#FFD700] py-2 px-4 rounded-lg hover:bg-[#FFD700]/30 transition-colors text-sm"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  รีเฟรชสถานะ
+                </button>
               </div>
             </div>
           </div>

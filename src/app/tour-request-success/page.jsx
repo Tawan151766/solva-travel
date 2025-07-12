@@ -11,6 +11,7 @@ export default function TourRequestSuccessPage() {
   const [loading, setLoading] = useState(true);
 
   const requestId = searchParams.get('requestId');
+  const requestType = searchParams.get('type'); // 'custom_booking' or default (custom tour request)
 
   useEffect(() => {
     if (requestId) {
@@ -18,15 +19,20 @@ export default function TourRequestSuccessPage() {
     } else {
       setLoading(false);
     }
-  }, [requestId]);
+  }, [requestId, requestType]);
 
   const fetchRequestDetails = async () => {
     try {
+      // Always use custom-tour-requests API since both forms use the same table now
       const response = await fetch(`/api/custom-tour-requests/${requestId}`);
+      
       if (response.ok) {
         const data = await response.json();
         // API returns data.request or just data based on structure
         setRequest(data.request || data.data || data);
+        console.log('Fetched request data:', data);
+      } else {
+        console.error('Failed to fetch request details:', response.status);
       }
     } catch (error) {
       console.error('Error fetching request details:', error);
@@ -62,9 +68,13 @@ export default function TourRequestSuccessPage() {
           <div className="p-6 space-y-6">
             {request && (
               <div className="text-center">
-                <h2 className="text-xl font-semibold text-white mb-2">หมายเลขติดตามของคุณ</h2>
+                <h2 className="text-xl font-semibold text-white mb-2">
+                  หมายเลขติดตามของคุณ
+                </h2>
                 <div className="bg-[#FFD700]/10 border border-[#FFD700]/30 rounded-lg py-4 px-6 inline-block">
-                  <span className="text-2xl font-mono font-bold text-[#FFD700]">{request.trackingNumber}</span>
+                  <span className="text-2xl font-mono font-bold text-[#FFD700]">
+                    {request.trackingNumber}
+                  </span>
                 </div>
                 <p className="text-white/70 mt-2">
                   กรุณาเก็บหมายเลขนี้ไว้เพื่อติดตามสถานะ
@@ -114,6 +124,18 @@ export default function TourRequestSuccessPage() {
                     <span className="text-white/60">ผู้ติดต่อ:</span>
                     <span className="text-white ml-2">{request.contactName}</span>
                   </div>
+                  {request.budget && (
+                    <div>
+                      <span className="text-white/60">งบประมาณ:</span>
+                      <span className="text-white ml-2">฿{parseFloat(request.budget).toLocaleString()}</span>
+                    </div>
+                  )}
+                  {request.activities && (
+                    <div className="md:col-span-2">
+                      <span className="text-white/60">กิจกรรม:</span>
+                      <span className="text-white ml-2">{request.activities}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -126,8 +148,15 @@ export default function TourRequestSuccessPage() {
                     <span className="text-sm font-semibold text-[#FFD700]">1</span>
                   </div>
                   <div>
-                    <h4 className="font-medium text-white">การรับคำขอ</h4>
-                    <p className="text-white/70 text-sm">ทีมงานจะตรวจสอบคำขอของคุณและติดต่อกลับภายใน 2-4 ชั่วโมง</p>
+                    <h4 className="font-medium text-white">
+                      {requestType === 'custom_booking' ? 'การรับข้อเสนอ' : 'การรับคำขอ'}
+                    </h4>
+                    <p className="text-white/70 text-sm">
+                      {requestType === 'custom_booking' 
+                        ? 'ทีมงานจะตรวจสอบข้อเสนอของคุณและติดต่อกลับภายใน 2-4 ชั่วโมง'
+                        : 'ทีมงานจะตรวจสอบคำขอของคุณและติดต่อกลับภายใน 2-4 ชั่วโมง'
+                      }
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
@@ -136,7 +165,12 @@ export default function TourRequestSuccessPage() {
                   </div>
                   <div>
                     <h4 className="font-medium text-white">การวางแผน</h4>
-                    <p className="text-white/70 text-sm">ทีมผู้เชี่ยวชาญจะร่วมออกแบบโปรแกรมทัวร์ที่เหมาะสมกับความต้องการของคุณ</p>
+                    <p className="text-white/70 text-sm">
+                      {requestType === 'custom_booking'
+                        ? 'ทีมผู้เชี่ยวชาญจะออกแบบแพ็คเกจที่เหมาะสมกับงบประมาณและความต้องการของคุณ'
+                        : 'ทีมผู้เชี่ยวชาญจะร่วมออกแบบโปรแกรมทัวร์ที่เหมาะสมกับความต้องการของคุณ'
+                      }
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
@@ -145,7 +179,12 @@ export default function TourRequestSuccessPage() {
                   </div>
                   <div>
                     <h4 className="font-medium text-white">การยืนยัน</h4>
-                    <p className="text-white/70 text-sm">เมื่อคุณพึงพอใจกับโปรแกรม เราจะส่งใบเสนอราคาและเอกสารการจอง</p>
+                    <p className="text-white/70 text-sm">
+                      {requestType === 'custom_booking'
+                        ? 'เราจะส่งแพ็คเกจที่เหมาะสมกับงบประมาณของคุณพร้อมรายละเอียดและราคา'
+                        : 'เมื่อคุณพึงพอใจกับโปรแกรม เราจะส่งใบเสนอราคาและเอกสารการจอง'
+                      }
+                    </p>
                   </div>
                 </div>
               </div>
@@ -174,10 +213,10 @@ export default function TourRequestSuccessPage() {
                 กลับไปหน้าหลัก
               </Link>
               <Link 
-                href="/tour-request"
+                href={requestType === 'custom_booking' ? "/" : "/tour-request"}
                 className="flex-1 bg-gradient-to-r from-[#FFD700] to-[#FFED4E] text-black py-3 px-4 rounded-lg hover:from-[#FFED4E] hover:to-[#FFD700] transition-all text-center font-semibold"
               >
-                ส่งคำขออื่น
+                {requestType === 'custom_booking' ? 'สร้างข้อเสนออื่น' : 'ส่งคำขออื่น'}
               </Link>
             </div>
           </div>

@@ -103,15 +103,17 @@ export default function CustomTourModal({ isOpen, onClose }) {
         budget: parseFloat(formData.budget),
         // รวม destination และ city เป็น location string
         destination: getFormattedLocation(formData.destination, formData.city),
+        // เพิ่มกิจกรรมจาก tripType และ requireGuide
+        activities: formData.tripType ? `ประเภททริป: ${formData.tripType}${formData.requireGuide ? ', ต้องการไกด์นำเที่ยว' : ''}` : (formData.requireGuide ? 'ต้องการไกด์นำเที่ยว' : ''),
         description: `Custom booking proposal to ${getFormattedLocation(formData.destination, formData.city)}${formData.tripType ? ` (${formData.tripType})` : ''}. Budget: ฿${parseFloat(formData.budget).toLocaleString()}. ${formData.requireGuide ? 'Require tour guide. ' : ''}${formData.description}`.trim(),
         // เพิ่ม userId หากมีการ login
         userId: user?.id || null,
-        proposalType: 'custom_booking'
+        // ไม่ต้องใช้ proposalType เพราะจะใช้ table เดียวกัน
       };
 
       console.log('Sending request data:', requestData);
 
-      const response = await fetch('/api/custom-bookings', {
+      const response = await fetch('/api/custom-tour-requests', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -133,19 +135,23 @@ export default function CustomTourModal({ isOpen, onClose }) {
       }
 
       if (response.ok && result.success) {
-        console.log('Custom booking proposal created successfully:', result);
+        console.log('Custom tour request created successfully:', result);
         
         // Close modal first
         onClose();
         
-        // Navigate to success page with the booking ID
-        const bookingId = result.data?.id || result.booking?.id;
-        if (bookingId) {
-          router.push(`/booking-success?bookingId=${bookingId}&type=custom`);
+        // Navigate to tour-request-success page with the request ID
+        const requestId = result.data?.id || result.request?.id;
+        const trackingNumber = result.data?.trackingNumber || result.trackingNumber;
+        
+        if (requestId || trackingNumber) {
+          // Use trackingNumber if available, otherwise use the database ID
+          const requestIdentifier = trackingNumber || requestId;
+          router.push(`/tour-request-success?requestId=${requestIdentifier}`);
         } else {
           // Fallback to success page without ID
-          console.warn('No booking ID found in response, redirecting to general success page');
-          router.push('/booking-success?type=custom');
+          console.warn('No request ID found in response, redirecting to general success page');
+          router.push('/tour-request-success');
         }
       } else {
         console.error('Request failed:', result);

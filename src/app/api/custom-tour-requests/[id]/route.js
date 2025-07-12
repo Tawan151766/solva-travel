@@ -1,17 +1,21 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-import jwt from 'jsonwebtoken';
-
-const prisma = new PrismaClient();
+import { prisma } from '../../../../../lib/prisma.js';
 
 // GET /api/custom-tour-requests/[id] - Get specific custom tour request
 export async function GET(request, { params }) {
   try {
     const { id } = await params;
-    const token = request.headers.get('authorization')?.replace('Bearer ', '');
     
-    const customTourRequest = await prisma.customTourRequest.findUnique({
-      where: { id },
+    console.log('Fetching custom tour request with ID:', id);
+    
+    // Try to find by trackingNumber first, then by database id
+    const customTourRequest = await prisma.customTourRequest.findFirst({
+      where: {
+        OR: [
+          { trackingNumber: id },
+          { id: id }
+        ]
+      },
       include: {
         user: {
           select: {
