@@ -144,9 +144,12 @@ export default function CustomTourModal({ isOpen, onClose }) {
         const requestId = result.data?.id || result.request?.id;
         const trackingNumber = result.data?.trackingNumber || result.trackingNumber;
         
+        console.log('Success response data:', { requestId, trackingNumber, fullResult: result });
+        
         if (requestId || trackingNumber) {
           // Use trackingNumber if available, otherwise use the database ID
           const requestIdentifier = trackingNumber || requestId;
+          console.log('Redirecting with identifier:', requestIdentifier);
           router.push(`/tour-request-success?requestId=${requestIdentifier}`);
         } else {
           // Fallback to success page without ID

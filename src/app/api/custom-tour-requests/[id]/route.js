@@ -57,9 +57,11 @@ export async function GET(request, { params }) {
       );
     }
 
-    // If there's a token, verify user can access this request
+    // Optional token verification - allow public access for tracking
+    const token = request.headers.get('authorization')?.replace('Bearer ', '');
     if (token) {
       try {
+        const jwt = require('jsonwebtoken');
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const userId = decoded.userId;
         
@@ -68,7 +70,7 @@ export async function GET(request, { params }) {
           where: { id: userId }
         });
         
-        if (user.role !== 'STAFF' && user.role !== 'ADMIN' && customTourRequest.userId !== userId) {
+        if (user && user.role !== 'STAFF' && user.role !== 'ADMIN' && customTourRequest.userId !== userId) {
           return NextResponse.json(
             { error: 'Access denied' },
             { status: 403 }
@@ -76,6 +78,7 @@ export async function GET(request, { params }) {
         }
       } catch (error) {
         // Continue as guest access for public requests
+        console.log('Token verification failed, continuing as guest access');
       }
     }
 

@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Booking Creation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .form-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+        button:hover { background-color: #0056b3; }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .loading { background-color: #d1ecf1; color: #0c5460; }
+        h1 { grid-column: 1 / -1; text-align: center; }
+        h2 { color: #333; border-bottom: 2px solid #007bff; padding-bottom: 10px; }
+        pre { font-size: 12px; background: #f8f9fa; padding: 10px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>Test Complete Booking Flow</h1>
+    
+    <div class="container">
+        <!-- Step 1: Create Custom Tour Request -->
+        <div class="form-section">
+            <h2>Step 1: Create Custom Tour Request</h2>
+            <form id="tourRequestForm">
+                <div class="form-group">
+                    <label for="contactName">ชื่อ-นามสกุล *</label>
+                    <input type="text" id="contactName" value="Test Booking User" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="contactEmail">อีเมล *</label>
+                    <input type="email" id="contactEmail" value="testbooking@example.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="contactPhone">เบอร์โทรศัพท์ *</label>
+                    <input type="tel" id="contactPhone" value="0812345678" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="destination">จุดหมาย *</label>
+                    <input type="text" id="destination" value="ญี่ปุ่น Tokyo" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="startDate">วันที่เริ่ม *</label>
+                    <input type="date" id="startDate" value="2025-08-01" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="endDate">วันที่สิ้นสุด *</label>
+                    <input type="date" id="endDate" value="2025-08-05" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="numberOfPeople">จำนวนคน *</label>
+                    <input type="number" id="numberOfPeople" value="2" min="1" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="budget">งบประมาณ (บาท)</label>
+                    <input type="number" id="budget" value="150000" min="1000" step="1000">
+                </div>
+                
+                <button type="submit" id="createTourBtn">สร้าง Custom Tour Request</button>
+            </form>
+            
+            <div id="tourResult"></div>
+        </div>
+
+        <!-- Step 2: Create Booking -->
+        <div class="form-section">
+            <h2>Step 2: Create Booking</h2>
+            <form id="bookingForm">
+                <div class="form-group">
+                    <label for="customTourRequestId">Custom Tour Request ID</label>
+                    <input type="text" id="customTourRequestId" readonly placeholder="สร้าง Custom Tour Request ก่อน">
+                </div>
+                
+                <div class="form-group">
+                    <label for="customerName">ชื่อลูกค้า *</label>
+                    <input type="text" id="customerName" value="Test Booking User" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="customerEmail">อีเมลลูกค้า *</label>
+                    <input type="email" id="customerEmail" value="testbooking@example.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="customerPhone">เบอร์โทรศัพท์ลูกค้า *</label>
+                    <input type="tel" id="customerPhone" value="0812345678" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="bookingStartDate">วันที่เริ่มการจอง *</label>
+                    <input type="date" id="bookingStartDate" value="2025-08-01" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="bookingEndDate">วันที่สิ้นสุดการจอง *</label>
+                    <input type="date" id="bookingEndDate" value="2025-08-05" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="bookingPeople">จำนวนคน *</label>
+                    <input type="number" id="bookingPeople" value="2" min="1" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="specialRequirements">ความต้องการพิเศษ</label>
+                    <textarea id="specialRequirements" rows="3">Test booking creation</textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="notes">หมายเหตุ</label>
+                    <textarea id="notes" rows="3">Test booking for tracking system</textarea>
+                </div>
+                
+                <button type="submit" id="createBookingBtn" disabled>สร้าง Booking</button>
+            </form>
+            
+            <div id="bookingResult"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentCustomTourRequestId = null;
+
+        // Step 1: Create Custom Tour Request
+        document.getElementById('tourRequestForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const resultDiv = document.getElementById('tourResult');
+            const createTourBtn = document.getElementById('createTourBtn');
+            const createBookingBtn = document.getElementById('createBookingBtn');
+            
+            resultDiv.innerHTML = '<div class="result loading">กำลังสร้าง Custom Tour Request...</div>';
+            createTourBtn.disabled = true;
+            
+            const data = {
+                contactName: document.getElementById('contactName').value,
+                contactEmail: document.getElementById('contactEmail').value,
+                contactPhone: document.getElementById('contactPhone').value,
+                destination: document.getElementById('destination').value,
+                startDate: document.getElementById('startDate').value,
+                endDate: document.getElementById('endDate').value,
+                numberOfPeople: parseInt(document.getElementById('numberOfPeople').value),
+                budget: parseFloat(document.getElementById('budget').value),
+                accommodation: 'premium',
+                transportation: 'flight',
+                description: 'Test for booking creation'
+            };
+            
+            try {
+                const response = await fetch('/api/custom-tour-requests', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    currentCustomTourRequestId = result.data.id;
+                    document.getElementById('customTourRequestId').value = currentCustomTourRequestId;
+                    createBookingBtn.disabled = false;
+                    
+                    resultDiv.innerHTML = `
+                        <div class="result success">
+                            <h3>✅ Custom Tour Request สร้างแล้ว!</h3>
+                            <p><strong>Tracking Number:</strong> ${result.data.trackingNumber}</p>
+                            <p><strong>ID:</strong> ${result.data.id}</p>
+                            <pre>${JSON.stringify(result, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            <h3>❌ เกิดข้อผิดพลาด</h3>
+                            <p>${result.message || result.error}</p>
+                            <pre>${JSON.stringify(result, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h3>❌ การเชื่อมต่อล้มเหลว</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            } finally {
+                createTourBtn.disabled = false;
+            }
+        });
+
+        // Step 2: Create Booking
+        document.getElementById('bookingForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (!currentCustomTourRequestId) {
+                alert('กรุณาสร้าง Custom Tour Request ก่อน');
+                return;
+            }
+            
+            const resultDiv = document.getElementById('bookingResult');
+            const createBookingBtn = document.getElementById('createBookingBtn');
+            
+            resultDiv.innerHTML = '<div class="result loading">กำลังสร้าง Booking...</div>';
+            createBookingBtn.disabled = true;
+            
+            const data = {
+                bookingType: 'CUSTOM',
+                customTourRequestId: currentCustomTourRequestId,
+                startDate: document.getElementById('bookingStartDate').value,
+                endDate: document.getElementById('bookingEndDate').value,
+                numberOfPeople: parseInt(document.getElementById('bookingPeople').value),
+                customerName: document.getElementById('customerName').value,
+                customerEmail: document.getElementById('customerEmail').value,
+                customerPhone: document.getElementById('customerPhone').value,
+                specialRequirements: document.getElementById('specialRequirements').value,
+                notes: document.getElementById('notes').value
+            };
+            
+            try {
+                const response = await fetch('/api/bookings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    resultDiv.innerHTML = `
+                        <div class="result success">
+                            <h3>✅ Booking สร้างแล้ว!</h3>
+                            <p><strong>Booking Number:</strong> ${result.booking.bookingNumber}</p>
+                            <p><strong>ID:</strong> ${result.booking.id}</p>
+                            <p><a href="/booking-success?bookingNumber=${result.booking.bookingNumber}" target="_blank">ดูหน้า Booking Success</a></p>
+                            <p><a href="/track-request" target="_blank">ทดสอบ Tracking (ใส่ ${result.booking.bookingNumber})</a></p>
+                            <pre>${JSON.stringify(result, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            <h3>❌ เกิดข้อผิดพลาด</h3>
+                            <p>${result.message || result.error}</p>
+                            <pre>${JSON.stringify(result, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h3>❌ การเชื่อมต่อล้มเหลว</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            } finally {
+                createBookingBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
