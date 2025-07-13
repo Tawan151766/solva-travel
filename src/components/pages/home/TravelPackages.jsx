@@ -1,8 +1,29 @@
 import { TravelCard } from "./TravelCard";
-import { useTravelContext } from "@/core/context";
+import { useState, useEffect } from "react";
 
 export function TravelPackages() {
-  const { currentItems, totalItems, currentPage, itemsPerPage, loading, error } = useTravelContext();
+  const [packages, setPackages] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // ง่าย ๆ แค่ดึงข้อมูลจาก API ตรง ๆ
+  useEffect(() => {
+    console.log('🎯 TravelPackages: Fetching data...');
+    fetch('/api/travel/packages')
+      .then(res => res.json())
+      .then(data => {
+        console.log('🎯 TravelPackages: Got data:', data);
+        if (data.success) {
+          setPackages(data.data.packages || []);
+        }
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('🎯 TravelPackages: Error:', err);
+        setError(err.message);
+        setLoading(false);
+      });
+  }, []);
 
   // Loading state
   if (loading) {
@@ -38,45 +59,47 @@ export function TravelPackages() {
       </div>
     );
   }
-  
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
 
-  return (
-    <div className="space-y-4">
-      {/* Results Info */}
-      <div className="flex justify-between items-center p-4">
-        <p className="text-[#FFD700]/80 text-sm">
-          Showing {totalItems > 0 ? startIndex + 1 : 0}-{endIndex} of{" "}
-          {totalItems} destinations
-        </p>
-        <div className="text-[#FFD700]/80 text-sm">
-          Page {currentPage} of {Math.ceil(totalItems / itemsPerPage) || 1}
+  // No packages available
+  if (!packages || packages.length === 0) {
+    return (
+      <div className="space-y-4">
+        <div className="flex justify-center items-center p-12">
+          <div className="text-center max-w-md">
+            <div className="text-[#FFD700] text-6xl mb-4">🏖️</div>
+            <h2 className="text-white text-xl font-bold mb-2">No Travel Packages Found</h2>
+            <p className="text-white/70">
+              We're currently updating our travel packages. Please check back soon for exciting new destinations!
+            </p>
+          </div>
         </div>
       </div>
+    );
+  }
 
-      {/* Travel Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-6 p-4">
-        {currentItems.map((travel) => (
+  // Success state with packages
+  return (
+    <div className="space-y-4">
+      <div className="p-4">
+        <p className="text-[#FFD700]/80 text-sm mb-4">
+          Found {packages.length} travel packages
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
+        {packages.map((pkg) => (
           <TravelCard
-            key={travel.id}
-            id={travel.id}
-            title={travel.name || travel.title}
-            location={travel.location}
-            price={travel.price}
-            duration={travel.duration}
-            imageUrl={travel.images?.[0] || '/placeholder-image.jpg'}
-            groupPricing={false} // Set based on your business logic
+            key={pkg.id}
+            id={pkg.id}
+            title={pkg.title || pkg.name}
+            location={pkg.destination || pkg.location}
+            price={pkg.price || `$${parseFloat(pkg.priceNumber || 0).toLocaleString()}`}
+            duration={pkg.durationText || `${pkg.duration || 0} days`}
+            imageUrl={pkg.imageUrl || pkg.images?.[0] || '/placeholder-image.jpg'}
+            groupPricing={pkg.priceDetails && typeof pkg.priceDetails === 'object'}
           />
         ))}
       </div>
-
-      {/* No results state */}
-      {currentItems.length === 0 && !loading && !error && (
-        <div className="flex justify-center items-center p-8">
-          <div className="text-[#FFD700] text-lg">No travel packages found</div>
-        </div>
-      )}
     </div>
   );
 }

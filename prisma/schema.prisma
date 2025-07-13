@@ -63,21 +63,25 @@ model StaffProfile {
 }
 
 model Review {
-  id             String     @id @default(cuid())
+  id             String         @id @default(cuid())
   reviewerId     String
-  reviewedUserId String
+  reviewedUserId String?
+  packageId      String?
   rating         Int
   title          String?
   comment        String?
-  reviewType     ReviewType @default(SERVICE)
+  userName       String?        // Optional display name for review
+  userEmail      String?        // Optional email for review
+  reviewType     ReviewType     @default(SERVICE)
   bookingId      String?
-  isPublic       Boolean    @default(true)
-  isVerified     Boolean    @default(false)
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
-  booking        Booking?   @relation(fields: [bookingId], references: [id])
-  reviewedUser   User       @relation("ReviewedUser", fields: [reviewedUserId], references: [id])
-  reviewer       User       @relation("ReviewerUser", fields: [reviewerId], references: [id])
+  isPublic       Boolean        @default(true)
+  isVerified     Boolean        @default(false)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  booking        Booking?       @relation(fields: [bookingId], references: [id])
+  reviewedUser   User?          @relation("ReviewedUser", fields: [reviewedUserId], references: [id])
+  reviewer       User           @relation("ReviewerUser", fields: [reviewerId], references: [id])
+  package        TravelPackage? @relation("PackageReviews", fields: [packageId], references: [id])
 
   @@map("reviews")
 }
@@ -114,18 +118,39 @@ model Booking {
 }
 
 model TravelPackage {
-  id          String    @id @default(cuid())
-  name        String
-  description String
-  price       Decimal
-  duration    Int
-  maxCapacity Int
-  location    String
-  images      String[]
-  isActive    Boolean   @default(true)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  bookings    Booking[]
+  id             String    @id @default(cuid())
+  name           String
+  title          String?   // Alternative title for display
+  description    String
+  overview       String?   // Extended description for overview section
+  highlights     String[]  // Array of highlight features
+  itinerary      Json?     // Detailed itinerary in JSON format
+  price          Decimal
+  priceDetails   Json?     // Price breakdown by group size, etc.
+  duration       Int       // Duration in days
+  durationText   String?   // e.g., "5 days 4 nights"
+  maxCapacity    Int
+  location       String
+  destination    String?   // Main destination name
+  category       String?   // e.g., "Cultural", "Adventure", "Beach"
+  difficulty     String?   // e.g., "Easy", "Moderate", "Challenging"
+  includes       String[]  // What's included in the package
+  excludes       String[]  // What's not included
+  accommodation  Json?     // Accommodation details
+  images         String[]  // Main images
+  imageUrl       String?   // Primary image URL
+  galleryImages  String[]  // Additional gallery images
+  isRecommended  Boolean   @default(false)
+  isActive       Boolean   @default(true)
+  rating         Float?    @default(0)
+  totalReviews   Int       @default(0)
+  tags           String[]  // Search tags
+  seoTitle       String?   // SEO title
+  seoDescription String?   // SEO description
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  bookings       Booking[]
+  reviews        Review[]  @relation("PackageReviews")
 
   @@map("travel_packages")
 }
@@ -250,6 +275,7 @@ enum ReviewType {
   GUIDE
   OVERALL
   BOOKING
+  PACKAGE
 }
 
 enum BookingStatus {

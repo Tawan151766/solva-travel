@@ -15,7 +15,8 @@ export function Home() {
           <div className="layout-content-container flex flex-col max-w-6xl flex-1">
             <SearchFilters />
             <TravelPackages />
-            <Pagination />
+            {/* Pagination ปิดไว้ก่อน เพื่อความง่าย */}
+            {/* <Pagination /> */}
           </div>
         </div>
       </div>

@@ -1,29 +1,34 @@
 "use client";
 
-import { useTravelContext } from "@/core/context";
+import { useState } from "react";
 
-export function Pagination() {
-  const { currentPage, setCurrentPage, totalItems, itemsPerPage } = useTravelContext();
+export function Pagination({ totalItems = 0, itemsPerPage = 5, onPageChange }) {
+  const [currentPage, setCurrentPage] = useState(1);
   
   const totalPages = Math.ceil(totalItems / itemsPerPage);
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
+    onPageChange?.(page); // เรียก callback ถ้ามี
   };
 
   const handlePrevious = () => {
     if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
+      const newPage = currentPage - 1;
+      setCurrentPage(newPage);
+      onPageChange?.(newPage);
     }
   };
 
   const handleNext = () => {
     if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
+      const newPage = currentPage + 1;
+      setCurrentPage(newPage);
+      onPageChange?.(newPage);
     }
   };
 
-  // Don't render pagination if there are no items or only one page
+  // ไม่แสดง pagination ถ้าไม่มีข้อมูลหรือมีแค่หน้าเดียว
   if (totalItems === 0 || totalPages <= 1) {
     return null;
   }

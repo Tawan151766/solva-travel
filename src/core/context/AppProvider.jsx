@@ -1,6 +1,6 @@
 "use client";
 
-import { TravelProvider } from './TravelContext';
+import { TravelProvider } from '@/contexts/TravelContext';
 import { StaffProvider } from './StaffContext';
 import { GalleryProvider } from './GalleryContext';
 import { AuthProvider } from '@/contexts/AuthContext-simple';

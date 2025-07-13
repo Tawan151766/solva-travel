@@ -12,7 +12,7 @@ export function TravelProvider({ children }) {
 
   // Calculate initial price range from data
   const initialPriceStats = useMemo(() => {
-    if (!Array.isArray(allTravelData) || allTravelData.length === 0) {
+    if (allTravelData.length === 0) {
       return { min: 0, max: 5000 };
     }
     
@@ -80,7 +80,7 @@ export function TravelProvider({ children }) {
 
   // Update price range when data loads
   useEffect(() => {
-    if (Array.isArray(allTravelData) && allTravelData.length > 0 && filters.priceRange[0] === 0 && filters.priceRange[1] === 5000) {
+    if (allTravelData.length > 0 && filters.priceRange[0] === 0 && filters.priceRange[1] === 5000) {
       setFilters(prev => ({
         ...prev,
         priceRange: [initialPriceStats.min, initialPriceStats.max]
@@ -90,10 +90,6 @@ export function TravelProvider({ children }) {
 
   // Filter the travel data based on current filters
   const filteredData = useMemo(() => {
-    if (!Array.isArray(allTravelData)) {
-      return [];
-    }
-    
     let filtered = [...allTravelData];
 
     // Filter by country
@@ -148,65 +144,21 @@ export function TravelProvider({ children }) {
 
   // Get travel package by ID
   const getTravelPackageById = (id) => {
-    if (!Array.isArray(allTravelData)) {
-      return null;
-    }
     return allTravelData.find((item) => item.id === id);
   };
 
   // Get available locations
   const getAvailableLocations = () => {
-    if (!Array.isArray(allTravelData)) {
-      return [];
-    }
     const locations = allTravelData.map((item) => item.location);
     return [...new Set(locations)];
   };
 
   // Get available categories
   const getAvailableCategories = () => {
-    if (!Array.isArray(allTravelData)) {
-      return [];
-    }
     const categories = allTravelData
       .map((item) => item.category)
       .filter(Boolean);
     return [...new Set(categories)];
-  };
-
-  // Get countries from location data
-  const getCountries = () => {
-    if (!Array.isArray(allTravelData)) {
-      return [];
-    }
-    const countries = allTravelData
-      .map((item) => {
-        // Extract country from location string (e.g., "Paris, France" -> "France")
-        const parts = item.location?.split(',');
-        return parts && parts.length > 1 ? parts[parts.length - 1].trim() : item.location;
-      })
-      .filter(Boolean);
-    return [...new Set(countries)];
-  };
-
-  // Get cities from location data
-  const getCities = () => {
-    if (!Array.isArray(allTravelData)) {
-      return [];
-    }
-    const cities = allTravelData
-      .map((item) => {
-        // Extract city from location string (e.g., "Paris, France" -> "Paris")
-        const parts = item.location?.split(',');
-        return parts && parts.length > 0 ? parts[0].trim() : item.location;
-      })
-      .filter(Boolean);
-    return [...new Set(cities)];
-  };
-
-  // Get price statistics
-  const getPriceStats = () => {
-    return initialPriceStats;
   };
 
   // Navigation functions
@@ -232,10 +184,6 @@ export function TravelProvider({ children }) {
 
   // Calculate price statistics for the current filtered data
   const currentPriceStats = useMemo(() => {
-    if (!Array.isArray(filteredData) || filteredData.length === 0) {
-      return { min: 0, max: 0, average: 0 };
-    }
-    
     const prices = filteredData
       .map((item) => {
         const price = parseFloat(item.priceNumber || item.price?.replace(/[$,]/g, "") || 0);
@@ -285,9 +233,6 @@ export function TravelProvider({ children }) {
     getTravelPackageById,
     getAvailableLocations,
     getAvailableCategories,
-    getCountries,
-    getCities,
-    getPriceStats,
     
     // Statistics
     initialPriceStats,
