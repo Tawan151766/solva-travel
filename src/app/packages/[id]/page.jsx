@@ -26,61 +26,82 @@ export default function PackagePage({ params }) {
         setLoading(true);
         setError(null);
 
-        // Fetch package data from API
-        const response = await fetch(`/api/travel/packages/${id}`);
-
-        if (!response.ok) {
-          if (response.status === 404) {
+        // First try to get single package, if not available, get from packages list
+        let packageData = null;
+        
+        try {
+          // Try single package API first
+          const singleResponse = await fetch(`/api/travel/packages/${id}`);
+          if (singleResponse.ok) {
+            const singleResult = await singleResponse.json();
+            if (singleResult.success) {
+              packageData = singleResult.data;
+            }
+          }
+        } catch (error) {
+          console.log('Single package API not available, trying packages list');
+        }
+        
+        // If single package API failed, get from packages list
+        if (!packageData) {
+          const listResponse = await fetch('/api/travel/packages');
+          if (!listResponse.ok) {
+            throw new Error('Failed to fetch package data');
+          }
+          
+          const listResult = await listResponse.json();
+          if (!listResult.success) {
+            throw new Error(listResult.message || 'Failed to fetch package data');
+          }
+          
+          // Find the specific package by ID
+          const packages = listResult.data?.packages || listResult.data || [];
+          packageData = packages.find(pkg => pkg.id === id);
+          
+          if (!packageData) {
             notFound();
             return;
           }
-          throw new Error("Failed to fetch package data");
         }
 
-        const result = await response.json();
-
-        if (!result.success) {
-          throw new Error(result.message || "Failed to fetch package data");
-        }
-
-        setTravelPackage(result.data);
+        setTravelPackage(packageData);
 
         // Use gallery images from the package data itself
         const packageImages = [];
 
         // Add main image
-        if (result.data.imageUrl) {
+        if (packageData.imageUrl) {
           packageImages.push({
             id: "main",
-            imageUrl: result.data.imageUrl,
-            title: result.data.title,
-            category: result.data.category || "Package",
+            imageUrl: packageData.imageUrl,
+            title: packageData.title || packageData.name,
+            category: packageData.category || "Package",
           });
         }
 
         // Add additional images
-        if (result.data.images && result.data.images.length > 0) {
-          result.data.images.forEach((imageUrl, index) => {
-            if (imageUrl && imageUrl !== result.data.imageUrl) {
+        if (packageData.images && packageData.images.length > 0) {
+          packageData.images.forEach((imageUrl, index) => {
+            if (imageUrl && imageUrl !== packageData.imageUrl) {
               packageImages.push({
                 id: `image-${index}`,
                 imageUrl: imageUrl,
-                title: `${result.data.title} - Image ${index + 1}`,
-                category: result.data.category || "Package",
+                title: `${packageData.title || packageData.name} - Image ${index + 1}`,
+                category: packageData.category || "Package",
               });
             }
           });
         }
 
         // Add gallery images
-        if (result.data.galleryImages && result.data.galleryImages.length > 0) {
-          result.data.galleryImages.forEach((imageUrl, index) => {
+        if (packageData.galleryImages && packageData.galleryImages.length > 0) {
+          packageData.galleryImages.forEach((imageUrl, index) => {
             if (imageUrl) {
               packageImages.push({
                 id: `gallery-${index}`,
                 imageUrl: imageUrl,
-                title: `${result.data.title} - Gallery ${index + 1}`,
-                category: result.data.category || "Gallery",
+                title: `${packageData.title || packageData.name} - Gallery ${index + 1}`,
+                category: packageData.category || "Gallery",
               });
             }
           });
