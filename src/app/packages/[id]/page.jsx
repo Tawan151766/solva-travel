@@ -9,7 +9,7 @@ import { getRelevantGalleryImages } from "@/data/galleryData";
 export default function PackagePage({ params }) {
   // Unwrap params Promise using React.use()
   const { id } = use(params);
-  
+
   // Local state for package data
   const [travelPackage, setTravelPackage] = useState(null);
   const [galleryImages, setGalleryImages] = useState([]);
@@ -28,29 +28,67 @@ export default function PackagePage({ params }) {
 
         // Fetch package data from API
         const response = await fetch(`/api/travel/packages/${id}`);
-        
+
         if (!response.ok) {
           if (response.status === 404) {
             notFound();
             return;
           }
-          throw new Error('Failed to fetch package data');
+          throw new Error("Failed to fetch package data");
         }
 
         const result = await response.json();
-        
+
         if (!result.success) {
-          throw new Error(result.message || 'Failed to fetch package data');
+          throw new Error(result.message || "Failed to fetch package data");
         }
 
         setTravelPackage(result.data);
-        
-        // Get relevant gallery images using the helper function
-        const relevantImages = getRelevantGalleryImages(result.data);
-        setGalleryImages(relevantImages);
-        
+
+        // Use gallery images from the package data itself
+        const packageImages = [];
+
+        // Add main image
+        if (result.data.imageUrl) {
+          packageImages.push({
+            id: "main",
+            imageUrl: result.data.imageUrl,
+            title: result.data.title,
+            category: result.data.category || "Package",
+          });
+        }
+
+        // Add additional images
+        if (result.data.images && result.data.images.length > 0) {
+          result.data.images.forEach((imageUrl, index) => {
+            if (imageUrl && imageUrl !== result.data.imageUrl) {
+              packageImages.push({
+                id: `image-${index}`,
+                imageUrl: imageUrl,
+                title: `${result.data.title} - Image ${index + 1}`,
+                category: result.data.category || "Package",
+              });
+            }
+          });
+        }
+
+        // Add gallery images
+        if (result.data.galleryImages && result.data.galleryImages.length > 0) {
+          result.data.galleryImages.forEach((imageUrl, index) => {
+            if (imageUrl) {
+              packageImages.push({
+                id: `gallery-${index}`,
+                imageUrl: imageUrl,
+                title: `${result.data.title} - Gallery ${index + 1}`,
+                category: result.data.category || "Gallery",
+              });
+            }
+          });
+        }
+
+        setGalleryImages(packageImages);
       } catch (err) {
-        console.error('Error loading package data:', err);
+        console.error("Error loading package data:", err);
         setError(err.message);
       } finally {
         setLoading(false);
@@ -80,9 +118,14 @@ export default function PackagePage({ params }) {
       <div className="min-h-screen bg-gradient-to-br from-black via-[#0a0804] to-black flex items-center justify-center">
         <div className="text-center max-w-md">
           <div className="text-red-400 text-6xl mb-4">⚠️</div>
-          <h2 className="text-white text-xl font-bold mb-2">Unable to Load Package</h2>
+          <h2 className="text-white text-xl font-bold mb-2">
+            Unable to Load Package
+          </h2>
           <p className="text-white/70 text-sm mb-6">{error}</p>
-          <Link href="/" className="bg-gradient-to-r from-[#FFD700] to-[#FFED4E] hover:from-[#FFED4E] hover:to-[#FFD700] text-black px-6 py-3 rounded-full font-semibold transition-all">
+          <Link
+            href="/"
+            className="bg-gradient-to-r from-[#FFD700] to-[#FFED4E] hover:from-[#FFED4E] hover:to-[#FFD700] text-black px-6 py-3 rounded-full font-semibold transition-all"
+          >
             Back to Home
           </Link>
         </div>
@@ -97,7 +140,9 @@ export default function PackagePage({ params }) {
 
   // Get relevant gallery images
   const relevantImages = galleryImages.length > 0 ? galleryImages : [];
-  const displayImages = showAllImages ? relevantImages : relevantImages.slice(0, 6);
+  const displayImages = showAllImages
+    ? relevantImages
+    : relevantImages.slice(0, 6);
 
   const openImageModal = (index) => {
     setSelectedImageIndex(index);
@@ -108,13 +153,13 @@ export default function PackagePage({ params }) {
   };
 
   const nextImage = () => {
-    setSelectedImageIndex(prev => 
+    setSelectedImageIndex((prev) =>
       prev === displayImages.length - 1 ? 0 : prev + 1
     );
   };
 
   const prevImage = () => {
-    setSelectedImageIndex(prev => 
+    setSelectedImageIndex((prev) =>
       prev === 0 ? displayImages.length - 1 : prev - 1
     );
   };
@@ -123,21 +168,25 @@ export default function PackagePage({ params }) {
     <div className="min-h-screen bg-gradient-to-br from-black via-[#0a0804] to-black relative">
       {/* Luxury Background Overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-[#FFD700]/5 via-transparent to-[#FFD700]/5 opacity-50"></div>
-      
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative">
         {/* Breadcrumb */}
         <nav className="flex items-center space-x-2 text-sm mb-8">
-          <Link href="/" className="text-[#FFD700] hover:text-[#FFED4E] transition-colors">
+          <Link
+            href="/"
+            className="text-[#FFD700] hover:text-[#FFED4E] transition-colors"
+          >
             Home
           </Link>
           <span className="text-[#FFD700]/50">/</span>
-          <Link href="/" className="text-[#FFD700] hover:text-[#FFED4E] transition-colors">
+          <Link
+            href="/"
+            className="text-[#FFD700] hover:text-[#FFED4E] transition-colors"
+          >
             Packages
           </Link>
           <span className="text-[#FFD700]/50">/</span>
-          <span className="text-white font-medium">
-            {travelPackage.title}
-          </span>
+          <span className="text-white font-medium">{travelPackage.title}</span>
         </nav>
 
         {/* Hero Section */}
@@ -157,20 +206,41 @@ export default function PackagePage({ params }) {
                   {travelPackage.title}
                 </h1>
                 <p className="text-lg md:text-xl text-gray-200 mb-6 leading-relaxed">
-                  {travelPackage.description || "Experience the ultimate travel adventure with our carefully curated package."}
+                  {travelPackage.description ||
+                    "Experience the ultimate travel adventure with our carefully curated package."}
                 </p>
                 <div className="flex flex-wrap items-center gap-6">
                   <div className="flex items-center text-[#FFD700]">
-                    <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                    <svg
+                      className="w-5 h-5 mr-2"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                        clipRule="evenodd"
+                      />
                     </svg>
-                    <span className="font-medium">{travelPackage.location}</span>
+                    <span className="font-medium">
+                      {travelPackage.location}
+                    </span>
                   </div>
                   <div className="flex items-center text-[#FFD700]">
-                    <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                    <svg
+                      className="w-5 h-5 mr-2"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                        clipRule="evenodd"
+                      />
                     </svg>
-                    <span className="font-medium">{travelPackage.duration}</span>
+                    <span className="font-medium">
+                      {travelPackage.duration}
+                    </span>
                   </div>
                   <div className="text-3xl font-bold text-transparent bg-gradient-to-r from-[#FFD700] to-[#FFED4E] bg-clip-text">
                     {travelPackage.price}
@@ -188,19 +258,23 @@ export default function PackagePage({ params }) {
             {relevantImages.length > 0 && (
               <section className="bg-gradient-to-br from-black/80 via-[#0a0804]/80 to-black/80 backdrop-blur-xl rounded-2xl p-8 border border-[#FFD700]/20 shadow-2xl shadow-black/50">
                 <div className="flex items-center justify-between mb-8">
-                  <h2 className="text-3xl font-bold text-transparent bg-gradient-to-r from-[#FFD700] to-[#FFED4E] bg-clip-text">Gallery</h2>
+                  <h2 className="text-3xl font-bold text-transparent bg-gradient-to-r from-[#FFD700] to-[#FFED4E] bg-clip-text">
+                    Gallery
+                  </h2>
                   <button
                     onClick={() => setShowAllImages(!showAllImages)}
                     className="text-[#FFD700] hover:text-[#FFED4E] transition-colors font-medium"
                   >
-                    {showAllImages ? 'Show Less' : `View All (${relevantImages.length})`}
+                    {showAllImages
+                      ? "Show Less"
+                      : `View All (${relevantImages.length})`}
                   </button>
                 </div>
-                
+
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   {displayImages.map((image, index) => (
-                    <div 
-                      key={image.id} 
+                    <div
+                      key={image.id}
                       className="group relative aspect-[4/3] rounded-xl overflow-hidden cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-2xl"
                       onClick={() => openImageModal(index)}
                     >
@@ -212,8 +286,12 @@ export default function PackagePage({ params }) {
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                       <div className="absolute bottom-3 left-3 right-3 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                        <h3 className="text-white font-semibold text-sm truncate">{image.title}</h3>
-                        <p className="text-gray-300 text-xs">{image.category}</p>
+                        <h3 className="text-white font-semibold text-sm truncate">
+                          {image.title}
+                        </h3>
+                        <p className="text-gray-300 text-xs">
+                          {image.category}
+                        </p>
                       </div>
                     </div>
                   ))}
@@ -223,37 +301,59 @@ export default function PackagePage({ params }) {
 
             {/* Overview */}
             <section className="bg-gradient-to-br from-black/80 via-[#0a0804]/80 to-black/80 backdrop-blur-xl rounded-2xl p-8 border border-[#FFD700]/20 shadow-2xl shadow-black/50">
-              <h2 className="text-3xl font-bold text-transparent bg-gradient-to-r from-[#FFD700] to-[#FFED4E] bg-clip-text mb-6">Overview</h2>
+              <h2 className="text-3xl font-bold text-transparent bg-gradient-to-r from-[#FFD700] to-[#FFED4E] bg-clip-text mb-6">
+                Overview
+              </h2>
               <p className="text-white/90 text-lg leading-relaxed">
-                {travelPackage.overview || travelPackage.description || `Escape to paradise with our ${travelPackage.title} package. This exclusive experience includes premium accommodations, authentic local cuisine, and a range of activities designed for both relaxation and adventure. From cultural immersion to scenic excursions, every detail is crafted to provide an unforgettable vacation experience.`}
+                {travelPackage.overview ||
+                  travelPackage.description ||
+                  `Escape to paradise with our ${travelPackage.title} package. This exclusive experience includes premium accommodations, authentic local cuisine, and a range of activities designed for both relaxation and adventure. From cultural immersion to scenic excursions, every detail is crafted to provide an unforgettable vacation experience.`}
               </p>
-              
+
               {/* Package Info Grid */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
                 <div className="bg-gradient-to-br from-[#FFD700]/10 to-[#FFED4E]/10 rounded-lg p-4 border border-[#FFD700]/20">
-                  <div className="text-[#FFD700] text-sm font-medium">Category</div>
-                  <div className="text-white font-semibold">{travelPackage.category || 'Adventure'}</div>
+                  <div className="text-[#FFD700] text-sm font-medium">
+                    Category
+                  </div>
+                  <div className="text-white font-semibold">
+                    {travelPackage.category || "Adventure"}
+                  </div>
                 </div>
                 <div className="bg-gradient-to-br from-[#FFD700]/10 to-[#FFED4E]/10 rounded-lg p-4 border border-[#FFD700]/20">
-                  <div className="text-[#FFD700] text-sm font-medium">Difficulty</div>
-                  <div className="text-white font-semibold">{travelPackage.difficulty || 'Easy'}</div>
+                  <div className="text-[#FFD700] text-sm font-medium">
+                    Difficulty
+                  </div>
+                  <div className="text-white font-semibold">
+                    {travelPackage.difficulty || "Easy"}
+                  </div>
                 </div>
                 <div className="bg-gradient-to-br from-[#FFD700]/10 to-[#FFED4E]/10 rounded-lg p-4 border border-[#FFD700]/20">
-                  <div className="text-[#FFD700] text-sm font-medium">Max Capacity</div>
-                  <div className="text-white font-semibold">{travelPackage.maxCapacity || 15} people</div>
+                  <div className="text-[#FFD700] text-sm font-medium">
+                    Max Capacity
+                  </div>
+                  <div className="text-white font-semibold">
+                    {travelPackage.maxCapacity || 15} people
+                  </div>
                 </div>
                 <div className="bg-gradient-to-br from-[#FFD700]/10 to-[#FFED4E]/10 rounded-lg p-4 border border-[#FFD700]/20">
-                  <div className="text-[#FFD700] text-sm font-medium">Rating</div>
+                  <div className="text-[#FFD700] text-sm font-medium">
+                    Rating
+                  </div>
                   <div className="text-white font-semibold flex items-center">
                     {travelPackage.rating ? (
                       <>
-                        <svg className="w-4 h-4 text-[#FFD700] mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <svg
+                          className="w-4 h-4 text-[#FFD700] mr-1"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
                           <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                         </svg>
                         {travelPackage.rating} ({travelPackage.totalReviews})
                       </>
                     ) : (
-                      'New Package'
+                      "New Package"
                     )}
                   </div>
                 </div>
@@ -262,77 +362,151 @@ export default function PackagePage({ params }) {
 
             {/* Highlights */}
             <section className="bg-gradient-to-br from-black/80 via-[#0a0804]/80 to-black/80 backdrop-blur-xl rounded-2xl p-8 border border-[#FFD700]/20 shadow-2xl shadow-black/50">
-              <h2 className="text-3xl font-bold text-transparent bg-gradient-to-r from-[#FFD700] to-[#FFED4E] bg-clip-text mb-8">Highlights</h2>
+              <h2 className="text-3xl font-bold text-transparent bg-gradient-to-r from-[#FFD700] to-[#FFED4E] bg-clip-text mb-8">
+                Highlights
+              </h2>
               <div className="grid gap-6">
                 {travelPackage.highlights ? (
-                  travelPackage.highlights.slice(0, 5).map((highlight, index) => (
-                    <div key={index} className="flex items-start gap-4 group">
-                      <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-r from-[#FFD700] to-[#FFED4E] rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg shadow-[#FFD700]/30">
-                        {index === 0 && (
-                          <svg className="w-6 h-6 text-black" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                          </svg>
-                        )}
-                        {index === 1 && (
-                          <svg className="w-6 h-6 text-black" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
-                          </svg>
-                        )}
-                        {index === 2 && (
-                          <svg className="w-6 h-6 text-black" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                          </svg>
-                        )}
-                        {index === 3 && (
-                          <svg className="w-6 h-6 text-black" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                          </svg>
-                        )}
-                        {index === 4 && (
-                          <svg className="w-6 h-6 text-black" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
-                          </svg>
-                        )}
+                  travelPackage.highlights
+                    .slice(0, 5)
+                    .map((highlight, index) => (
+                      <div key={index} className="flex items-start gap-4 group">
+                        <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-r from-[#FFD700] to-[#FFED4E] rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg shadow-[#FFD700]/30">
+                          {index === 0 && (
+                            <svg
+                              className="w-6 h-6 text-black"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                          )}
+                          {index === 1 && (
+                            <svg
+                              className="w-6 h-6 text-black"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                          )}
+                          {index === 2 && (
+                            <svg
+                              className="w-6 h-6 text-black"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                          )}
+                          {index === 3 && (
+                            <svg
+                              className="w-6 h-6 text-black"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                          )}
+                          {index === 4 && (
+                            <svg
+                              className="w-6 h-6 text-black"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="text-white text-lg font-semibold mb-2">
+                            {highlight}
+                          </h3>
+                          <p className="text-white/80">
+                            Experience this amazing feature of your travel
+                            package.
+                          </p>
+                        </div>
                       </div>
-                      <div className="flex-1">
-                        <h3 className="text-white text-lg font-semibold mb-2">{highlight}</h3>
-                        <p className="text-white/80">Experience this amazing feature of your travel package.</p>
-                      </div>
-                    </div>
-                  ))
+                    ))
                 ) : (
                   <>
                     <div className="flex items-start gap-4 group">
                       <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-r from-[#FFD700] to-[#FFED4E] rounded-xl flex items-center justify-center shadow-lg shadow-[#FFD700]/30">
-                        <svg className="w-6 h-6 text-black" fill="currentColor" viewBox="0 0 20 20">
+                        <svg
+                          className="w-6 h-6 text-black"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
                           <path d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" />
                         </svg>
                       </div>
                       <div className="flex-1">
-                        <h3 className="text-white text-lg font-semibold mb-2">Premium Dining</h3>
-                        <p className="text-white/80">Indulge in authentic local cuisine and international dishes.</p>
+                        <h3 className="text-white text-lg font-semibold mb-2">
+                          Premium Dining
+                        </h3>
+                        <p className="text-white/80">
+                          Indulge in authentic local cuisine and international
+                          dishes.
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-start gap-4 group">
                       <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-r from-[#FFD700] to-[#FFED4E] rounded-xl flex items-center justify-center shadow-lg shadow-[#FFD700]/30">
-                        <svg className="w-6 h-6 text-black" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                        <svg
+                          className="w-6 h-6 text-black"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                            clipRule="evenodd"
+                          />
                         </svg>
                       </div>
                       <div className="flex-1">
-                        <h3 className="text-white text-lg font-semibold mb-2">Guided Excursions</h3>
-                        <p className="text-white/80">Explore the destination with expert local guides.</p>
+                        <h3 className="text-white text-lg font-semibold mb-2">
+                          Guided Excursions
+                        </h3>
+                        <p className="text-white/80">
+                          Explore the destination with expert local guides.
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-start gap-4 group">
                       <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-r from-[#FFD700] to-[#FFED4E] rounded-xl flex items-center justify-center shadow-lg shadow-[#FFD700]/30">
-                        <svg className="w-6 h-6 text-black" fill="currentColor" viewBox="0 0 20 20">
+                        <svg
+                          className="w-6 h-6 text-black"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
                           <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                         </svg>
                       </div>
                       <div className="flex-1">
-                        <h3 className="text-white text-lg font-semibold mb-2">Relaxation & Activities</h3>
-                        <p className="text-white/80">Enjoy a perfect balance of relaxation and adventure.</p>
+                        <h3 className="text-white text-lg font-semibold mb-2">
+                          Relaxation & Activities
+                        </h3>
+                        <p className="text-white/80">
+                          Enjoy a perfect balance of relaxation and adventure.
+                        </p>
                       </div>
                     </div>
                   </>
@@ -342,78 +516,148 @@ export default function PackagePage({ params }) {
 
             {/* Itinerary */}
             <section className="bg-gradient-to-br from-black/80 via-[#0a0804]/80 to-black/80 backdrop-blur-xl rounded-2xl p-8 border border-[#FFD700]/20 shadow-2xl shadow-black/50">
-              <h2 className="text-3xl font-bold text-transparent bg-gradient-to-r from-[#FFD700] to-[#FFED4E] bg-clip-text mb-8">Itinerary</h2>
+              <h2 className="text-3xl font-bold text-transparent bg-gradient-to-r from-[#FFD700] to-[#FFED4E] bg-clip-text mb-8">
+                Itinerary
+              </h2>
               <div className="relative">
                 <div className="absolute left-6 top-16 bottom-16 w-0.5 bg-gradient-to-b from-[#FFD700] to-[#FFED4E]"></div>
                 <div className="space-y-8">
-                  {travelPackage.itinerary && typeof travelPackage.itinerary === 'object' ? (
-                    Object.entries(travelPackage.itinerary).map(([day, details], index) => (
-                      <div key={day} className="flex items-start gap-6">
-                        <div className="relative z-10 w-12 h-12 bg-gradient-to-r from-[#FFD700] to-[#FFED4E] rounded-full flex items-center justify-center flex-shrink-0 shadow-lg shadow-[#FFD700]/30">
-                          <span className="text-black font-bold text-sm">{index + 1}</span>
-                        </div>
-                        <div className="flex-1 pt-1">
-                          <h3 className="text-xl font-semibold text-white mb-2">{details.title}</h3>
-                          <p className="text-[#FFD700] font-medium mb-2">Day {index + 1}</p>
-                          {details.activities && (
-                            <ul className="text-white/80 space-y-1 mb-3">
-                              {details.activities.map((activity, actIndex) => (
-                                <li key={actIndex} className="flex items-center">
-                                  <svg className="w-4 h-4 text-[#FFD700] mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.293l-3-3a1 1 0 00-1.414 1.414L10.586 9.5 9.293 10.793a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clipRule="evenodd" />
-                                  </svg>
-                                  {activity}
-                                </li>
-                              ))}
-                            </ul>
-                          )}
-                          {details.accommodation && (
-                            <p className="text-[#FFD700]/80 text-sm">
-                              🏨 {details.accommodation}
+                  {travelPackage.itinerary &&
+                  typeof travelPackage.itinerary === "object" ? (
+                    Object.entries(travelPackage.itinerary).map(
+                      ([day, details], index) => (
+                        <div key={day} className="flex items-start gap-6">
+                          <div className="relative z-10 w-12 h-12 bg-gradient-to-r from-[#FFD700] to-[#FFED4E] rounded-full flex items-center justify-center flex-shrink-0 shadow-lg shadow-[#FFD700]/30">
+                            <span className="text-black font-bold text-sm">
+                              {index + 1}
+                            </span>
+                          </div>
+                          <div className="flex-1 pt-1">
+                            <h3 className="text-xl font-semibold text-white mb-2">
+                              {details.title}
+                            </h3>
+                            <p className="text-[#FFD700] font-medium mb-2">
+                              Day {index + 1}
                             </p>
-                          )}
+                            {details.activities && (
+                              <ul className="text-white/80 space-y-1 mb-3">
+                                {details.activities.map(
+                                  (activity, actIndex) => (
+                                    <li
+                                      key={actIndex}
+                                      className="flex items-center"
+                                    >
+                                      <svg
+                                        className="w-4 h-4 text-[#FFD700] mr-2 flex-shrink-0"
+                                        fill="currentColor"
+                                        viewBox="0 0 20 20"
+                                      >
+                                        <path
+                                          fillRule="evenodd"
+                                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.293l-3-3a1 1 0 00-1.414 1.414L10.586 9.5 9.293 10.793a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z"
+                                          clipRule="evenodd"
+                                        />
+                                      </svg>
+                                      {activity}
+                                    </li>
+                                  )
+                                )}
+                              </ul>
+                            )}
+                            {details.accommodation && (
+                              <p className="text-[#FFD700]/80 text-sm">
+                                🏨 {details.accommodation}
+                              </p>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    ))
+                      )
+                    )
                   ) : (
                     <>
                       <div className="flex items-start gap-6">
                         <div className="relative z-10 w-12 h-12 bg-gradient-to-r from-[#FFD700] to-[#FFED4E] rounded-full flex items-center justify-center flex-shrink-0 shadow-lg shadow-[#FFD700]/30">
-                          <svg className="w-6 h-6 text-black" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.293l-3-3a1 1 0 00-1.414 1.414L10.586 9.5 9.293 10.793a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clipRule="evenodd" />
+                          <svg
+                            className="w-6 h-6 text-black"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.293l-3-3a1 1 0 00-1.414 1.414L10.586 9.5 9.293 10.793a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z"
+                              clipRule="evenodd"
+                            />
                           </svg>
                         </div>
                         <div className="flex-1 pt-1">
-                          <h3 className="text-xl font-semibold text-white mb-2">Arrival & Check-In</h3>
-                          <p className="text-[#FFD700] font-medium mb-2">Day 1</p>
-                          <p className="text-white/80">Welcome to your destination! Check into your premium accommodation and begin your adventure.</p>
+                          <h3 className="text-xl font-semibold text-white mb-2">
+                            Arrival & Check-In
+                          </h3>
+                          <p className="text-[#FFD700] font-medium mb-2">
+                            Day 1
+                          </p>
+                          <p className="text-white/80">
+                            Welcome to your destination! Check into your premium
+                            accommodation and begin your adventure.
+                          </p>
                         </div>
                       </div>
-                      
+
                       <div className="flex items-start gap-6">
                         <div className="relative z-10 w-12 h-12 bg-gradient-to-r from-[#FFD700] to-[#FFED4E] rounded-full flex items-center justify-center flex-shrink-0 shadow-lg shadow-[#FFD700]/30">
-                          <svg className="w-6 h-6 text-black" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                          <svg
+                            className="w-6 h-6 text-black"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                              clipRule="evenodd"
+                            />
                           </svg>
                         </div>
                         <div className="flex-1 pt-1">
-                          <h3 className="text-xl font-semibold text-white mb-2">Exploration & Activities</h3>
-                          <p className="text-[#FFD700] font-medium mb-2">Days 2-{parseInt(travelPackage.duration) || '6'}</p>
-                          <p className="text-white/80">Discover the highlights of your destination with guided tours, cultural experiences, and adventure activities.</p>
+                          <h3 className="text-xl font-semibold text-white mb-2">
+                            Exploration & Activities
+                          </h3>
+                          <p className="text-[#FFD700] font-medium mb-2">
+                            Days 2-{parseInt(travelPackage.duration) || "6"}
+                          </p>
+                          <p className="text-white/80">
+                            Discover the highlights of your destination with
+                            guided tours, cultural experiences, and adventure
+                            activities.
+                          </p>
                         </div>
                       </div>
-                      
+
                       <div className="flex items-start gap-6">
                         <div className="relative z-10 w-12 h-12 bg-gradient-to-r from-[#FFD700] to-[#FFED4E] rounded-full flex items-center justify-center flex-shrink-0 shadow-lg shadow-[#FFD700]/30">
-                          <svg className="w-6 h-6 text-black" fill="currentColor" viewBox="0 0 20 20">
+                          <svg
+                            className="w-6 h-6 text-black"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
                             <path d="M4 3a2 2 0 100 4h12a2 2 0 100-4H4z" />
-                            <path fillRule="evenodd" d="M3 8h14v7a2 2 0 01-2 2H5a2 2 0 01-2-2V8zm5 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" clipRule="evenodd" />
+                            <path
+                              fillRule="evenodd"
+                              d="M3 8h14v7a2 2 0 01-2 2H5a2 2 0 01-2-2V8zm5 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"
+                              clipRule="evenodd"
+                            />
                           </svg>
                         </div>
                         <div className="flex-1 pt-1">
-                          <h3 className="text-xl font-semibold text-white mb-2">Departure</h3>
-                          <p className="text-[#FFD700] font-medium mb-2">Final Day</p>
-                          <p className="text-white/80">Check out and departure with unforgettable memories of your journey.</p>
+                          <h3 className="text-xl font-semibold text-white mb-2">
+                            Departure
+                          </h3>
+                          <p className="text-[#FFD700] font-medium mb-2">
+                            Final Day
+                          </p>
+                          <p className="text-white/80">
+                            Check out and departure with unforgettable memories
+                            of your journey.
+                          </p>
                         </div>
                       </div>
                     </>
@@ -424,23 +668,42 @@ export default function PackagePage({ params }) {
 
             {/* What's Included & Excluded */}
             <section className="bg-gradient-to-br from-black/80 via-[#0a0804]/80 to-black/80 backdrop-blur-xl rounded-2xl p-8 border border-[#FFD700]/20 shadow-2xl shadow-black/50">
-              <h2 className="text-3xl font-bold text-transparent bg-gradient-to-r from-[#FFD700] to-[#FFED4E] bg-clip-text mb-8">Package Details</h2>
-              
+              <h2 className="text-3xl font-bold text-transparent bg-gradient-to-r from-[#FFD700] to-[#FFED4E] bg-clip-text mb-8">
+                Package Details
+              </h2>
+
               <div className="grid md:grid-cols-2 gap-8">
                 {/* Included */}
                 <div>
                   <h3 className="text-xl font-semibold text-[#FFD700] mb-4 flex items-center">
-                    <svg className="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    <svg
+                      className="w-6 h-6 mr-2"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                     What's Included
                   </h3>
                   <ul className="space-y-2">
-                    {travelPackage.includes && travelPackage.includes.length > 0 ? (
+                    {travelPackage.includes &&
+                    travelPackage.includes.length > 0 ? (
                       travelPackage.includes.map((item, index) => (
                         <li key={index} className="flex items-start">
-                          <svg className="w-5 h-5 text-green-400 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          <svg
+                            className="w-5 h-5 text-green-400 mr-3 mt-0.5 flex-shrink-0"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                              clipRule="evenodd"
+                            />
                           </svg>
                           <span className="text-white/90">{item}</span>
                         </li>
@@ -448,28 +711,68 @@ export default function PackagePage({ params }) {
                     ) : (
                       <>
                         <li className="flex items-start">
-                          <svg className="w-5 h-5 text-green-400 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          <svg
+                            className="w-5 h-5 text-green-400 mr-3 mt-0.5 flex-shrink-0"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                              clipRule="evenodd"
+                            />
                           </svg>
-                          <span className="text-white/90">Professional tour guide</span>
+                          <span className="text-white/90">
+                            Professional tour guide
+                          </span>
                         </li>
                         <li className="flex items-start">
-                          <svg className="w-5 h-5 text-green-400 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          <svg
+                            className="w-5 h-5 text-green-400 mr-3 mt-0.5 flex-shrink-0"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                              clipRule="evenodd"
+                            />
                           </svg>
-                          <span className="text-white/90">Accommodation as specified</span>
+                          <span className="text-white/90">
+                            Accommodation as specified
+                          </span>
                         </li>
                         <li className="flex items-start">
-                          <svg className="w-5 h-5 text-green-400 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          <svg
+                            className="w-5 h-5 text-green-400 mr-3 mt-0.5 flex-shrink-0"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                              clipRule="evenodd"
+                            />
                           </svg>
-                          <span className="text-white/90">Transportation during tour</span>
+                          <span className="text-white/90">
+                            Transportation during tour
+                          </span>
                         </li>
                         <li className="flex items-start">
-                          <svg className="w-5 h-5 text-green-400 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          <svg
+                            className="w-5 h-5 text-green-400 mr-3 mt-0.5 flex-shrink-0"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                              clipRule="evenodd"
+                            />
                           </svg>
-                          <span className="text-white/90">Entry fees to attractions</span>
+                          <span className="text-white/90">
+                            Entry fees to attractions
+                          </span>
                         </li>
                       </>
                     )}
@@ -479,17 +782,34 @@ export default function PackagePage({ params }) {
                 {/* Excluded */}
                 <div>
                   <h3 className="text-xl font-semibold text-red-400 mb-4 flex items-center">
-                    <svg className="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    <svg
+                      className="w-6 h-6 mr-2"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                     Not Included
                   </h3>
                   <ul className="space-y-2">
-                    {travelPackage.excludes && travelPackage.excludes.length > 0 ? (
+                    {travelPackage.excludes &&
+                    travelPackage.excludes.length > 0 ? (
                       travelPackage.excludes.map((item, index) => (
                         <li key={index} className="flex items-start">
-                          <svg className="w-5 h-5 text-red-400 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                          <svg
+                            className="w-5 h-5 text-red-400 mr-3 mt-0.5 flex-shrink-0"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                              clipRule="evenodd"
+                            />
                           </svg>
                           <span className="text-white/90">{item}</span>
                         </li>
@@ -497,28 +817,68 @@ export default function PackagePage({ params }) {
                     ) : (
                       <>
                         <li className="flex items-start">
-                          <svg className="w-5 h-5 text-red-400 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                          <svg
+                            className="w-5 h-5 text-red-400 mr-3 mt-0.5 flex-shrink-0"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                              clipRule="evenodd"
+                            />
                           </svg>
-                          <span className="text-white/90">International flights</span>
+                          <span className="text-white/90">
+                            International flights
+                          </span>
                         </li>
                         <li className="flex items-start">
-                          <svg className="w-5 h-5 text-red-400 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                          <svg
+                            className="w-5 h-5 text-red-400 mr-3 mt-0.5 flex-shrink-0"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                              clipRule="evenodd"
+                            />
                           </svg>
-                          <span className="text-white/90">Travel insurance</span>
+                          <span className="text-white/90">
+                            Travel insurance
+                          </span>
                         </li>
                         <li className="flex items-start">
-                          <svg className="w-5 h-5 text-red-400 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                          <svg
+                            className="w-5 h-5 text-red-400 mr-3 mt-0.5 flex-shrink-0"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                              clipRule="evenodd"
+                            />
                           </svg>
-                          <span className="text-white/90">Personal expenses</span>
+                          <span className="text-white/90">
+                            Personal expenses
+                          </span>
                         </li>
                         <li className="flex items-start">
-                          <svg className="w-5 h-5 text-red-400 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                          <svg
+                            className="w-5 h-5 text-red-400 mr-3 mt-0.5 flex-shrink-0"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                              clipRule="evenodd"
+                            />
                           </svg>
-                          <span className="text-white/90">Optional activities</span>
+                          <span className="text-white/90">
+                            Optional activities
+                          </span>
                         </li>
                       </>
                     )}
@@ -533,7 +893,9 @@ export default function PackagePage({ params }) {
             <div className="sticky top-8 space-y-8">
               {/* Accommodation */}
               <section className="bg-gradient-to-br from-black/80 via-[#0a0804]/80 to-black/80 backdrop-blur-xl rounded-2xl p-6 border border-[#FFD700]/20 shadow-2xl shadow-black/50">
-                <h3 className="text-2xl font-bold text-transparent bg-gradient-to-r from-[#FFD700] to-[#FFED4E] bg-clip-text mb-6">Accommodation</h3>
+                <h3 className="text-2xl font-bold text-transparent bg-gradient-to-r from-[#FFD700] to-[#FFED4E] bg-clip-text mb-6">
+                  Accommodation
+                </h3>
                 <div className="space-y-4">
                   <div className="relative aspect-[4/3] rounded-xl overflow-hidden">
                     <Image
@@ -544,32 +906,50 @@ export default function PackagePage({ params }) {
                     />
                   </div>
                   <div>
-                    {travelPackage.accommodation && typeof travelPackage.accommodation === 'object' ? (
+                    {travelPackage.accommodation &&
+                    typeof travelPackage.accommodation === "object" ? (
                       <div className="space-y-3">
-                        {Object.entries(travelPackage.accommodation).map(([key, acc]) => (
-                          <div key={key} className="border-b border-[#FFD700]/20 pb-3">
-                            <h4 className="text-lg font-semibold text-white mb-1">
-                              {acc.name}
-                            </h4>
-                            <div className="flex items-center mb-2">
-                              {[...Array(acc.rating || 4)].map((_, i) => (
-                                <svg key={i} className="w-4 h-4 text-[#FFD700]" fill="currentColor" viewBox="0 0 20 20">
-                                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                </svg>
-                              ))}
-                              <span className="ml-2 text-[#FFD700] text-sm">{acc.rating || 4} Star</span>
-                            </div>
-                            {acc.amenities && (
-                              <div className="flex flex-wrap gap-1">
-                                {acc.amenities.slice(0, 4).map((amenity, index) => (
-                                  <span key={index} className="text-xs bg-[#FFD700]/20 text-[#FFD700] px-2 py-1 rounded">
-                                    {amenity}
-                                  </span>
+                        {Object.entries(travelPackage.accommodation).map(
+                          ([key, acc]) => (
+                            <div
+                              key={key}
+                              className="border-b border-[#FFD700]/20 pb-3"
+                            >
+                              <h4 className="text-lg font-semibold text-white mb-1">
+                                {acc.name}
+                              </h4>
+                              <div className="flex items-center mb-2">
+                                {[...Array(acc.rating || 4)].map((_, i) => (
+                                  <svg
+                                    key={i}
+                                    className="w-4 h-4 text-[#FFD700]"
+                                    fill="currentColor"
+                                    viewBox="0 0 20 20"
+                                  >
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                  </svg>
                                 ))}
+                                <span className="ml-2 text-[#FFD700] text-sm">
+                                  {acc.rating || 4} Star
+                                </span>
                               </div>
-                            )}
-                          </div>
-                        ))}
+                              {acc.amenities && (
+                                <div className="flex flex-wrap gap-1">
+                                  {acc.amenities
+                                    .slice(0, 4)
+                                    .map((amenity, index) => (
+                                      <span
+                                        key={index}
+                                        className="text-xs bg-[#FFD700]/20 text-[#FFD700] px-2 py-1 rounded"
+                                      >
+                                        {amenity}
+                                      </span>
+                                    ))}
+                                </div>
+                              )}
+                            </div>
+                          )
+                        )}
                       </div>
                     ) : (
                       <>
@@ -577,7 +957,9 @@ export default function PackagePage({ params }) {
                           {travelPackage.location} Premium Resort
                         </h4>
                         <p className="text-white/80 text-sm">
-                          Enjoy comfortable accommodations with modern amenities, stunning views, and excellent service throughout your stay.
+                          Enjoy comfortable accommodations with modern
+                          amenities, stunning views, and excellent service
+                          throughout your stay.
                         </p>
                       </>
                     )}
@@ -588,75 +970,107 @@ export default function PackagePage({ params }) {
               {/* Pricing */}
               <section className="bg-gradient-to-br from-[#FFD700] to-[#FFED4E] rounded-2xl p-6 text-black shadow-2xl shadow-[#FFD700]/30">
                 <h3 className="text-2xl font-bold mb-4">Pricing</h3>
-                
+
                 <div className="space-y-4">
                   {/* Group Size Selection */}
                   <div>
                     <h4 className="text-lg font-semibold mb-3">Group Size</h4>
                     <div className="grid grid-cols-2 gap-2">
-                      {travelPackage.priceDetails && typeof travelPackage.priceDetails === 'object' ? (
-                        Object.entries(travelPackage.priceDetails).map(([groupKey, priceInfo]) => {
-                          const groupSize = parseInt(groupKey.split('_')[0]);
-                          return (
-                            <button
-                              key={groupKey}
-                              onClick={() => setSelectedGroupSize(groupSize)}
-                              className={`p-3 rounded-lg border-2 transition-all ${
-                                selectedGroupSize === groupSize
-                                  ? 'border-black bg-black text-[#FFD700] font-bold'
-                                  : 'border-black/20 bg-transparent hover:border-black/40'
-                              }`}
-                            >
-                              <div className="text-sm font-medium">{groupSize}{groupSize >= 8 ? '+' : ''} คน</div>
-                              <div className="text-xs opacity-80">฿{priceInfo.per_person.toLocaleString()}/คน</div>
-                            </button>
-                          );
-                        })
+                      {travelPackage.priceDetails &&
+                      typeof travelPackage.priceDetails === "object" ? (
+                        Object.entries(travelPackage.priceDetails).map(
+                          ([groupKey, priceInfo]) => {
+                            const groupSize = parseInt(groupKey.split("_")[0]);
+                            return (
+                              <button
+                                key={groupKey}
+                                onClick={() => setSelectedGroupSize(groupSize)}
+                                className={`p-3 rounded-lg border-2 transition-all ${
+                                  selectedGroupSize === groupSize
+                                    ? "border-black bg-black text-[#FFD700] font-bold"
+                                    : "border-black/20 bg-transparent hover:border-black/40"
+                                }`}
+                              >
+                                <div className="text-sm font-medium">
+                                  {groupSize}
+                                  {groupSize >= 8 ? "+" : ""} คน
+                                </div>
+                                <div className="text-xs opacity-80">
+                                  ฿{priceInfo.per_person.toLocaleString()}/คน
+                                </div>
+                              </button>
+                            );
+                          }
+                        )
                       ) : (
                         <>
                           <button
                             onClick={() => setSelectedGroupSize(2)}
                             className={`p-3 rounded-lg border-2 transition-all ${
                               selectedGroupSize === 2
-                                ? 'border-black bg-black text-[#FFD700] font-bold'
-                                : 'border-black/20 bg-transparent hover:border-black/40'
+                                ? "border-black bg-black text-[#FFD700] font-bold"
+                                : "border-black/20 bg-transparent hover:border-black/40"
                             }`}
                           >
                             <div className="text-sm font-medium">2 คน</div>
-                            <div className="text-xs opacity-80">฿{Math.round(parseFloat(travelPackage.price) * 1.2).toLocaleString()}/คน</div>
+                            <div className="text-xs opacity-80">
+                              ฿
+                              {Math.round(
+                                parseFloat(travelPackage.price) * 1.2
+                              ).toLocaleString()}
+                              /คน
+                            </div>
                           </button>
                           <button
                             onClick={() => setSelectedGroupSize(4)}
                             className={`p-3 rounded-lg border-2 transition-all ${
                               selectedGroupSize === 4
-                                ? 'border-black bg-black text-[#FFD700] font-bold'
-                                : 'border-black/20 bg-transparent hover:border-black/40'
+                                ? "border-black bg-black text-[#FFD700] font-bold"
+                                : "border-black/20 bg-transparent hover:border-black/40"
                             }`}
                           >
                             <div className="text-sm font-medium">4 คน</div>
-                            <div className="text-xs opacity-80">฿{Math.round(parseFloat(travelPackage.price)).toLocaleString()}/คน</div>
+                            <div className="text-xs opacity-80">
+                              ฿
+                              {Math.round(
+                                parseFloat(travelPackage.price)
+                              ).toLocaleString()}
+                              /คน
+                            </div>
                           </button>
                           <button
                             onClick={() => setSelectedGroupSize(6)}
                             className={`p-3 rounded-lg border-2 transition-all ${
                               selectedGroupSize === 6
-                                ? 'border-black bg-black text-[#FFD700] font-bold'
-                                : 'border-black/20 bg-transparent hover:border-black/40'
+                                ? "border-black bg-black text-[#FFD700] font-bold"
+                                : "border-black/20 bg-transparent hover:border-black/40"
                             }`}
                           >
                             <div className="text-sm font-medium">6 คน</div>
-                            <div className="text-xs opacity-80">฿{Math.round(parseFloat(travelPackage.price) * 0.9).toLocaleString()}/คน</div>
+                            <div className="text-xs opacity-80">
+                              ฿
+                              {Math.round(
+                                parseFloat(travelPackage.price) * 0.9
+                              ).toLocaleString()}
+                              /คน
+                            </div>
                           </button>
                           <button
                             onClick={() => setSelectedGroupSize(8)}
                             className={`p-3 rounded-lg border-2 transition-all ${
                               selectedGroupSize === 8
-                                ? 'border-black bg-black text-[#FFD700] font-bold'
-                                : 'border-black/20 bg-transparent hover:border-black/40'
+                                ? "border-black bg-black text-[#FFD700] font-bold"
+                                : "border-black/20 bg-transparent hover:border-black/40"
                             }`}
                           >
                             <div className="text-sm font-medium">8+ คน</div>
-                            <div className="text-xs opacity-80">฿{Math.round(parseFloat(travelPackage.price) * 0.8).toLocaleString()}/คน</div>
+                            <div className="text-xs opacity-80">
+                              ฿
+                              {Math.round(
+                                parseFloat(travelPackage.price) * 0.8
+                              ).toLocaleString()}
+                              /คน
+                            </div>
                           </button>
                         </>
                       )}
@@ -667,65 +1081,140 @@ export default function PackagePage({ params }) {
                   <div className="border-t border-black/20 pt-4">
                     <div>
                       <div className="text-3xl font-bold">
-                        ฿{(() => {
-                          if (travelPackage.priceDetails && typeof travelPackage.priceDetails === 'object') {
+                        ฿
+                        {(() => {
+                          if (
+                            travelPackage.priceDetails &&
+                            typeof travelPackage.priceDetails === "object"
+                          ) {
                             const groupKey = `${selectedGroupSize}_people`;
-                            const priceInfo = travelPackage.priceDetails[groupKey];
-                            return priceInfo ? priceInfo.per_person.toLocaleString() : parseFloat(travelPackage.price).toLocaleString();
+                            const priceInfo =
+                              travelPackage.priceDetails[groupKey];
+                            return priceInfo
+                              ? priceInfo.per_person.toLocaleString()
+                              : parseFloat(
+                                  travelPackage.price
+                                ).toLocaleString();
                           }
-                          
+
                           // Fallback pricing
                           const basePrice = parseFloat(travelPackage.price);
-                          const multiplier = selectedGroupSize === 2 ? 1.2 : selectedGroupSize === 4 ? 1 : selectedGroupSize === 6 ? 0.9 : 0.8;
-                          return Math.round(basePrice * multiplier).toLocaleString();
+                          const multiplier =
+                            selectedGroupSize === 2
+                              ? 1.2
+                              : selectedGroupSize === 4
+                              ? 1
+                              : selectedGroupSize === 6
+                              ? 0.9
+                              : 0.8;
+                          return Math.round(
+                            basePrice * multiplier
+                          ).toLocaleString();
                         })()}
                       </div>
-                      <div className="text-sm opacity-80">ต่อคน ({selectedGroupSize} คน)</div>
+                      <div className="text-sm opacity-80">
+                        ต่อคน ({selectedGroupSize} คน)
+                      </div>
                     </div>
                     <div className="mt-2 p-3 bg-black/10 rounded-lg">
                       <div className="text-sm font-medium">
-                        ราคารวม: ฿{(() => {
-                          if (travelPackage.priceDetails && typeof travelPackage.priceDetails === 'object') {
+                        ราคารวม: ฿
+                        {(() => {
+                          if (
+                            travelPackage.priceDetails &&
+                            typeof travelPackage.priceDetails === "object"
+                          ) {
                             const groupKey = `${selectedGroupSize}_people`;
-                            const priceInfo = travelPackage.priceDetails[groupKey];
-                            return priceInfo ? priceInfo.total.toLocaleString() : (parseFloat(travelPackage.price) * selectedGroupSize).toLocaleString();
+                            const priceInfo =
+                              travelPackage.priceDetails[groupKey];
+                            return priceInfo
+                              ? priceInfo.total.toLocaleString()
+                              : (
+                                  parseFloat(travelPackage.price) *
+                                  selectedGroupSize
+                                ).toLocaleString();
                           }
-                          
+
                           // Fallback pricing
                           const basePrice = parseFloat(travelPackage.price);
-                          const multiplier = selectedGroupSize === 2 ? 1.2 : selectedGroupSize === 4 ? 1 : selectedGroupSize === 6 ? 0.9 : 0.8;
-                          return Math.round(basePrice * multiplier * selectedGroupSize).toLocaleString();
+                          const multiplier =
+                            selectedGroupSize === 2
+                              ? 1.2
+                              : selectedGroupSize === 4
+                              ? 1
+                              : selectedGroupSize === 6
+                              ? 0.9
+                              : 0.8;
+                          return Math.round(
+                            basePrice * multiplier * selectedGroupSize
+                          ).toLocaleString();
                         })()}
                       </div>
-                      <div className="text-xs opacity-80">สำหรับ {selectedGroupSize} คน</div>
+                      <div className="text-xs opacity-80">
+                        สำหรับ {selectedGroupSize} คน
+                      </div>
                     </div>
                   </div>
 
                   <div className="text-sm space-y-1 border-t border-black/20 pt-4">
-                    <div>Duration: {travelPackage.durationText || `${travelPackage.duration} days`}</div>
+                    <div>
+                      Duration:{" "}
+                      {travelPackage.durationText ||
+                        `${travelPackage.duration} days`}
+                    </div>
                     <div>ราคาลดตามจำนวนคน</div>
                     <div>*ราคาอาจแตกต่างตามช่วงเวลา</div>
                   </div>
-                  <Link 
+                  <Link
                     href={`/tour-request?packageId=${id}&groupSize=${selectedGroupSize}&pricePerPerson=${(() => {
-                      if (travelPackage.priceDetails && typeof travelPackage.priceDetails === 'object') {
+                      if (
+                        travelPackage.priceDetails &&
+                        typeof travelPackage.priceDetails === "object"
+                      ) {
                         const groupKey = `${selectedGroupSize}_people`;
                         const priceInfo = travelPackage.priceDetails[groupKey];
-                        return priceInfo ? priceInfo.per_person : parseFloat(travelPackage.price);
+                        return priceInfo
+                          ? priceInfo.per_person
+                          : parseFloat(travelPackage.price);
                       }
                       const basePrice = parseFloat(travelPackage.price);
-                      const multiplier = selectedGroupSize === 2 ? 1.2 : selectedGroupSize === 4 ? 1 : selectedGroupSize === 6 ? 0.9 : 0.8;
+                      const multiplier =
+                        selectedGroupSize === 2
+                          ? 1.2
+                          : selectedGroupSize === 4
+                          ? 1
+                          : selectedGroupSize === 6
+                          ? 0.9
+                          : 0.8;
                       return Math.round(basePrice * multiplier);
                     })()}&totalPrice=${(() => {
-                      if (travelPackage.priceDetails && typeof travelPackage.priceDetails === 'object') {
+                      if (
+                        travelPackage.priceDetails &&
+                        typeof travelPackage.priceDetails === "object"
+                      ) {
                         const groupKey = `${selectedGroupSize}_people`;
                         const priceInfo = travelPackage.priceDetails[groupKey];
-                        return priceInfo ? priceInfo.total : (parseFloat(travelPackage.price) * selectedGroupSize);
+                        return priceInfo
+                          ? priceInfo.total
+                          : parseFloat(travelPackage.price) * selectedGroupSize;
                       }
                       const basePrice = parseFloat(travelPackage.price);
-                      const multiplier = selectedGroupSize === 2 ? 1.2 : selectedGroupSize === 4 ? 1 : selectedGroupSize === 6 ? 0.9 : 0.8;
-                      return Math.round(basePrice * multiplier * selectedGroupSize);
-                    })()}&packageTitle=${encodeURIComponent(travelPackage.title)}&destination=${encodeURIComponent(travelPackage.location)}`} 
+                      const multiplier =
+                        selectedGroupSize === 2
+                          ? 1.2
+                          : selectedGroupSize === 4
+                          ? 1
+                          : selectedGroupSize === 6
+                          ? 0.9
+                          : 0.8;
+                      return Math.round(
+                        basePrice * multiplier * selectedGroupSize
+                      );
+                    })()}&packageTitle=${encodeURIComponent(
+                      travelPackage.title
+                    )}&destination=${encodeURIComponent(
+                      travelPackage.location
+                    )}`}
                     className="block"
                   >
                     <button className="w-full bg-black text-[#FFD700] font-bold py-4 px-6 rounded-xl hover:bg-[#0a0804] transition-colors transform hover:scale-105 duration-200 shadow-lg">
@@ -737,36 +1226,54 @@ export default function PackagePage({ params }) {
 
               {/* Quick Facts */}
               <section className="bg-gradient-to-br from-black/80 via-[#0a0804]/80 to-black/80 backdrop-blur-xl rounded-2xl p-6 border border-[#FFD700]/20 shadow-2xl shadow-black/50">
-                <h3 className="text-xl font-bold text-transparent bg-gradient-to-r from-[#FFD700] to-[#FFED4E] bg-clip-text mb-4">Quick Facts</h3>
+                <h3 className="text-xl font-bold text-transparent bg-gradient-to-r from-[#FFD700] to-[#FFED4E] bg-clip-text mb-4">
+                  Quick Facts
+                </h3>
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between">
                     <span className="text-white/80">Duration:</span>
-                    <span className="text-white font-medium">{travelPackage.durationText || `${travelPackage.duration} days`}</span>
+                    <span className="text-white font-medium">
+                      {travelPackage.durationText ||
+                        `${travelPackage.duration} days`}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-white/80">Destination:</span>
-                    <span className="text-white font-medium">{travelPackage.destination || travelPackage.location}</span>
+                    <span className="text-white font-medium">
+                      {travelPackage.destination || travelPackage.location}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-white/80">Category:</span>
-                    <span className="text-white font-medium">{travelPackage.category || 'Adventure'}</span>
+                    <span className="text-white font-medium">
+                      {travelPackage.category || "Adventure"}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-white/80">Max Capacity:</span>
-                    <span className="text-white font-medium">{travelPackage.maxCapacity || 15} people</span>
+                    <span className="text-white font-medium">
+                      {travelPackage.maxCapacity || 15} people
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-white/80">Difficulty:</span>
-                    <span className="text-white font-medium">{travelPackage.difficulty || 'Easy to Moderate'}</span>
+                    <span className="text-white font-medium">
+                      {travelPackage.difficulty || "Easy to Moderate"}
+                    </span>
                   </div>
                   {travelPackage.rating && (
                     <div className="flex justify-between">
                       <span className="text-white/80">Rating:</span>
                       <span className="text-white font-medium flex items-center">
-                        <svg className="w-4 h-4 text-[#FFD700] mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <svg
+                          className="w-4 h-4 text-[#FFD700] mr-1"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
                           <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                         </svg>
-                        {travelPackage.rating} ({travelPackage.totalReviews} reviews)
+                        {travelPackage.rating} ({travelPackage.totalReviews}{" "}
+                        reviews)
                       </span>
                     </div>
                   )}
@@ -781,30 +1288,51 @@ export default function PackagePage({ params }) {
           <div className="mt-16">
             <section className="bg-gradient-to-br from-black/80 via-[#0a0804]/80 to-black/80 backdrop-blur-xl rounded-2xl p-8 border border-[#FFD700]/20 shadow-2xl shadow-black/50">
               <div className="flex items-center justify-between mb-8">
-                <h2 className="text-3xl font-bold text-transparent bg-gradient-to-r from-[#FFD700] to-[#FFED4E] bg-clip-text">Customer Reviews</h2>
+                <h2 className="text-3xl font-bold text-transparent bg-gradient-to-r from-[#FFD700] to-[#FFED4E] bg-clip-text">
+                  Customer Reviews
+                </h2>
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center">
-                    <svg className="w-6 h-6 text-[#FFD700] mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <svg
+                      className="w-6 h-6 text-[#FFD700] mr-2"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
                       <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                     </svg>
-                    <span className="text-2xl font-bold text-white">{travelPackage.rating}</span>
+                    <span className="text-2xl font-bold text-white">
+                      {travelPackage.rating}
+                    </span>
                   </div>
                   <div className="text-white/70">
-                    <div className="font-medium">{travelPackage.totalReviews} reviews</div>
+                    <div className="font-medium">
+                      {travelPackage.totalReviews} reviews
+                    </div>
                     <div className="text-sm">Excellent rating</div>
                   </div>
                 </div>
               </div>
-              
+
               <div className="text-center py-8">
                 <div className="text-white/60 mb-4">
-                  <svg className="w-16 h-16 mx-auto mb-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M18 13V5a2 2 0 00-2-2H4a2 2 0 00-2 2v8a2 2 0 002 2h3l3 3 3-3h3a2 2 0 002-2zM5 7a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1zm1 3a1 1 0 100 2h3a1 1 0 100-2H6z" clipRule="evenodd" />
+                  <svg
+                    className="w-16 h-16 mx-auto mb-4"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M18 13V5a2 2 0 00-2-2H4a2 2 0 00-2 2v8a2 2 0 002 2h3l3 3 3-3h3a2 2 0 002-2zM5 7a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1zm1 3a1 1 0 100 2h3a1 1 0 100-2H6z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                 </div>
-                <h3 className="text-xl font-semibold text-white mb-2">Reviews are loading...</h3>
+                <h3 className="text-xl font-semibold text-white mb-2">
+                  Reviews are loading...
+                </h3>
                 <p className="text-white/70">
-                  See what our customers are saying about this amazing travel experience.
+                  See what our customers are saying about this amazing travel
+                  experience.
                 </p>
                 <div className="mt-6">
                   <button className="bg-gradient-to-r from-[#FFD700] to-[#FFED4E] text-black px-6 py-2 rounded-full font-semibold hover:from-[#FFED4E] hover:to-[#FFD700] transition-all">
@@ -818,21 +1346,37 @@ export default function PackagePage({ params }) {
 
         {/* Image Modal */}
         {selectedImageIndex !== null && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-black/95 via-[#0a0804]/95 to-black/95 backdrop-blur-xl" onClick={closeImageModal}>
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-black/95 via-[#0a0804]/95 to-black/95 backdrop-blur-xl"
+            onClick={closeImageModal}
+          >
             {/* Luxury Background Overlay */}
             <div className="absolute inset-0 bg-gradient-to-br from-[#FFD700]/5 via-transparent to-[#FFD700]/5 opacity-50"></div>
-            
+
             <div className="relative max-w-4xl max-h-[90vh] w-full mx-4">
               <button
                 onClick={closeImageModal}
                 className="absolute top-4 right-4 z-10 bg-gradient-to-r from-[#FFD700]/20 to-[#FFED4E]/20 backdrop-blur-xl border border-[#FFD700]/30 hover:bg-gradient-to-r hover:from-[#FFD700]/40 hover:to-[#FFED4E]/40 text-[#FFD700] transition-all duration-200 p-2 rounded-full"
               >
-                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="w-8 h-8"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
-              
-              <div className="relative aspect-[4/3] rounded-lg overflow-hidden" onClick={(e) => e.stopPropagation()}>
+
+              <div
+                className="relative aspect-[4/3] rounded-lg overflow-hidden"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <Image
                   src={displayImages[selectedImageIndex].imageUrl}
                   alt={displayImages[selectedImageIndex].title}
@@ -840,29 +1384,59 @@ export default function PackagePage({ params }) {
                   className="object-cover"
                 />
               </div>
-              
+
               <div className="absolute bottom-4 left-4 right-4 bg-gradient-to-t from-black/90 via-black/60 to-transparent backdrop-blur-sm rounded-lg p-4">
-                <h3 className="text-white font-semibold text-lg text-transparent bg-gradient-to-r from-[#FFD700] to-[#FFED4E] bg-clip-text">{displayImages[selectedImageIndex].title}</h3>
-                <p className="text-white/80">{displayImages[selectedImageIndex].category}</p>
+                <h3 className="text-white font-semibold text-lg text-transparent bg-gradient-to-r from-[#FFD700] to-[#FFED4E] bg-clip-text">
+                  {displayImages[selectedImageIndex].title}
+                </h3>
+                <p className="text-white/80">
+                  {displayImages[selectedImageIndex].category}
+                </p>
               </div>
-              
+
               {displayImages.length > 1 && (
                 <>
                   <button
-                    onClick={(e) => { e.stopPropagation(); prevImage(); }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      prevImage();
+                    }}
                     className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-[#FFD700]/20 to-[#FFED4E]/20 backdrop-blur-xl border border-[#FFD700]/30 hover:bg-gradient-to-r hover:from-[#FFD700]/40 hover:to-[#FFED4E]/40 text-[#FFD700] transition-all duration-200 p-2 rounded-full"
                   >
-                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    <svg
+                      className="w-8 h-8"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 19l-7-7 7-7"
+                      />
                     </svg>
                   </button>
-                  
+
                   <button
-                    onClick={(e) => { e.stopPropagation(); nextImage(); }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      nextImage();
+                    }}
                     className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-[#FFD700]/20 to-[#FFED4E]/20 backdrop-blur-xl border border-[#FFD700]/30 hover:bg-gradient-to-r hover:from-[#FFD700]/40 hover:to-[#FFED4E]/40 text-[#FFD700] transition-all duration-200 p-2 rounded-full"
                   >
-                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    <svg
+                      className="w-8 h-8"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5l7 7-7 7"
+                      />
                     </svg>
                   </button>
                 </>

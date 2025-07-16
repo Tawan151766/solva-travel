@@ -3,36 +3,55 @@ import { prisma } from '../../../../../lib/prisma.js';
 
 export async function GET(request, { params }) {
   try {
-    const { id } = await params;
+    const { id } = params;
 
-    console.log('Individual travel package API called for ID:', id);
+    if (!id) {
+      return NextResponse.json({
+        success: false,
+        message: 'Package ID is required'
+      }, { status: 400 });
+    }
 
-    // Find the travel package by ID using Prisma
+    console.log('Fetching package with ID:', id);
+
+    // Get package with related data
     const travelPackage = await prisma.travelPackage.findUnique({
       where: { 
         id: id,
-        isActive: true 
+        isActive: true // Only return active packages
       },
       include: {
         bookings: {
           select: {
             id: true,
             status: true,
-            customer: {
-              select: {
-                firstName: true,
-                lastName: true,
-              },
-            },
+            numberOfPeople: true,
           },
         },
-      },
+        reviews: {
+          where: {
+            isPublic: true
+          },
+          select: {
+            id: true,
+            rating: true,
+            title: true,
+            comment: true,
+            userName: true,
+            createdAt: true,
+          },
+          orderBy: {
+            createdAt: 'desc'
+          },
+          take: 10
+        }
+      }
     });
 
     if (!travelPackage) {
       return NextResponse.json({
         success: false,
-        message: 'Travel package not found'
+        message: 'Package not found'
       }, { status: 404 });
     }
 
@@ -44,10 +63,9 @@ export async function GET(request, { params }) {
       description: travelPackage.description,
       overview: travelPackage.overview,
       highlights: travelPackage.highlights || [],
-      itinerary: travelPackage.itinerary,
-      price: travelPackage.price.toString(), // Keep as string for display
-      priceNumber: parseFloat(travelPackage.price), // Add numeric version for calculations
-      priceDetails: travelPackage.priceDetails,
+      price: `$${travelPackage.price.toFixed(2)}`,
+      priceNumber: travelPackage.price,
+      priceDetails: travelPackage.priceDetails || {},
       duration: travelPackage.durationText || `${travelPackage.duration} days`,
       durationDays: travelPackage.duration,
       maxCapacity: travelPackage.maxCapacity,
@@ -55,62 +73,44 @@ export async function GET(request, { params }) {
       destination: travelPackage.destination,
       category: travelPackage.category,
       difficulty: travelPackage.difficulty,
-      includes: travelPackage.includes || [],
-      excludes: travelPackage.excludes || [],
-      accommodation: travelPackage.accommodation,
-      imageUrl: travelPackage.imageUrl || (travelPackage.images && travelPackage.images[0]),
+      imageUrl: travelPackage.imageUrl || (travelPackage.images && travelPackage.images[0]) || '/placeholder-image.jpg',
       images: travelPackage.images || [],
       galleryImages: travelPackage.galleryImages || [],
       isRecommended: travelPackage.isRecommended,
+      isActive: travelPackage.isActive,
       rating: travelPackage.rating || 0,
       totalReviews: travelPackage.totalReviews || 0,
       tags: travelPackage.tags || [],
-      images: travelPackage.images,
-      imageUrl: travelPackage.images[0] || '/images/default-package.jpg',
-      isActive: travelPackage.isActive,
+      includes: travelPackage.includes || [],
+      excludes: travelPackage.excludes || [],
+      itinerary: travelPackage.itinerary || {},
+      accommodation: travelPackage.accommodation || {},
+      
+      // Booking statistics
       totalBookings: travelPackage.bookings.length,
       activeBookings: travelPackage.bookings.filter(b => b.status === 'CONFIRMED').length,
+      availableSpots: travelPackage.maxCapacity - travelPackage.bookings
+        .filter(b => ['CONFIRMED', 'PENDING'].includes(b.status))
+        .reduce((sum, booking) => sum + booking.numberOfPeople, 0),
+      
+      // Reviews
+      reviews: travelPackage.reviews || [],
+      
+      // Timestamps
       createdAt: travelPackage.createdAt,
       updatedAt: travelPackage.updatedAt,
-      // Add default highlights if not in database
-      highlights: [
-        "Premium accommodation with modern amenities",
-        "Expert local guides and cultural experiences", 
-        "Authentic local cuisine and dining experiences",
-        "Carefully curated activities and excursions",
-        "24/7 customer support throughout your journey"
-      ],
-      // Group pricing options
-      groupPricing: {
-        "2": {
-          price: (travelPackage.price * 1.5).toFixed(0),
-          label: "2 People"
-        },
-        "4": {
-          price: (travelPackage.price * 1.2).toFixed(0),
-          label: "4 People"
-        },
-        "6": {
-          price: travelPackage.price.toFixed(0),
-          label: "6 People"
-        },
-        "8": {
-          price: (travelPackage.price * 0.9).toFixed(0),
-          label: "8+ People"
-        }
-      }
     };
 
-    console.log(`Retrieved travel package: ${transformedPackage.title}`);
+    console.log(`Package ${id} retrieved successfully`);
 
     return NextResponse.json({
       success: true,
-      message: 'Travel package retrieved successfully',
+      message: 'Package retrieved successfully',
       data: transformedPackage
     }, { status: 200 });
 
   } catch (error) {
-    console.error('Get travel package error:', error);
+    console.error('Get package error:', error);
     return NextResponse.json({
       success: false,
       message: 'Internal server error',
