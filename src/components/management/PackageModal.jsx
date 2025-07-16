@@ -1,17 +1,17 @@
 "use client";
 
-import { PackageForm } from "./PackageForm";
+import { PackageFormNew } from "./PackageFormNew";
 
-export function PackageModal({ 
-  isOpen, 
-  onClose, 
-  title, 
-  subtitle, 
-  formData, 
-  setFormData, 
-  onSubmit, 
+export function PackageModal({
+  isOpen,
+  onClose,
+  title,
+  subtitle,
+  formData,
+  setFormData,
+  onSubmit,
   isEdit = false,
-  isSubmitting = false 
+  isSubmitting = false,
 }) {
   if (!isOpen) return null;
 
@@ -28,7 +28,7 @@ export function PackageModal({
       />
 
       {/* Modal Container */}
-      <div className="relative z-10 w-full max-w-2xl mx-4 animate-fade-in-up">
+      <div className="relative z-10 w-full max-w-6xl mx-4 animate-fade-in-up">
         <div className="relative bg-gradient-to-br from-black/95 via-[#0a0804]/95 to-black/95 backdrop-blur-xl rounded-3xl border border-[#FFD700]/20 shadow-2xl shadow-black/50 overflow-hidden">
           {/* Gradient Overlay */}
           <div className="absolute inset-0 bg-gradient-to-br from-[#FFD700]/5 via-transparent to-[#FFD700]/5 pointer-events-none" />
@@ -53,12 +53,10 @@ export function PackageModal({
               <h2 className="text-2xl font-bold bg-gradient-to-r from-[#FFD700] to-[#FFED4E] bg-clip-text text-transparent mb-2">
                 {title}
               </h2>
-              <p className="text-white/70 text-sm">
-                {subtitle}
-              </p>
+              <p className="text-white/70 text-sm">{subtitle}</p>
             </div>
 
-            <PackageForm
+            <PackageFormNew
               formData={formData}
               setFormData={setFormData}
               onSubmit={onSubmit}

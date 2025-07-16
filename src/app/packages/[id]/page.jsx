@@ -28,7 +28,7 @@ export default function PackagePage({ params }) {
 
         // First try to get single package, if not available, get from packages list
         let packageData = null;
-        
+
         try {
           // Try single package API first
           const singleResponse = await fetch(`/api/travel/packages/${id}`);
@@ -39,25 +39,27 @@ export default function PackagePage({ params }) {
             }
           }
         } catch (error) {
-          console.log('Single package API not available, trying packages list');
+          console.log("Single package API not available, trying packages list");
         }
-        
+
         // If single package API failed, get from packages list
         if (!packageData) {
-          const listResponse = await fetch('/api/travel/packages');
+          const listResponse = await fetch("/api/travel/packages");
           if (!listResponse.ok) {
-            throw new Error('Failed to fetch package data');
+            throw new Error("Failed to fetch package data");
           }
-          
+
           const listResult = await listResponse.json();
           if (!listResult.success) {
-            throw new Error(listResult.message || 'Failed to fetch package data');
+            throw new Error(
+              listResult.message || "Failed to fetch package data"
+            );
           }
-          
+
           // Find the specific package by ID
           const packages = listResult.data?.packages || listResult.data || [];
-          packageData = packages.find(pkg => pkg.id === id);
-          
+          packageData = packages.find((pkg) => pkg.id === id);
+
           if (!packageData) {
             notFound();
             return;
@@ -86,7 +88,9 @@ export default function PackagePage({ params }) {
               packageImages.push({
                 id: `image-${index}`,
                 imageUrl: imageUrl,
-                title: `${packageData.title || packageData.name} - Image ${index + 1}`,
+                title: `${packageData.title || packageData.name} - Image ${
+                  index + 1
+                }`,
                 category: packageData.category || "Package",
               });
             }
@@ -100,7 +104,9 @@ export default function PackagePage({ params }) {
               packageImages.push({
                 id: `gallery-${index}`,
                 imageUrl: imageUrl,
-                title: `${packageData.title || packageData.name} - Gallery ${index + 1}`,
+                title: `${packageData.title || packageData.name} - Gallery ${
+                  index + 1
+                }`,
                 category: packageData.category || "Gallery",
               });
             }
