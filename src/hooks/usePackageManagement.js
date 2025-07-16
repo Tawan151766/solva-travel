@@ -128,10 +128,7 @@ export function usePackageManagement() {
       includes: pkg.includes?.join(", ") || "",
       excludes: pkg.excludes?.join(", ") || "",
       tags: pkg.tags?.join(", ") || "",
-      itinerary:
-        typeof pkg.itinerary === "object"
-          ? JSON.stringify(pkg.itinerary, null, 2)
-          : pkg.itinerary || "",
+      itinerary: pkg.itinerary || {},
       accommodation:
         typeof pkg.accommodation === "object"
           ? JSON.stringify(pkg.accommodation, null, 2)
@@ -159,8 +156,15 @@ export function usePackageManagement() {
       
       if (formData.itinerary) {
         try {
-          parsedItinerary = JSON.parse(formData.itinerary);
+          // If it's already an object, no need to parse
+          if (typeof formData.itinerary === 'object') {
+            parsedItinerary = formData.itinerary;
+          } else if (typeof formData.itinerary === 'string') {
+            // Parse the JSON string
+            parsedItinerary = JSON.parse(formData.itinerary);
+          }
         } catch (error) {
+          console.error("Itinerary parsing error:", error);
           toast({
             title: "Error",
             description: "Invalid JSON format in Itinerary field",
@@ -172,8 +176,27 @@ export function usePackageManagement() {
       
       if (formData.accommodation) {
         try {
-          parsedAccommodation = JSON.parse(formData.accommodation);
+          // If it's already an object, no need to parse
+          if (typeof formData.accommodation === 'object') {
+            parsedAccommodation = formData.accommodation;
+          } else {
+            // Ensure it's a proper JSON string before parsing
+            const accommodationStr = formData.accommodation.trim();
+            if ((accommodationStr.startsWith('{') && accommodationStr.endsWith('}')) || 
+                (accommodationStr.startsWith('[') && accommodationStr.endsWith(']'))) {
+              parsedAccommodation = JSON.parse(accommodationStr);
+            } else {
+              // Not valid JSON format
+              toast({
+                title: "Error",
+                description: "Invalid JSON format in Accommodation field. Must be an object or array.",
+                variant: "destructive",
+              });
+              return;
+            }
+          }
         } catch (error) {
+          console.error("Accommodation parsing error:", error);
           toast({
             title: "Error",
             description: "Invalid JSON format in Accommodation field",
@@ -191,22 +214,18 @@ export function usePackageManagement() {
         overview: formData.overview,
 
         // Arrays
-        highlights: formData.highlights
-          .split(",")
-          .map((item) => item.trim())
-          .filter(Boolean),
-        includes: formData.includes
-          .split(",")
-          .map((item) => item.trim())
-          .filter(Boolean),
-        excludes: formData.excludes
-          .split(",")
-          .map((item) => item.trim())
-          .filter(Boolean),
-        tags: formData.tags
-          .split(",")
-          .map((item) => item.trim())
-          .filter(Boolean),
+        highlights: Array.isArray(formData.highlights) 
+          ? formData.highlights.filter(Boolean)
+          : formData.highlights.split(",").map((item) => item.trim()).filter(Boolean),
+        includes: Array.isArray(formData.includes)
+          ? formData.includes.filter(Boolean)
+          : formData.includes.split(",").map((item) => item.trim()).filter(Boolean),
+        excludes: Array.isArray(formData.excludes)
+          ? formData.excludes.filter(Boolean)
+          : formData.excludes.split(",").map((item) => item.trim()).filter(Boolean),
+        tags: Array.isArray(formData.tags)
+          ? formData.tags.filter(Boolean)
+          : formData.tags.split(",").map((item) => item.trim()).filter(Boolean),
 
         // Pricing
         price: formData.price,
@@ -215,41 +234,41 @@ export function usePackageManagement() {
         priceDetails: {
           "2_people": {
             total:
-              parseFloat(formData.priceDetails["2_people"].total) ||
+              parseFloat(formData.priceDetails?.["2_people"]?.total) ||
               parseFloat(formData.priceNumber) * 2 ||
               0,
             per_person:
-              parseFloat(formData.priceDetails["2_people"].per_person) ||
+              parseFloat(formData.priceDetails?.["2_people"]?.per_person) ||
               parseFloat(formData.priceNumber) ||
               0,
           },
           "4_people": {
             total:
-              parseFloat(formData.priceDetails["4_people"].total) ||
+              parseFloat(formData.priceDetails?.["4_people"]?.total) ||
               parseFloat(formData.priceNumber) * 4 * 0.9 ||
               0,
             per_person:
-              parseFloat(formData.priceDetails["4_people"].per_person) ||
+              parseFloat(formData.priceDetails?.["4_people"]?.per_person) ||
               parseFloat(formData.priceNumber) * 0.9 ||
               0,
           },
           "6_people": {
             total:
-              parseFloat(formData.priceDetails["6_people"].total) ||
+              parseFloat(formData.priceDetails?.["6_people"]?.total) ||
               parseFloat(formData.priceNumber) * 6 * 0.85 ||
               0,
             per_person:
-              parseFloat(formData.priceDetails["6_people"].per_person) ||
+              parseFloat(formData.priceDetails?.["6_people"]?.per_person) ||
               parseFloat(formData.priceNumber) * 0.85 ||
               0,
           },
           "8_people": {
             total:
-              parseFloat(formData.priceDetails["8_people"].total) ||
+              parseFloat(formData.priceDetails?.["8_people"]?.total) ||
               parseFloat(formData.priceNumber) * 8 * 0.8 ||
               0,
             per_person:
-              parseFloat(formData.priceDetails["8_people"].per_person) ||
+              parseFloat(formData.priceDetails?.["8_people"]?.per_person) ||
               parseFloat(formData.priceNumber) * 0.8 ||
               0,
           },
@@ -268,14 +287,12 @@ export function usePackageManagement() {
 
         // Images
         imageUrl: formData.imageUrl,
-        images: formData.images
-          .split(",")
-          .map((img) => img.trim())
-          .filter(Boolean),
-        galleryImages: formData.galleryImages
-          .split(",")
-          .map((img) => img.trim())
-          .filter(Boolean),
+        images: Array.isArray(formData.images)
+          ? formData.images.filter(Boolean)
+          : formData.images.split(",").map((img) => img.trim()).filter(Boolean),
+        galleryImages: Array.isArray(formData.galleryImages)
+          ? formData.galleryImages.filter(Boolean)
+          : formData.galleryImages.split(",").map((img) => img.trim()).filter(Boolean),
 
         // JSON data
         itinerary: parsedItinerary,

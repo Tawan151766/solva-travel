@@ -12,7 +12,39 @@ export function PackageForm({
 }) {
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(isEdit);
+
+    // Convert itinerary object to JSON string for submission
+    let submitData = { ...formData };
+
+    try {
+      // Clean up the itinerary object - remove empty entries
+      const cleanItinerary = {};
+      Object.entries(itineraryObj).forEach(([dayKey, day]) => {
+        if (
+          day &&
+          (day.title ||
+            (day.activities && day.activities.length > 0) ||
+            day.accommodation)
+        ) {
+          cleanItinerary[dayKey] = {
+            title: day.title || "",
+            activities: (day.activities || []).filter(
+              (activity) => activity.trim() !== ""
+            ),
+            accommodation: day.accommodation || null,
+          };
+        }
+      });
+
+      // Convert to JSON string for the usePackageManagement hook
+      submitData.itinerary = JSON.stringify(cleanItinerary);
+    } catch (err) {
+      alert("Itinerary ไม่ถูกต้อง ไม่สามารถแปลงเป็น JSON ได้");
+      console.error("JSON stringify error:", err);
+      return;
+    }
+
+    onSubmit(isEdit, submitData);
   };
   useEffect(() => {
     if (typeof formData.includes === "string") {
@@ -29,6 +61,27 @@ export function PackageForm({
       }));
     }
   }, []);
+
+  // Always use object for itinerary in UI and state
+  let itineraryObj = {};
+  if (
+    typeof formData.itinerary === "object" &&
+    formData.itinerary !== null &&
+    !Array.isArray(formData.itinerary)
+  ) {
+    itineraryObj = formData.itinerary;
+  } else if (Array.isArray(formData.itinerary)) {
+    // Convert array to object with dayN keys
+    formData.itinerary.forEach((day, i) => {
+      itineraryObj[`day${i + 1}`] = day;
+    });
+    // Sync state to object if needed
+    if (formData.itinerary.length > 0) {
+      setFormData({ ...formData, itinerary: itineraryObj });
+    }
+  } else {
+    itineraryObj = {};
+  }
 
   return (
     <form
@@ -552,18 +605,139 @@ export function PackageForm({
         </h3>
         <div>
           <label className="block text-[#FFD700] text-sm font-medium mb-2">
-            กำหนดการเดินทาง (Itinerary JSON) *
+            กำหนดการเดินทาง (Itinerary) *
           </label>
-          <textarea
-            value={formData.itinerary}
-            onChange={(e) =>
-              setFormData({ ...formData, itinerary: e.target.value })
-            }
-            placeholder='{"day1": {"title": "Arrival in Tokyo", "activities": ["Airport pickup", "Shibuya crossing"], "accommodation": "Tokyo City Hotel"}}'
-            className="w-full px-4 py-3 bg-black/50 border border-[#FFD700]/30 rounded-xl text-white placeholder-white/50 focus:outline-none focus:border-[#FFD700] focus:bg-black/70 transition-all font-mono text-sm"
-            rows={6}
-            required
-          />
+          {Object.entries(itineraryObj).map(([dayKey, day], idx) => (
+            <div
+              key={dayKey}
+              className="border border-[#FFD700]/30 rounded-xl p-4 mb-4 bg-black/30"
+            >
+              <div className="flex justify-between items-center mb-2">
+                <div className="flex flex-col flex-1">
+                  <label className="text-[#FFD700] text-sm">
+                    ชื่อวัน (Title)
+                  </label>
+                  <input
+                    type="text"
+                    value={day.title || ""}
+                    onChange={(e) => {
+                      const updated = {
+                        ...itineraryObj,
+                        [dayKey]: { ...day, title: e.target.value },
+                      };
+                      setFormData({ ...formData, itinerary: updated });
+                    }}
+                    className="w-full px-3 py-2 bg-black/50 border border-[#FFD700]/30 rounded text-white mb-2"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const updated = { ...itineraryObj };
+                    delete updated[dayKey];
+                    // Re-index keys to day1, day2, ...
+                    const reIndexed = {};
+                    Object.values(updated).forEach((d, i) => {
+                      reIndexed[`day${i + 1}`] = d;
+                    });
+                    setFormData({ ...formData, itinerary: reIndexed });
+                  }}
+                  className="text-red-400 text-sm ml-2"
+                >
+                  ลบวัน
+                </button>
+              </div>
+              <div className="mb-2">
+                <label className="text-[#FFD700] text-sm">
+                  กิจกรรม (Activities)
+                </label>
+                {(day.activities || []).map((act, aidx) => (
+                  <div key={aidx} className="flex items-center gap-2 mb-1">
+                    <input
+                      type="text"
+                      value={act}
+                      onChange={(e) => {
+                        const acts = [...(day.activities || [])];
+                        acts[aidx] = e.target.value;
+                        const updated = {
+                          ...itineraryObj,
+                          [dayKey]: { ...day, activities: acts },
+                        };
+                        setFormData({ ...formData, itinerary: updated });
+                      }}
+                      className="flex-1 px-3 py-2 bg-black/50 border border-[#FFD700]/30 rounded text-white"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const acts = (day.activities || []).filter(
+                          (_, i) => i !== aidx
+                        );
+                        const updated = {
+                          ...itineraryObj,
+                          [dayKey]: { ...day, activities: acts },
+                        };
+                        setFormData({ ...formData, itinerary: updated });
+                      }}
+                      className="text-red-400 text-xs"
+                    >
+                      ลบ
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const acts = [...(day.activities || []), ""];
+                    const updated = {
+                      ...itineraryObj,
+                      [dayKey]: { ...day, activities: acts },
+                    };
+                    setFormData({ ...formData, itinerary: updated });
+                  }}
+                  className="mt-1 px-2 py-1 bg-[#FFD700]/10 text-[#FFD700] rounded text-xs"
+                >
+                  + เพิ่มกิจกรรม
+                </button>
+              </div>
+              <div>
+                <label className="text-[#FFD700] text-sm">
+                  ที่พัก (Accommodation)
+                </label>
+                <input
+                  type="text"
+                  value={day.accommodation || ""}
+                  onChange={(e) => {
+                    const updated = {
+                      ...itineraryObj,
+                      [dayKey]: { ...day, accommodation: e.target.value },
+                    };
+                    setFormData({ ...formData, itinerary: updated });
+                  }}
+                  className="w-full px-3 py-2 bg-black/50 border border-[#FFD700]/30 rounded text-white"
+                />
+              </div>
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={() => {
+              // Add new day as next dayN
+              const newIdx = Object.keys(itineraryObj).length + 1;
+              const updated = {
+                ...itineraryObj,
+                [`day${newIdx}`]: {
+                  title: "",
+                  activities: [],
+                  accommodation: "",
+                },
+              };
+              setFormData({ ...formData, itinerary: updated });
+            }}
+            className="px-3 py-2 bg-[#FFD700]/10 text-[#FFD700] rounded-lg text-sm"
+          >
+            + เพิ่มวันเดินทาง
+          </button>
         </div>
         <div className="space-y-4">
           <label className="block text-[#FFD700] text-sm font-medium mb-2">

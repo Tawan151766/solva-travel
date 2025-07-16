@@ -114,6 +114,70 @@ export async function PUT(request, { params }) {
       // Prepare update data
       const updateData = {};
       
+      // Process itinerary if provided
+      if (body.itinerary !== undefined) {
+        try {
+          let itinerary = body.itinerary;
+          
+          // Handle different formats of itinerary data
+          if (typeof itinerary === 'string') {
+            itinerary = JSON.parse(itinerary);
+          }
+          
+          // Convert array format to object format if needed
+          if (Array.isArray(itinerary)) {
+            const obj = {};
+            itinerary.forEach((day, i) => { 
+              obj[`day${i+1}`] = day; 
+            });
+            itinerary = obj;
+          }
+          
+          // Ensure itinerary is an object at this point
+          if (typeof itinerary !== 'object' || itinerary === null) {
+            return NextResponse.json({
+              success: false,
+              message: 'Invalid itinerary format. Must be an object or array.'
+            }, { status: 400 });
+          }
+          
+          updateData.itinerary = itinerary;
+        } catch (error) {
+          console.error('Itinerary parsing error:', error);
+          return NextResponse.json({
+            success: false,
+            message: 'Invalid JSON format in Itinerary field'
+          }, { status: 400 });
+        }
+      }
+      
+      // Process accommodation if provided
+      if (body.accommodation !== undefined) {
+        try {
+          let accommodation = body.accommodation;
+          
+          if (typeof accommodation === 'string') {
+            accommodation = JSON.parse(accommodation);
+          }
+          
+          if (typeof accommodation !== 'object' || accommodation === null) {
+            return NextResponse.json({
+              success: false,
+              message: 'Invalid accommodation format. Must be an object.'
+            }, { status: 400 });
+          }
+          
+          updateData.accommodation = accommodation;
+        } catch (error) {
+          console.error('Accommodation parsing error:', error);
+          return NextResponse.json({
+            success: false,
+            message: 'Invalid JSON format in Accommodation field'
+          }, { status: 400 });
+        }
+      }
+      
+      // Process basic fields
       if (body.name !== undefined) {
         if (!body.name.trim()) {
           return NextResponse.json({ 
@@ -139,6 +203,74 @@ export async function PUT(request, { params }) {
           }, { status: 400 });
         }
         updateData.location = body.location.trim();
+      }
+      
+      // Process additional fields used by the PackageForm component
+      if (body.title !== undefined) {
+        updateData.title = body.title.trim();
+      }
+      
+      if (body.overview !== undefined) {
+        updateData.overview = body.overview.trim();
+      }
+      
+      if (body.destination !== undefined) {
+        updateData.destination = body.destination.trim();
+      }
+      
+      if (body.category !== undefined) {
+        updateData.category = body.category;
+      }
+      
+      if (body.difficulty !== undefined) {
+        updateData.difficulty = body.difficulty;
+      }
+      
+      if (body.durationDays !== undefined) {
+        const durationDays = parseInt(body.durationDays);
+        if (!isNaN(durationDays)) {
+          updateData.durationDays = durationDays;
+        }
+      }
+      
+      if (body.maxCapacity !== undefined) {
+        const maxCapacity = parseInt(body.maxCapacity);
+        if (!isNaN(maxCapacity)) {
+          updateData.maxCapacity = maxCapacity;
+        }
+      }
+      
+      if (body.priceNumber !== undefined) {
+        const priceNumber = parseFloat(body.priceNumber);
+        if (!isNaN(priceNumber)) {
+          updateData.priceNumber = priceNumber;
+        }
+      }
+      
+      if (body.priceDetails !== undefined) {
+        updateData.priceDetails = body.priceDetails;
+      }
+      
+      if (body.isRecommended !== undefined) {
+        updateData.isRecommended = !!body.isRecommended;
+      }
+      
+      if (body.isActive !== undefined) {
+        updateData.isActive = !!body.isActive;
+      }
+      
+      if (body.rating !== undefined) {
+        const rating = parseFloat(body.rating);
+        if (!isNaN(rating)) {
+          updateData.rating = rating;
+        }
+      }
+      
+      if (body.totalReviews !== undefined) {
+        const totalReviews = parseInt(body.totalReviews);
+        if (!isNaN(totalReviews)) {
+          updateData.totalReviews = totalReviews;
+        }
       }
 
       if (body.duration !== undefined) {

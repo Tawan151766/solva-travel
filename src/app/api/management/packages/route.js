@@ -79,52 +79,56 @@ export async function POST(request) {
       }
 
       const body = await request.json();
-      const { 
-        name, 
-        description, 
-        location, 
-        duration, 
-        price, 
-        maxTravelers,
-        highlights,
-        included,
-        excluded,
-        images
-      } = body;
-
-      // Validate required fields
-      if (!name || !description || !location || !duration || !price || !maxTravelers) {
+      
+      // Validate required fields based on current Prisma schema
+      if (!body.title || !body.name || !body.description || !body.location || !body.durationDays || !body.priceNumber || !body.maxCapacity) {
         return NextResponse.json({ 
-          message: 'Missing required fields: name, description, location, duration, price, maxTravelers' 
+          message: 'Missing required fields: title, name, description, location, durationDays, priceNumber, maxCapacity' 
         }, { status: 400 });
       }
 
       // Validate numeric fields
-      if (isNaN(duration) || isNaN(price) || isNaN(maxTravelers)) {
+      if (isNaN(body.durationDays) || isNaN(body.priceNumber) || isNaN(body.maxCapacity)) {
         return NextResponse.json({ 
-          message: 'Duration, price, and maxTravelers must be valid numbers' 
+          message: 'durationDays, priceNumber, and maxCapacity must be valid numbers' 
         }, { status: 400 });
       }
 
-      if (duration <= 0 || price <= 0 || maxTravelers <= 0) {
+      if (body.durationDays <= 0 || body.priceNumber <= 0 || body.maxCapacity <= 0) {
         return NextResponse.json({ 
-          message: 'Duration, price, and maxTravelers must be positive numbers' 
+          message: 'durationDays, priceNumber, and maxCapacity must be positive numbers' 
         }, { status: 400 });
       }
 
-      // Create new travel package
+      // Create new travel package with current schema
       const newPackage = await prisma.travelPackage.create({
         data: {
-          name: name.trim(),
-          description: description.trim(),
-          location: location.trim(),
-          duration: parseInt(duration),
-          price: parseFloat(price),
-          maxTravelers: parseInt(maxTravelers),
-          highlights: highlights || [],
-          included: included || [],
-          excluded: excluded || [],
-          images: images || []
+          title: body.title.trim(),
+          name: body.name.trim(),
+          description: body.description.trim(),
+          overview: body.overview?.trim() || '',
+          highlights: body.highlights || [],
+          price: parseFloat(body.priceNumber),
+          priceDetails: body.priceDetails || {},
+          duration: parseInt(body.durationDays),
+          durationText: body.duration?.trim() || `${body.durationDays} days`,
+          maxCapacity: parseInt(body.maxCapacity),
+          location: body.location.trim(),
+          destination: body.destination?.trim() || body.location.trim(),
+          category: body.category || 'Cultural',
+          difficulty: body.difficulty || 'Easy',
+          includes: body.includes || [],
+          excludes: body.excludes || [],
+          accommodation: body.accommodation || {},
+          images: body.images || [],
+          imageUrl: body.imageUrl || (body.images && body.images[0]) || '',
+          galleryImages: body.galleryImages || [],
+          isRecommended: body.isRecommended || false,
+          isActive: body.isActive !== false,
+          rating: parseFloat(body.rating) || 0,
+          totalReviews: parseInt(body.totalReviews) || 0,
+          tags: body.tags || [],
+          itinerary: body.itinerary || {},
         },
         include: {
           _count: {

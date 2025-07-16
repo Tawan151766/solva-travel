@@ -127,3 +127,75 @@ export async function OPTIONS() {
     },
   });
 }
+
+export async function POST(req) {
+  try {
+    const body = await req.json();
+    
+    // Process itinerary data with error handling
+    let itinerary = body.itinerary;
+    
+    try {
+      // Handle different formats of itinerary data
+      if (typeof itinerary === 'string') {
+        itinerary = JSON.parse(itinerary);
+      }
+      
+      // Convert array format to object format if needed
+      if (Array.isArray(itinerary)) {
+        const obj = {};
+        itinerary.forEach((day, i) => { obj[`day${i+1}`] = day; });
+        itinerary = obj;
+      }
+      
+      // Ensure itinerary is an object at this point
+      if (typeof itinerary !== 'object' || itinerary === null) {
+        return NextResponse.json({
+          success: false,
+          message: 'Invalid itinerary format. Must be an object or array.'
+        }, { status: 400 });
+      }
+    } catch (error) {
+      console.error('Itinerary parsing error:', error);
+      return NextResponse.json({
+        success: false,
+        message: 'Invalid JSON format in Itinerary field'
+      }, { status: 400 });
+    }
+    
+    // Process accommodation data with error handling if it exists
+    if (body.accommodation && typeof body.accommodation === 'string') {
+      try {
+        body.accommodation = JSON.parse(body.accommodation);
+      } catch (error) {
+        console.error('Accommodation parsing error:', error);
+        return NextResponse.json({
+          success: false,
+          message: 'Invalid JSON format in Accommodation field'
+        }, { status: 400 });
+      }
+    }
+    
+    // Create the travel package in the database
+    const newPackage = await prisma.travelPackage.create({ 
+      data: { 
+        ...body, 
+        itinerary 
+      }
+    });
+    
+    return NextResponse.json({
+      success: true,
+      message: 'Travel package created successfully',
+      data: newPackage
+    }, { status: 201 });
+    
+  } catch (error) {
+    console.error('Create travel package error:', error);
+    return NextResponse.json({
+      success: false,
+      message: 'Internal server error',
+      error: error.message
+    }, { status: 500 });
+  }
+}
