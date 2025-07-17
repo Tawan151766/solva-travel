@@ -6,6 +6,7 @@ import { useStaffContext } from "@/core/context";
 import { StaffProfile } from "@/components/pages/staff/StaffProfile";
 import { ReviewStats } from "@/components/pages/staff/ReviewStats";
 import { ReviewsList } from "@/components/pages/staff/ReviewsList";
+import { ReviewForm } from "@/components/pages/staff/ReviewForm";
 import { StaffBreadcrumb, StaffNavigation } from "@/components/pages/staff/StaffNavigation";
 import { ReviewsErrorWrapper } from "@/components/pages/staff/ReviewsErrorBoundary";
 import { ReviewsLoading } from "@/components/pages/staff/ReviewsLoading";
@@ -173,6 +174,15 @@ export default function StaffPage({ params }) {
                     rating={staff.rating}
                     totalReviews={staff.totalReviews}
                     ratingBreakdown={ratingBreakdown}
+                  />
+                </div>
+
+                {/* Review Form */}
+                <div className="mb-6">
+                  <ReviewForm 
+                    staffId={id}
+                    staffName={staff.name}
+                    onReviewSubmitted={refreshStaff}
                   />
                 </div>
 

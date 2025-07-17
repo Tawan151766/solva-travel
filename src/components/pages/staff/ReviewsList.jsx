@@ -17,7 +17,7 @@ export function ReviewsList({ reviews }) {
     // Apply filter
     if (filterBy !== "All Staff") {
       const rating = parseInt(filterBy.split(" ")[0]);
-      filtered = filtered.filter(review => review.rating === rating);
+      filtered = filtered.filter((review) => review.rating === rating);
     }
 
     // Apply sort
@@ -32,7 +32,7 @@ export function ReviewsList({ reviews }) {
         case "Lowest Rating":
           return a.rating - b.rating;
         case "Most Helpful":
-          return (b.likes - b.dislikes) - (a.likes - a.dislikes);
+          return b.likes - b.dislikes - (a.likes - a.dislikes);
         default:
           return 0;
       }
@@ -65,9 +65,9 @@ export function ReviewsList({ reviews }) {
         <h3 className="text-transparent bg-gradient-to-r from-[#FFD700] to-[#FFED4E] bg-clip-text text-lg sm:text-xl font-bold leading-tight tracking-[-0.015em] mb-4">
           All Reviews ({filteredAndSortedReviews.length})
         </h3>
-        
+
         {/* Filters */}
-        <ReviewFilters 
+        <ReviewFilters
           onSortChange={handleSortChange}
           onFilterChange={handleFilterChange}
         />
@@ -77,8 +77,11 @@ export function ReviewsList({ reviews }) {
       <div className="p-4">
         {currentReviews.length > 0 ? (
           <div className="flex flex-col gap-4 sm:gap-6">
-            {currentReviews.map((review) => (
-              <ReviewCard key={review.id} review={review} />
+            {currentReviews.map((review, index) => (
+              <ReviewCard
+                key={review.id || `review-${index}`}
+                review={review}
+              />
             ))}
           </div>
         ) : (

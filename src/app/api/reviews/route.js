@@ -10,9 +10,14 @@ const verifyToken = (token) => {
 
 export async function POST(request) {
   try {
+    console.log('Reviews API: POST request received');
+    
     // Get authorization header
     const authHeader = request.headers.get('authorization');
+    console.log('Reviews API: Auth header present:', !!authHeader);
+    
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.log('Reviews API: Missing or invalid auth header');
       return NextResponse.json({
         success: false,
         message: 'Access token is required'
@@ -20,9 +25,23 @@ export async function POST(request) {
     }
 
     const token = authHeader.substring(7);
-    const decoded = verifyToken(token);
+    console.log('Reviews API: Token extracted, length:', token.length);
+    
+    let decoded;
+    try {
+      decoded = verifyToken(token);
+      console.log('Reviews API: Token verified successfully, user ID:', decoded.userId);
+    } catch (tokenError) {
+      console.error('Reviews API: Token verification failed:', tokenError.message);
+      return NextResponse.json({
+        success: false,
+        message: 'Invalid or expired token'
+      }, { status: 401 });
+    }
 
     const body = await request.json();
+    console.log('Reviews API: Request body:', body);
+    
     const { 
       reviewedUserId, 
       rating, 
@@ -32,8 +51,18 @@ export async function POST(request) {
       bookingId 
     } = body;
 
+    console.log('Reviews API: Parsed data:', {
+      reviewedUserId,
+      rating,
+      title,
+      comment,
+      reviewType,
+      bookingId
+    });
+
     // Validation
     if (!reviewedUserId || !rating) {
+      console.log('Reviews API: Validation failed - missing required fields');
       return NextResponse.json({
         success: false,
         message: 'Reviewed user ID and rating are required'
@@ -136,9 +165,15 @@ export async function POST(request) {
 
   } catch (error) {
     console.error('Review creation error:', error);
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
     return NextResponse.json({
       success: false,
-      message: 'Internal server error'
+      message: `Internal server error: ${error.message}`,
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
     }, { status: 500 });
   }
 }
