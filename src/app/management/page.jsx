@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import UserManagement from "@/components/management/UserManagement";
 import BookingManagement from "@/components/management/BookingManagement";
 import PackageManagement from "@/components/management/PackageManagement";
+import GalleryManagement from "@/components/management/GalleryManagement";
 import { Users, Calendar, Package, BarChart3 } from "lucide-react";
 
 export default function ManagementPage() {
@@ -113,9 +114,21 @@ export default function ManagementPage() {
             {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
               {[
-                { title: "Total Users", icon: <Users />, value: stats.totalUsers },
-                { title: "Tour Requests", icon: <Calendar />, value: stats.totalBookings },
-                { title: "Total Packages", icon: <Package />, value: stats.totalPackages },
+                {
+                  title: "Total Users",
+                  icon: <Users />,
+                  value: stats.totalUsers,
+                },
+                {
+                  title: "Tour Requests",
+                  icon: <Calendar />,
+                  value: stats.totalBookings,
+                },
+                {
+                  title: "Total Packages",
+                  icon: <Package />,
+                  value: stats.totalPackages,
+                },
                 {
                   title: "Pending Requests",
                   icon: <BarChart3 />,
@@ -128,10 +141,16 @@ export default function ManagementPage() {
                   className="border border-[#FFD700]/20 rounded-lg bg-black/60 backdrop-blur-xl p-6 hover:bg-black/70 transition-all duration-300 shadow-lg"
                 >
                   <div className="flex items-center justify-between pb-2">
-                    <h3 className="text-sm font-medium text-white">{item.title}</h3>
+                    <h3 className="text-sm font-medium text-white">
+                      {item.title}
+                    </h3>
                     <div className="h-4 w-4 text-[#FFD700]">{item.icon}</div>
                   </div>
-                  <div className={`text-2xl font-bold ${item.color || "text-[#FFD700]"}`}>
+                  <div
+                    className={`text-2xl font-bold ${
+                      item.color || "text-[#FFD700]"
+                    }`}
+                  >
                     {item.value}
                   </div>
                 </div>
@@ -140,7 +159,7 @@ export default function ManagementPage() {
 
             {/* Tabs */}
             <Tabs defaultValue="users" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="users">
                   <Users className="h-4 w-4 mr-2" />
                   จัดการผู้ใช้งาน
@@ -153,12 +172,24 @@ export default function ManagementPage() {
                   <Package className="h-4 w-4 mr-2" />
                   จัดการแพ็คเกจ
                 </TabsTrigger>
+                <TabsTrigger value="gallery">
+                  <svg
+                    className="h-4 w-4 mr-2"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
+                  </svg>
+                  จัดการแกลเลอรี่
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="users">
                 <div className="space-y-4">
                   <div className="border border-[#FFD700]/20 rounded-lg bg-black/60 backdrop-blur-xl p-6">
-                    <h3 className="text-lg font-semibold text-white mb-2">จัดการผู้ใช้งาน</h3>
+                    <h3 className="text-lg font-semibold text-white mb-2">
+                      จัดการผู้ใช้งาน
+                    </h3>
                     <p className="text-white/70 text-sm mb-4">
                       จัดการผู้ใช้งานทั้งหมด ดูรายละเอียด และอัปเดตข้อมูลผู้ใช้
                     </p>
@@ -170,9 +201,12 @@ export default function ManagementPage() {
               <TabsContent value="bookings">
                 <div className="space-y-4">
                   <div className="border border-[#FFD700]/20 rounded-lg bg-black/60 backdrop-blur-xl p-6">
-                    <h3 className="text-lg font-semibold text-white mb-2">จัดการคำขอทัวร์</h3>
+                    <h3 className="text-lg font-semibold text-white mb-2">
+                      จัดการคำขอทัวร์
+                    </h3>
                     <p className="text-white/70 text-sm mb-4">
-                      ดูและจัดการคำขอทัวร์ส่วนตัวทั้งหมด อัปเดตสถานะ และจัดการคำขอของลูกค้า
+                      ดูและจัดการคำขอทัวร์ส่วนตัวทั้งหมด อัปเดตสถานะ
+                      และจัดการคำขอของลูกค้า
                     </p>
                     <BookingManagement />
                   </div>
@@ -182,11 +216,28 @@ export default function ManagementPage() {
               <TabsContent value="packages">
                 <div className="space-y-4">
                   <div className="border border-[#FFD700]/20 rounded-lg bg-black/60 backdrop-blur-xl p-6">
-                    <h3 className="text-lg font-semibold text-white mb-2">จัดการแพ็คเกจ</h3>
+                    <h3 className="text-lg font-semibold text-white mb-2">
+                      จัดการแพ็คเกจ
+                    </h3>
                     <p className="text-white/70 text-sm mb-4">
                       สร้าง แก้ไข และจัดการแพ็คเกจการท่องเที่ยวและรายละเอียด
                     </p>
                     <PackageManagement />
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="gallery">
+                <div className="space-y-4">
+                  <div className="border border-[#FFD700]/20 rounded-lg bg-black/60 backdrop-blur-xl p-6">
+                    <h3 className="text-lg font-semibold text-white mb-2">
+                      จัดการแกลเลอรี่
+                    </h3>
+                    <p className="text-white/70 text-sm mb-4">
+                      อัปโหลด แก้ไข และจัดการรูปภาพในแกลเลอรี่
+                      จัดหมวดหมู่และแท็กรูปภาพ
+                    </p>
+                    <GalleryManagement />
                   </div>
                 </div>
               </TabsContent>

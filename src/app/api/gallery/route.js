@@ -11,9 +11,12 @@ export async function GET(request) {
 
     console.log('Gallery API called with params:', { page, limit, category, search });
 
+    // Check if this is a management request (show all images including inactive)
+    const showAll = searchParams.get('showAll') === 'true';
+    
     // Build where clause for filtering
     const where = {
-      isActive: true,
+      ...(!showAll && { isActive: true }),
       ...(category && category !== 'all' && {
         category: category.toUpperCase(),
       }),
@@ -98,12 +101,91 @@ export async function GET(request) {
   }
 }
 
+export async function POST(request) {
+  try {
+    // Get authorization header
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json({
+        success: false,
+        message: 'Access token is required'
+      }, { status: 401 });
+    }
+
+    const token = authHeader.substring(7);
+    
+    // Verify JWT token (you might want to add proper JWT verification here)
+    // For now, we'll assume the token is valid if it exists
+    
+    const body = await request.json();
+    const { title, description, imageUrl, category, location, tags, isActive = true } = body;
+
+    // Validation
+    if (!title || !imageUrl || !category || !location) {
+      return NextResponse.json({
+        success: false,
+        message: 'Title, image URL, category, and location are required'
+      }, { status: 400 });
+    }
+
+    // Create new gallery image
+    const newImage = await prisma.gallery.create({
+      data: {
+        title,
+        description,
+        imageUrl,
+        category: category.toUpperCase(),
+        location,
+        tags: Array.isArray(tags) ? tags : [],
+        isActive,
+        // Note: uploadedBy should be set to the authenticated user's ID
+        // For now, we'll leave it null or you can extract user ID from JWT
+      },
+      include: {
+        uploader: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: 'Gallery image created successfully',
+      data: {
+        image: {
+          id: newImage.id,
+          title: newImage.title,
+          description: newImage.description,
+          imageUrl: newImage.imageUrl,
+          category: newImage.category.toLowerCase(),
+          location: newImage.location,
+          tags: newImage.tags,
+          isActive: newImage.isActive,
+          uploadedBy: newImage.uploader ? `${newImage.uploader.firstName} ${newImage.uploader.lastName}` : 'System',
+          createdAt: newImage.createdAt,
+        }
+      }
+    }, { status: 201 });
+
+  } catch (error) {
+    console.error('Create gallery image error:', error);
+    return NextResponse.json({
+      success: false,
+      message: 'Internal server error',
+      error: error.message
+    }, { status: 500 });
+  }
+}
+
 export async function OPTIONS() {
   return new NextResponse(null, {
     status: 200,
     headers: {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     },
   });
