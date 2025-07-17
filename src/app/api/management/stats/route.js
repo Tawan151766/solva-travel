@@ -24,7 +24,7 @@ export async function GET(request) {
       );
     }
 
-    // Check if user has operator or admin role
+    // Check if user has admin role
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId }
     });

@@ -14,7 +14,7 @@ export async function PUT(request, { params }) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decoded.userId;
 
-    // Check if user has operator/admin role
+    // Check if user has admin role
     const user = await prisma.user.findUnique({
       where: { id: userId }
     });
@@ -100,7 +100,7 @@ export async function DELETE(request, { params }) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decoded.userId;
 
-    // Check if user has operator/admin role
+    // Check if user has admin role
     const user = await prisma.user.findUnique({
       where: { id: userId }
     });

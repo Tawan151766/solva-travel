@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
-// Verify operator/admin role
+// Verify admin role
 async function verifyOperatorRole(token) {
   if (!token) {
     return { error: 'Authentication required', status: 401 };

@@ -18,10 +18,10 @@ export async function GET(request, { params }) {
     try {
       const decoded = verify(token, JWT_SECRET);
       
-      // Check if user has operator or admin role
-      if (!['OPERATOR', 'ADMIN'].includes(decoded.role)) {
+      // Check if user has admin role
+      if (decoded.role !== 'ADMIN') {
         return NextResponse.json({ 
-          message: 'Insufficient permissions. Operator or Admin role required.' 
+          message: 'Insufficient permissions. Admin role required.' 
         }, { status: 403 });
       }
 
@@ -90,10 +90,10 @@ export async function PUT(request, { params }) {
     try {
       const decoded = verify(token, JWT_SECRET);
       
-      // Check if user has operator or admin role
-      if (!['OPERATOR', 'ADMIN'].includes(decoded.role)) {
+      // Check if user has admin role
+      if (decoded.role !== 'ADMIN') {
         return NextResponse.json({ 
-          message: 'Insufficient permissions. Operator or Admin role required.' 
+          message: 'Insufficient permissions. Admin role required.' 
         }, { status: 403 });
       }
 
@@ -203,10 +203,10 @@ export async function DELETE(request, { params }) {
     try {
       const decoded = verify(token, JWT_SECRET);
       
-      // Check if user has operator or admin role
-      if (!['OPERATOR', 'ADMIN'].includes(decoded.role)) {
+      // Check if user has admin role
+      if (decoded.role !== 'ADMIN') {
         return NextResponse.json({ 
-          message: 'Insufficient permissions. Operator or Admin role required.' 
+          message: 'Insufficient permissions. Admin role required.' 
         }, { status: 403 });
       }
 

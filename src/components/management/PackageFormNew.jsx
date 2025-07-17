@@ -67,28 +67,41 @@ export function PackageFormNew({
     onSubmit(isEdit, submitData);
   };
 
-  // Initialize default data
+  // Initialize default data and normalize arrays
   useEffect(() => {
-    if (!formData.priceDetails) {
-      setFormData((prev) => ({
+    setFormData((prev) => {
+      // Helper function to ensure array format
+      const ensureArray = (value) => {
+        if (Array.isArray(value)) return value;
+        if (typeof value === "string") {
+          // Try to parse as comma-separated string
+          return value
+            .split(",")
+            .map((item) => item.trim())
+            .filter(Boolean);
+        }
+        return [];
+      };
+
+      return {
         ...prev,
-        priceDetails: {
+        priceDetails: prev.priceDetails || {
           "2_people": { total: 0, per_person: 0 },
           "4_people": { total: 0, per_person: 0 },
           "6_people": { total: 0, per_person: 0 },
           "8_people": { total: 0, per_person: 0 },
         },
-        includes: prev.includes || [],
-        excludes: prev.excludes || [],
-        highlights: prev.highlights || [],
-        tags: prev.tags || [],
-        images: prev.images || [],
-        galleryImages: prev.galleryImages || [],
+        includes: ensureArray(prev.includes),
+        excludes: ensureArray(prev.excludes),
+        highlights: ensureArray(prev.highlights),
+        tags: ensureArray(prev.tags),
+        images: ensureArray(prev.images),
+        galleryImages: ensureArray(prev.galleryImages),
         itinerary: prev.itinerary || {},
         accommodation: prev.accommodation || {},
-      }));
-    }
-  }, []);
+      };
+    });
+  }, [formData.id]); // Add dependency to re-run when editing different packages
 
   const renderBasicInfo = () => (
     <div className="space-y-6">
@@ -547,33 +560,34 @@ export function PackageFormNew({
         </div>
 
         {/* Selected highlights display */}
-        {(formData.highlights || []).length > 0 && (
-          <div className="mt-3">
-            <div className="text-[#FFD700] text-xs mb-2">รายการที่เลือก:</div>
-            <div className="flex flex-wrap gap-1">
-              {(formData.highlights || []).map((highlight, idx) => (
-                <span
-                  key={idx}
-                  className="inline-flex items-center gap-1 px-2 py-1 bg-[#FFD700]/20 text-[#FFD700] rounded text-xs"
-                >
-                  {highlight}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const updated = (formData.highlights || []).filter(
-                        (_, i) => i !== idx
-                      );
-                      setFormData({ ...formData, highlights: updated });
-                    }}
-                    className="text-red-400 hover:text-red-300 ml-1"
+        {Array.isArray(formData.highlights) &&
+          formData.highlights.length > 0 && (
+            <div className="mt-3">
+              <div className="text-[#FFD700] text-xs mb-2">รายการที่เลือก:</div>
+              <div className="flex flex-wrap gap-1">
+                {formData.highlights.map((highlight, idx) => (
+                  <span
+                    key={idx}
+                    className="inline-flex items-center gap-1 px-2 py-1 bg-[#FFD700]/20 text-[#FFD700] rounded text-xs"
                   >
-                    ×
-                  </button>
-                </span>
-              ))}
+                    {highlight}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const updated = (formData.highlights || []).filter(
+                          (_, i) => i !== idx
+                        );
+                        setFormData({ ...formData, highlights: updated });
+                      }}
+                      className="text-red-400 hover:text-red-300 ml-1"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
       </div>
 
       {/* Includes */}
@@ -622,11 +636,11 @@ export function PackageFormNew({
           />
         </div>
 
-        {(formData.includes || []).length > 0 && (
+        {Array.isArray(formData.includes) && formData.includes.length > 0 && (
           <div className="mt-3">
             <div className="text-green-400 text-xs mb-2">รายการที่เลือก:</div>
             <div className="flex flex-wrap gap-1">
-              {(formData.includes || []).map((item, idx) => (
+              {formData.includes.map((item, idx) => (
                 <span
                   key={idx}
                   className="inline-flex items-center gap-1 px-2 py-1 bg-green-600/20 text-green-400 rounded text-xs"
@@ -697,11 +711,11 @@ export function PackageFormNew({
           />
         </div>
 
-        {(formData.excludes || []).length > 0 && (
+        {Array.isArray(formData.excludes) && formData.excludes.length > 0 && (
           <div className="mt-3">
             <div className="text-red-400 text-xs mb-2">รายการที่เลือก:</div>
             <div className="flex flex-wrap gap-1">
-              {(formData.excludes || []).map((item, idx) => (
+              {formData.excludes.map((item, idx) => (
                 <span
                   key={idx}
                   className="inline-flex items-center gap-1 px-2 py-1 bg-red-600/20 text-red-400 rounded text-xs"
@@ -772,11 +786,11 @@ export function PackageFormNew({
           />
         </div>
 
-        {(formData.tags || []).length > 0 && (
+        {Array.isArray(formData.tags) && formData.tags.length > 0 && (
           <div className="mt-3">
             <div className="text-blue-400 text-xs mb-2">แท็กที่เลือก:</div>
             <div className="flex flex-wrap gap-1">
-              {(formData.tags || []).map((tag, idx) => (
+              {formData.tags.map((tag, idx) => (
                 <span
                   key={idx}
                   className="inline-flex items-center gap-1 px-2 py-1 bg-blue-600/20 text-blue-400 rounded text-xs"

@@ -314,11 +314,24 @@ export function usePackageManagement() {
         : "/api/management/packages";
       const method = isEdit ? "PUT" : "POST";
 
+      // Check if token exists
+      const token = localStorage.getItem("token");
+      if (!token) {
+        toast({
+          title: "Authentication Error",
+          description: "Please login again to continue",
+          variant: "destructive",
+        });
+        // Redirect to login or refresh page
+        window.location.href = "/";
+        return;
+      }
+
       const response = await fetch(url, {
         method,
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(submitData),
       });
@@ -334,6 +347,23 @@ export function usePackageManagement() {
         setSelectedPackage(null);
       } else {
         const errorData = await response.json();
+        
+        // Handle token-related errors
+        if (response.status === 401 || errorData.message === "Invalid token") {
+          toast({
+            title: "Session Expired",
+            description: "Please login again to continue",
+            variant: "destructive",
+          });
+          // Clear invalid token and redirect
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          setTimeout(() => {
+            window.location.href = "/";
+          }, 2000);
+          return;
+        }
+        
         toast({
           title: "Error",
           description:
