@@ -37,7 +37,8 @@ export async function POST(request) {
 
     // Validate required fields
     const requiredFields = ['contactName', 'contactEmail', 'contactPhone', 'destination', 'startDate', 'endDate', 'numberOfPeople'];
-    const missingFields = requiredFields.filter(field => !eval(field));
+    const requestData = { contactName, contactEmail, contactPhone, destination, startDate, endDate, numberOfPeople };
+    const missingFields = requiredFields.filter(field => !requestData[field]);
     
     if (missingFields.length > 0) {
       return NextResponse.json(
