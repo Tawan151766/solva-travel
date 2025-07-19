@@ -27,6 +27,11 @@ export function useToast() {
     };
   }, []);
 
+  const dismiss = useCallback((toastId) => {
+    toastState.toasts = toastState.toasts.filter(t => t.id !== toastId);
+    notifySubscribers(toastState.toasts);
+  }, []);
+
   const toast = useCallback(({ title, description, variant = "default", duration = 5000 }) => {
     const id = (++toastCount).toString();
     
@@ -57,12 +62,7 @@ export function useToast() {
         }
       }
     };
-  }, []);
-
-  const dismiss = useCallback((toastId) => {
-    toastState.toasts = toastState.toasts.filter(t => t.id !== toastId);
-    notifySubscribers(toastState.toasts);
-  }, []);
+  }, [dismiss]);
 
   return {
     toast,

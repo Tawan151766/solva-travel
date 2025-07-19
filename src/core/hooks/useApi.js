@@ -35,7 +35,7 @@ export function useApi(apiFunction, dependencies = [], immediate = true) {
     if (immediate && apiFunction) {
       execute();
     }
-  }, dependencies);
+  }, [immediate, apiFunction, execute, ...dependencies]);
 
   return {
     data,

@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
-export default function TourRequestSuccessPage() {
+function TourRequestSuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [request, setRequest] = useState(null);
@@ -223,5 +223,20 @@ export default function TourRequestSuccessPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function TourRequestSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-[#0a0804] via-[#1a1611] to-[#0a0804] flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-[#FFD700]/20 border-t-[#FFD700] rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-[#cdc08e] text-lg">กำลังโหลด...</p>
+        </div>
+      </div>
+    }>
+      <TourRequestSuccessContent />
+    </Suspense>
   );
 }

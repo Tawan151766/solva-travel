@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useAuth } from '@/contexts/AuthContext-simple';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
-export default function TourRequestPage() {
+function TourRequestContent() {
   const { user, isAuthenticated } = useAuth();
   const searchParams = useSearchParams();
   
@@ -655,5 +655,20 @@ export default function TourRequestPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function TourRequestPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-[#0a0804] via-[#1a1611] to-[#0a0804] flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-[#FFD700]/20 border-t-[#FFD700] rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-[#cdc08e] text-lg">กำลังโหลด...</p>
+        </div>
+      </div>
+    }>
+      <TourRequestContent />
+    </Suspense>
   );
 }
