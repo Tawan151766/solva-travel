@@ -1,0 +1,21 @@
+{"level":"info","message":"🚀 Solva Travel API Server started successfully","service":"solva-travel-api","timestamp":"2025-07-20 05:46:06"}
+{"level":"info","message":"📍 Server running on port 5000","service":"solva-travel-api","timestamp":"2025-07-20 05:46:06"}
+{"level":"info","message":"🌍 Environment: development","service":"solva-travel-api","timestamp":"2025-07-20 05:46:06"}
+{"level":"info","message":"📚 API Documentation: http://localhost:5000/api/v1/docs","service":"solva-travel-api","timestamp":"2025-07-20 05:46:06"}
+{"level":"info","message":"❤️  Health Check: http://localhost:5000/api/v1/health","service":"solva-travel-api","timestamp":"2025-07-20 05:46:06"}
+{"ip":"::1","level":"info","message":"GET /api/v1/docs - Request received","method":"GET","service":"solva-travel-api","timestamp":"2025-07-20 05:46:57","url":"/api/v1/docs","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+{"duration":9,"ip":"::1","level":"warn","message":"GET /api/v1/docs - 404 - 9ms","method":"GET","service":"solva-travel-api","statusCode":404,"timestamp":"2025-07-20 05:46:57","url":"/api/v1/docs"}
+{"ip":"::1","level":"info","message":"GET /favicon.ico - Request received","method":"GET","service":"solva-travel-api","timestamp":"2025-07-20 05:46:57","url":"/favicon.ico","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+{"duration":2,"ip":"::1","level":"warn","message":"GET /favicon.ico - 404 - 2ms","method":"GET","service":"solva-travel-api","statusCode":404,"timestamp":"2025-07-20 05:46:57","url":"/favicon.ico"}
+{"level":"info","message":"🚀 Solva Travel API Server started successfully","service":"solva-travel-api","timestamp":"2025-07-20 05:47:39"}
+{"level":"info","message":"📍 Server running on port 5000","service":"solva-travel-api","timestamp":"2025-07-20 05:47:39"}
+{"level":"info","message":"🌍 Environment: development","service":"solva-travel-api","timestamp":"2025-07-20 05:47:39"}
+{"level":"info","message":"📚 API Documentation: http://localhost:5000/api/v1/docs","service":"solva-travel-api","timestamp":"2025-07-20 05:47:39"}
+{"level":"info","message":"❤️  Health Check: http://localhost:5000/api/v1/health","service":"solva-travel-api","timestamp":"2025-07-20 05:47:39"}
+{"level":"info","message":"🚀 Solva Travel API Server started successfully","service":"solva-travel-api","timestamp":"2025-07-20 05:51:15"}
+{"level":"info","message":"📍 Server running on port 5000","service":"solva-travel-api","timestamp":"2025-07-20 05:51:15"}
+{"level":"info","message":"🌍 Environment: development","service":"solva-travel-api","timestamp":"2025-07-20 05:51:15"}
+{"level":"info","message":"📚 API Documentation: http://localhost:5000/api/v1/docs","service":"solva-travel-api","timestamp":"2025-07-20 05:51:15"}
+{"level":"info","message":"❤️  Health Check: http://localhost:5000/api/v1/health","service":"solva-travel-api","timestamp":"2025-07-20 05:51:15"}
+{"ip":"::1","level":"info","message":"GET /api/v1 - Request received","method":"GET","service":"solva-travel-api","timestamp":"2025-07-20 05:51:52","url":"/api/v1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+{"duration":3,"ip":"::1","level":"warn","message":"GET /api/v1 - 404 - 3ms","method":"GET","service":"solva-travel-api","statusCode":404,"timestamp":"2025-07-20 05:51:52","url":"/api/v1"}
