@@ -22,6 +22,13 @@ const notoSans = Noto_Sans({
   display: "swap",
 });
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+};
+
 export const metadata = {
   title: {
     default: "Wanderlust - Travel Packages",
@@ -41,12 +48,6 @@ export const metadata = {
   authors: [{ name: "Wanderlust Team" }],
   creator: "Wanderlust",
   publisher: "Wanderlust",
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 5,
-    userScalable: true,
-  },
   formatDetection: {
     email: false,
     address: false,
@@ -105,10 +106,6 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" className="h-full">
       <head>
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1, maximum-scale=1"
-        />
         <meta name="theme-color" content="#231f10" />
         <meta name="color-scheme" content="dark light" />
         <link rel="icon" type="image/x-icon" href="/favicon.ico" />
