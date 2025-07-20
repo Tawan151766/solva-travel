@@ -35,7 +35,7 @@ export function useApi(apiFunction, dependencies = [], immediate = true) {
     if (immediate && apiFunction) {
       execute();
     }
-  }, [immediate, execute, ...dependencies]);
+  }, [immediate, apiFunction, execute]);
 
   return {
     data,
@@ -270,7 +270,7 @@ export function useAsync(asyncFunction, immediate = true) {
   const [error, setError] = useState(null);
   const [data, setData] = useState(null);
 
-  const execute = async (...args) => {
+  const execute = useCallback(async (...args) => {
     setLoading(true);
     setError(null);
 
@@ -284,13 +284,13 @@ export function useAsync(asyncFunction, immediate = true) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [asyncFunction]);
 
   useEffect(() => {
     if (immediate) {
       execute();
     }
-  }, []);
+  }, [immediate, execute]);
 
   return {
     loading,
