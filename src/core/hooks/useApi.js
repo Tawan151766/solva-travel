@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 /**
  * Custom hook for API calls with loading, error, and data states
@@ -8,7 +8,7 @@ export function useApi(apiFunction, dependencies = [], immediate = true) {
   const [loading, setLoading] = useState(immediate);
   const [error, setError] = useState(null);
 
-  const execute = async (...args) => {
+  const execute = useCallback(async (...args) => {
     setLoading(true);
     setError(null);
     
@@ -29,13 +29,13 @@ export function useApi(apiFunction, dependencies = [], immediate = true) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [apiFunction]);
 
   useEffect(() => {
     if (immediate && apiFunction) {
       execute();
     }
-  }, [immediate, apiFunction, execute, ...dependencies]);
+  }, [immediate, execute, ...dependencies]);
 
   return {
     data,

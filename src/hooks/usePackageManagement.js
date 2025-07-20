@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 
 const getInitialFormData = () => ({
@@ -64,11 +64,7 @@ export function usePackageManagement() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
-  useEffect(() => {
-    fetchPackages();
-  }, []);
-
-  const fetchPackages = async () => {
+  const fetchPackages = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch("/api/management/packages", {
@@ -97,7 +93,11 @@ export function usePackageManagement() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    fetchPackages();
+  }, [fetchPackages]);
 
   const handleEdit = (pkg) => {
     setSelectedPackage(pkg);
