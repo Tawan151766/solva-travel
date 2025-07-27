@@ -63,7 +63,7 @@ export function useToast() {
       }
     };
   }, [dismiss]);
-
+// Add toast to the state and notify subscribers
   return {
     toast,
     dismiss,
