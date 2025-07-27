@@ -31,6 +31,7 @@ export function generateOrganizationSchema() {
   };
 }
 
+// Test
 export function generateWebsiteSchema() {
   return {
     "@context": "https://schema.org",
