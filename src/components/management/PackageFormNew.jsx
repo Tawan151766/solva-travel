@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import ImageUploader from "../ui/ImageUploader";
 
 export function PackageFormNew({
   formData,
@@ -51,12 +52,12 @@ export function PackageFormNew({
 
       submitData.itinerary = JSON.stringify(cleanItinerary);
 
-      // Clean up accommodation
+      // Clean up accommodation - keep as object, don't stringify
       if (
         formData.accommodation &&
         typeof formData.accommodation === "object"
       ) {
-        submitData.accommodation = JSON.stringify(formData.accommodation);
+        submitData.accommodation = formData.accommodation;
       }
     } catch (err) {
       alert("ข้อมูลไม่ถูกต้อง ไม่สามารถบันทึกได้");
@@ -1377,125 +1378,129 @@ export function PackageFormNew({
 
   const renderMedia = () => (
     <div className="space-y-6">
+      {/* Main Image Upload */}
       <div>
-        <label className="block text-[#FFD700] text-sm font-medium mb-2">
-          รูปภาพหลัก (Main Image URL) *
+        <label className="block text-[#FFD700] text-sm font-medium mb-4">
+          รูปภาพหลัก (Main Image) *
         </label>
-        <input
-          type="url"
-          value={formData.imageUrl || ""}
-          onChange={(e) =>
-            setFormData({ ...formData, imageUrl: e.target.value })
+        <ImageUploader
+          onImageUploaded={(imageUrl) => 
+            setFormData({ ...formData, imageUrl })
           }
-          placeholder="https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800&h=600&fit=crop"
-          className="w-full px-4 py-3 bg-black/50 border border-[#FFD700]/30 rounded-xl text-white placeholder-white/50 focus:outline-none focus:border-[#FFD700] focus:bg-black/70 transition-all"
-          required
+          currentImage={formData.imageUrl}
+          type="packages"
+          multiple={false}
+          className="mb-4"
         />
-        {formData.imageUrl && (
-          <div className="mt-2 relative w-full h-48 rounded-lg overflow-hidden">
-            <img
-              src={formData.imageUrl}
-              alt="Preview"
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                e.target.style.display = "none";
-                console.log("Image failed to load");
-              }}
-            />
-          </div>
-        )}
+        <p className="text-white/50 text-xs mt-2">
+          รูปภาพหลักที่จะแสดงในหน้ารายการแพ็คเกจ
+        </p>
       </div>
 
-      {/* Additional Images */}
+      {/* Additional Images Upload */}
       <div>
-        <label className="block text-[#FFD700] text-sm font-medium mb-2">
+        <label className="block text-[#FFD700] text-sm font-medium mb-4">
           รูปภาพเพิ่มเติม (Additional Images)
         </label>
-        {(formData.images || []).map((image, idx) => (
-          <div key={idx} className="flex items-center gap-2 mb-2">
-            <input
-              type="url"
-              value={image}
-              onChange={(e) => {
-                const updated = [...(formData.images || [])];
-                updated[idx] = e.target.value;
-                setFormData({ ...formData, images: updated });
-              }}
-              className="flex-1 px-3 py-2 bg-black/50 border border-[#FFD700]/30 rounded-lg text-white"
-              placeholder="URL รูปภาพ"
-            />
-            <button
-              type="button"
-              onClick={() => {
-                const updated = (formData.images || []).filter(
-                  (_, i) => i !== idx
-                );
-                setFormData({ ...formData, images: updated });
-              }}
-              className="text-red-400 hover:text-red-300 px-2 py-1"
-            >
-              ลบ
-            </button>
+        
+        {/* Current additional images */}
+        {(formData.images || []).length > 0 && (
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+            {(formData.images || []).map((image, idx) => (
+              <div key={idx} className="relative group">
+                <img
+                  src={image}
+                  alt={`Additional image ${idx + 1}`}
+                  className="w-full h-32 object-cover rounded-lg"
+                  onError={(e) => {
+                    e.target.style.display = "none";
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const updated = (formData.images || []).filter(
+                      (_, i) => i !== idx
+                    );
+                    setFormData({ ...formData, images: updated });
+                  }}
+                  className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
           </div>
-        ))}
-        <button
-          type="button"
-          onClick={() =>
-            setFormData({
-              ...formData,
-              images: [...(formData.images || []), ""],
-            })
-          }
-          className="mt-2 px-4 py-2 bg-[#FFD700]/10 text-[#FFD700] rounded-lg text-sm hover:bg-[#FFD700]/20 transition-colors"
-        >
-          + เพิ่มรูปภาพ
-        </button>
+        )}
+
+        <ImageUploader
+          onImageUploaded={(imageUrls) => {
+            const newImages = Array.isArray(imageUrls) ? imageUrls : [imageUrls];
+            setFormData({ 
+              ...formData, 
+              images: [...(formData.images || []), ...newImages]
+            });
+          }}
+          type="packages"
+          multiple={true}
+          className="mb-4"
+        />
+        <p className="text-white/50 text-xs">
+          รูปภาพเพิ่มเติมที่จะแสดงในรายละเอียดแพ็คเกจ (สามารถเลือกหลายไฟล์พร้อมกัน)
+        </p>
       </div>
 
-      {/* Gallery Images */}
+      {/* Gallery Images Upload */}
       <div>
-        <label className="block text-[#FFD700] text-sm font-medium mb-2">
+        <label className="block text-[#FFD700] text-sm font-medium mb-4">
           รูปภาพแกลเลอรี่ (Gallery Images)
         </label>
-        {(formData.galleryImages || []).map((image, idx) => (
-          <div key={idx} className="flex items-center gap-2 mb-2">
-            <input
-              type="url"
-              value={image}
-              onChange={(e) => {
-                const updated = [...(formData.galleryImages || [])];
-                updated[idx] = e.target.value;
-                setFormData({ ...formData, galleryImages: updated });
-              }}
-              className="flex-1 px-3 py-2 bg-black/50 border border-[#FFD700]/30 rounded-lg text-white"
-              placeholder="URL รูปภาพแกลเลอรี่"
-            />
-            <button
-              type="button"
-              onClick={() => {
-                const updated = (formData.galleryImages || []).filter(
-                  (_, i) => i !== idx
-                );
-                setFormData({ ...formData, galleryImages: updated });
-              }}
-              className="text-red-400 hover:text-red-300 px-2 py-1"
-            >
-              ลบ
-            </button>
+        
+        {/* Current gallery images */}
+        {(formData.galleryImages || []).length > 0 && (
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+            {(formData.galleryImages || []).map((image, idx) => (
+              <div key={idx} className="relative group">
+                <img
+                  src={image}
+                  alt={`Gallery image ${idx + 1}`}
+                  className="w-full h-32 object-cover rounded-lg"
+                  onError={(e) => {
+                    e.target.style.display = "none";
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const updated = (formData.galleryImages || []).filter(
+                      (_, i) => i !== idx
+                    );
+                    setFormData({ ...formData, galleryImages: updated });
+                  }}
+                  className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
           </div>
-        ))}
-        <button
-          type="button"
-          onClick={() =>
-            setFormData({
-              ...formData,
-              galleryImages: [...(formData.galleryImages || []), ""],
-            })
-          }
-          className="mt-2 px-4 py-2 bg-[#FFD700]/10 text-[#FFD700] rounded-lg text-sm hover:bg-[#FFD700]/20 transition-colors"
-        >
-          + เพิ่มรูปแกลเลอรี่
-        </button>
+        )}
+
+        <ImageUploader
+          onImageUploaded={(imageUrls) => {
+            const newImages = Array.isArray(imageUrls) ? imageUrls : [imageUrls];
+            setFormData({ 
+              ...formData, 
+              galleryImages: [...(formData.galleryImages || []), ...newImages]
+            });
+          }}
+          type="packages"
+          multiple={true}
+          className="mb-4"
+        />
+        <p className="text-white/50 text-xs">
+          รูปภาพสำหรับแกลเลอรี่ที่จะแสดงในหน้าแกลเลอรี่ของเว็บไซต์
+        </p>
       </div>
     </div>
   );

@@ -160,10 +160,10 @@ export async function PUT(request, { params }) {
             accommodation = JSON.parse(accommodation);
           }
           
-          if (typeof accommodation !== 'object' || accommodation === null) {
+          if (accommodation !== null && typeof accommodation !== 'object') {
             return NextResponse.json({
               success: false,
-              message: 'Invalid accommodation format. Must be an object.'
+              message: 'Invalid JSON format in Accommodation field. Must be an object or array.'
             }, { status: 400 });
           }
           
@@ -172,7 +172,7 @@ export async function PUT(request, { params }) {
           console.error('Accommodation parsing error:', error);
           return NextResponse.json({
             success: false,
-            message: 'Invalid JSON format in Accommodation field'
+            message: 'Invalid JSON format in Accommodation field. Must be an object or array.'
           }, { status: 400 });
         }
       }

@@ -164,14 +164,25 @@ export async function POST(req) {
     }
     
     // Process accommodation data with error handling if it exists
-    if (body.accommodation && typeof body.accommodation === 'string') {
-      try {
-        body.accommodation = JSON.parse(body.accommodation);
-      } catch (error) {
-        console.error('Accommodation parsing error:', error);
+    if (body.accommodation !== undefined) {
+      if (typeof body.accommodation === 'string') {
+        try {
+          body.accommodation = JSON.parse(body.accommodation);
+        } catch (error) {
+          console.error('Accommodation parsing error:', error);
+          return NextResponse.json({
+            success: false,
+            message: 'Invalid JSON format in Accommodation field. Must be an object or array.'
+          }, { status: 400 });
+        }
+      }
+      
+      // Validate that accommodation is an object or array
+      if (body.accommodation !== null && 
+          typeof body.accommodation !== 'object') {
         return NextResponse.json({
           success: false,
-          message: 'Invalid JSON format in Accommodation field'
+          message: 'Invalid JSON format in Accommodation field. Must be an object or array.'
         }, { status: 400 });
       }
     }

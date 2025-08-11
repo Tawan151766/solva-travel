@@ -8,54 +8,54 @@ datasource db {
 }
 
 model User {
-  id                     String              @id @default(cuid())
-  email                  String              @unique
+  id                     String         @id @default(cuid())
+  email                  String         @unique
   password               String
   firstName              String
   lastName               String
   phone                  String?
   profileImage           String?
-  role                   UserRole            @default(USER)
-  isActive               Boolean             @default(true)
-  isEmailVerified        Boolean             @default(false)
+  role                   UserRole       @default(USER)
+  isActive               Boolean        @default(true)
+  isEmailVerified        Boolean        @default(false)
   emailVerificationToken String?
   resetPasswordToken     String?
   resetPasswordExpires   DateTime?
   lastLoginAt            DateTime?
-  createdAt              DateTime            @default(now())
-  updatedAt              DateTime            @updatedAt
+  createdAt              DateTime       @default(now())
+  updatedAt              DateTime       @updatedAt
   bookings               Booking[]
   customRequests         CustomRequest[]
   galleryImages          Gallery[]
-  reviewsReceived        Review[]            @relation("ReviewedUser")
-  reviewsGiven           Review[]            @relation("ReviewerUser")
+  reviewsReceived        Review[]       @relation("ReviewedUser")
+  reviewsGiven           Review[]       @relation("ReviewerUser")
   staffProfile           StaffProfile?
   systemLogs             SystemLog[]
-  users_A                User[]              @relation("StaffManagement")
-  users_B                User[]              @relation("StaffManagement")
+  users_A                User[]         @relation("StaffManagement")
+  users_B                User[]         @relation("StaffManagement")
 
   @@map("users")
 }
 
 model StaffProfile {
-  id                 String              @id @default(cuid())
-  userId             String              @unique
-  employeeId         String              @unique
-  department         Department
-  position           String
-  salary             Decimal?
-  hireDate           DateTime
-  bio                String?
-  specializations    String[]
-  languages          String[]
-  rating             Float?              @default(0)
-  totalReviews       Int                 @default(0)
-  workSchedule       Json?
-  isAvailable        Boolean             @default(true)
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
-  customRequests     CustomRequest[]
-  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id              String          @id @default(cuid())
+  userId          String          @unique
+  employeeId      String          @unique
+  department      Department
+  position        String
+  salary          Decimal?
+  hireDate        DateTime
+  bio             String?
+  specializations String[]
+  languages       String[]
+  rating          Float?          @default(0)
+  totalReviews    Int             @default(0)
+  workSchedule    Json?
+  isAvailable     Boolean         @default(true)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  customRequests  CustomRequest[]
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("staff_profiles")
 }
@@ -85,31 +85,31 @@ model Review {
 }
 
 model Booking {
-  id                  String             @id @default(cuid())
-  bookingNumber       String             @unique
+  id                  String         @id @default(cuid())
+  bookingNumber       String         @unique
   customerId          String
   packageId           String?
   startDate           DateTime
   endDate             DateTime
   totalAmount         Decimal
-  status              BookingStatus      @default(PENDING)
+  status              BookingStatus  @default(PENDING)
   assignedStaff       Json?
-  createdAt           DateTime           @default(now())
-  updatedAt           DateTime           @updatedAt
-  bookingType         BookingType        @default(PACKAGE)
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+  bookingType         BookingType    @default(PACKAGE)
   customRequestId     String?
   customerEmail       String
   customerName        String
   customerPhone       String
   notes               String?
-  numberOfPeople      Int                @default(1)
+  numberOfPeople      Int            @default(1)
   paymentDate         DateTime?
   paymentMethod       String?
-  paymentStatus       PaymentStatus      @default(PENDING)
+  paymentStatus       PaymentStatus  @default(PENDING)
   specialRequirements String?
-  customRequest       CustomRequest?     @relation(fields: [customRequestId], references: [id])
-  customer            User               @relation(fields: [customerId], references: [id])
-  package             TravelPackage?     @relation(fields: [packageId], references: [id])
+  customRequest       CustomRequest? @relation(fields: [customRequestId], references: [id])
+  customer            User           @relation(fields: [customerId], references: [id])
+  package             TravelPackage? @relation(fields: [packageId], references: [id])
   reviews             Review[]
 
   @@map("bookings")
@@ -118,37 +118,35 @@ model Booking {
 model TravelPackage {
   id             String    @id @default(cuid())
   name           String
+  title          String?
   description    String
+  overview       String?
   price          Decimal
+  priceDetails   Json?
   duration       Int
+  durationText   String?
   maxCapacity    Int
   location       String
-  images         String[]
+  destination    String?
+  category       String?
+  difficulty     String?
+  highlights     String[]
+  includes       String[]
+  excludes       String[]
+  tags           String[]
+  itinerary      Json?
+  accommodation  Json?
   isActive       Boolean   @default(true)
+  isRecommended  Boolean   @default(false)
+  rating         Float?    @default(0)
+  totalReviews   Int       @default(0)
+  seoTitle       String?
+  seoDescription String?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
-  accommodation  Json?
-  category       String?
-  destination    String?
-  difficulty     String?
-  durationText   String?
-  excludes       String[]
-  highlights     String[]
-  imageUrl       String?
-  includes       String[]
-  isRecommended  Boolean   @default(false)
-  itinerary      Json?
-  overview       String?
-  priceDetails   Json?
-  rating         Float?    @default(0)
-  seoDescription String?
-  seoTitle       String?
-  tags           String[]
-  title          String?
-  totalReviews   Int       @default(0)
   bookings       Booking[]
-  galleryImages  Gallery[]
   reviews        Review[]  @relation("PackageReviews")
+  galleryImages  Gallery[] @relation("PackageGallery")
 
   @@map("travel_packages")
 }
@@ -167,25 +165,26 @@ model SystemLog {
 }
 
 model Gallery {
-  id          String             @id @default(cuid())
+  id          String            @id @default(cuid())
   title       String
   description String?
   imageUrl    String
   category    GalleryCategory
-  imageType   GalleryImageType   @default(GALLERY)
-  packageId   String?
   location    String
   tags        String[]
-  isActive    Boolean            @default(true)
+  imageType   GalleryImageType? @default(GALLERY)
+  packageId   String?
+  isActive    Boolean           @default(true)
   uploadedBy  String?
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
-  package     TravelPackage?     @relation(fields: [packageId], references: [id])
-  uploader    User?              @relation(fields: [uploadedBy], references: [id])
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  package     TravelPackage?    @relation("PackageGallery", fields: [packageId], references: [id])
+  uploader    User?             @relation(fields: [uploadedBy], references: [id])
 
   @@map("gallery_images")
 }
 
+// New unified CustomRequest model replacing CustomTourRequest and CustomBooking
 model CustomRequest {
   id                  String               @id @default(cuid())
   requestNumber       String               @unique
@@ -221,8 +220,7 @@ model CustomRequest {
   @@map("custom_requests")
 }
 
-
-
+// Enums
 enum UserRole {
   USER
   STAFF
@@ -283,6 +281,12 @@ enum GalleryCategory {
   OTHER
 }
 
+enum GalleryImageType {
+  MAIN
+  ADDITIONAL
+  GALLERY
+}
+
 enum CustomRequestType {
   TOUR_REQUEST
   CUSTOM_BOOKING
@@ -295,10 +299,4 @@ enum CustomRequestStatus {
   CONFIRMED
   CANCELLED
   COMPLETED
-}
-
-enum GalleryImageType {
-  MAIN
-  ADDITIONAL
-  GALLERY
 }

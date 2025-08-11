@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import ImageUploader from "../ui/ImageUploader";
 
 export function PackageForm({
   formData,
@@ -433,48 +434,67 @@ export function PackageForm({
         <h3 className="text-lg font-semibold text-[#FFD700] border-b border-[#FFD700]/30 pb-2">
           รูปภาพ
         </h3>
+        
+        {/* Main Image Upload */}
         <div>
-          <label className="block text-[#FFD700] text-sm font-medium mb-2">
-            รูปภาพหลัก (Main Image URL) *
+          <label className="block text-[#FFD700] text-sm font-medium mb-4">
+            รูปภาพหลัก (Main Image) *
           </label>
-          <input
-            type="url"
-            value={formData.imageUrl}
-            onChange={(e) =>
-              setFormData({ ...formData, imageUrl: e.target.value })
+          <ImageUploader
+            onImageUploaded={(imageUrl) => 
+              setFormData({ ...formData, imageUrl })
             }
-            placeholder="https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800&h=600&fit=crop"
-            className="w-full px-4 py-3 bg-black/50 border border-[#FFD700]/30 rounded-xl text-white placeholder-white/50 focus:outline-none focus:border-[#FFD700] focus:bg-black/70 transition-all"
-            required
+            currentImage={formData.imageUrl}
+            type="packages"
+            multiple={false}
+            className="mb-4"
           />
         </div>
+
+        {/* Additional Images - Convert string to array for compatibility */}
         <div>
-          <label className="block text-[#FFD700] text-sm font-medium mb-2">
-            รูปภาพเพิ่มเติม (Additional Images - คั่นด้วยคอมมา)
+          <label className="block text-[#FFD700] text-sm font-medium mb-4">
+            รูปภาพเพิ่มเติม (Additional Images)
           </label>
-          <textarea
-            value={formData.images}
-            onChange={(e) =>
-              setFormData({ ...formData, images: e.target.value })
-            }
-            placeholder="URL1, URL2, URL3"
-            className="w-full px-4 py-3 bg-black/50 border border-[#FFD700]/30 rounded-xl text-white placeholder-white/50 focus:outline-none focus:border-[#FFD700] focus:bg-black/70 transition-all"
-            rows={2}
+          <ImageUploader
+            onImageUploaded={(imageUrls) => {
+              const newImages = Array.isArray(imageUrls) ? imageUrls : [imageUrls];
+              const currentImages = formData.images ? formData.images.split(',').map(img => img.trim()).filter(img => img) : [];
+              const allImages = [...currentImages, ...newImages];
+              setFormData({ ...formData, images: allImages.join(', ') });
+            }}
+            type="packages"
+            multiple={true}
+            className="mb-4"
           />
+          {formData.images && (
+            <div className="mt-2 p-2 bg-black/30 rounded text-xs text-white/70">
+              ปัจจุบัน: {formData.images}
+            </div>
+          )}
         </div>
+
+        {/* Gallery Images - Convert string to array for compatibility */}
         <div>
-          <label className="block text-[#FFD700] text-sm font-medium mb-2">
-            รูปภาพแกลเลอรี่ (Gallery Images - คั่นด้วยคอมมา)
+          <label className="block text-[#FFD700] text-sm font-medium mb-4">
+            รูปภาพแกลเลอรี่ (Gallery Images)
           </label>
-          <textarea
-            value={formData.galleryImages}
-            onChange={(e) =>
-              setFormData({ ...formData, galleryImages: e.target.value })
-            }
-            placeholder="URL1, URL2, URL3"
-            className="w-full px-4 py-3 bg-black/50 border border-[#FFD700]/30 rounded-xl text-white placeholder-white/50 focus:outline-none focus:border-[#FFD700] focus:bg-black/70 transition-all"
-            rows={2}
+          <ImageUploader
+            onImageUploaded={(imageUrls) => {
+              const newImages = Array.isArray(imageUrls) ? imageUrls : [imageUrls];
+              const currentGalleryImages = formData.galleryImages ? formData.galleryImages.split(',').map(img => img.trim()).filter(img => img) : [];
+              const allGalleryImages = [...currentGalleryImages, ...newImages];
+              setFormData({ ...formData, galleryImages: allGalleryImages.join(', ') });
+            }}
+            type="packages"
+            multiple={true}
+            className="mb-4"
           />
+          {formData.galleryImages && (
+            <div className="mt-2 p-2 bg-black/30 rounded text-xs text-white/70">
+              ปัจจุบัน: {formData.galleryImages}
+            </div>
+          )}
         </div>
       </div>
 

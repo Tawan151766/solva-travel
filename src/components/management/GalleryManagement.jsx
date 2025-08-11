@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import ImageUploader from "../ui/ImageUploader";
 import { 
   Plus, 
   Edit, 
@@ -403,18 +404,19 @@ export default function GalleryManagement() {
                   />
                 </div>
 
-                {/* Image URL */}
+                {/* Image Upload */}
                 <div>
-                  <label className="block text-[#FFD700] text-sm font-medium mb-2">
-                    URL รูปภาพ *
+                  <label className="block text-[#FFD700] text-sm font-medium mb-4">
+                    รูปภาพ *
                   </label>
-                  <input
-                    type="url"
-                    required
-                    value={formData.imageUrl}
-                    onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                    className="w-full px-4 py-2 bg-black/50 border border-[#FFD700]/30 rounded-xl text-white placeholder-white/50 focus:outline-none focus:border-[#FFD700] focus:bg-black/70 transition-all"
-                    placeholder="https://example.com/image.jpg"
+                  <ImageUploader
+                    onImageUploaded={(imageUrl) => 
+                      setFormData({ ...formData, imageUrl })
+                    }
+                    currentImage={formData.imageUrl}
+                    type="gallery"
+                    multiple={false}
+                    className="mb-4"
                   />
                 </div>
 

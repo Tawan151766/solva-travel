@@ -4,7 +4,6 @@ import { notFound } from "next/navigation";
 import { use, useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { getRelevantGalleryImages } from "@/data/galleryData";
 
 export default function PackagePage({ params }) {
   // Unwrap params Promise using React.use()

@@ -176,13 +176,15 @@ export function usePackageManagement() {
       
       if (formData.accommodation) {
         try {
-          // If it's already an object, no need to parse
-          if (typeof formData.accommodation === 'object') {
+          // If it's already an object, use it directly
+          if (typeof formData.accommodation === 'object' && formData.accommodation !== null) {
             parsedAccommodation = formData.accommodation;
-          } else {
+          } else if (typeof formData.accommodation === 'string') {
             // Ensure it's a proper JSON string before parsing
             const accommodationStr = formData.accommodation.trim();
-            if ((accommodationStr.startsWith('{') && accommodationStr.endsWith('}')) || 
+            if (accommodationStr === '') {
+              parsedAccommodation = {};
+            } else if ((accommodationStr.startsWith('{') && accommodationStr.endsWith('}')) || 
                 (accommodationStr.startsWith('[') && accommodationStr.endsWith(']'))) {
               parsedAccommodation = JSON.parse(accommodationStr);
             } else {
@@ -194,12 +196,15 @@ export function usePackageManagement() {
               });
               return;
             }
+          } else {
+            // Handle other types
+            parsedAccommodation = {};
           }
         } catch (error) {
           console.error("Accommodation parsing error:", error);
           toast({
             title: "Error",
-            description: "Invalid JSON format in Accommodation field",
+            description: "Invalid JSON format in Accommodation field. Must be an object or array.",
             variant: "destructive",
           });
           return;

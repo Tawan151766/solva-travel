@@ -25,7 +25,8 @@ model User {
   createdAt              DateTime            @default(now())
   updatedAt              DateTime            @updatedAt
   bookings               Booking[]
-  customRequests         CustomRequest[]
+  customBookings         CustomBooking[]
+  customTourRequests     CustomTourRequest[]
   galleryImages          Gallery[]
   reviewsReceived        Review[]            @relation("ReviewedUser")
   reviewsGiven           Review[]            @relation("ReviewerUser")
@@ -54,7 +55,8 @@ model StaffProfile {
   isAvailable        Boolean             @default(true)
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
-  customRequests     CustomRequest[]
+  customBookings     CustomBooking[]
+  customTourRequests CustomTourRequest[]
   user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("staff_profiles")
@@ -97,7 +99,7 @@ model Booking {
   createdAt           DateTime           @default(now())
   updatedAt           DateTime           @updatedAt
   bookingType         BookingType        @default(PACKAGE)
-  customRequestId     String?
+  customTourRequestId String?
   customerEmail       String
   customerName        String
   customerPhone       String
@@ -107,7 +109,7 @@ model Booking {
   paymentMethod       String?
   paymentStatus       PaymentStatus      @default(PENDING)
   specialRequirements String?
-  customRequest       CustomRequest?     @relation(fields: [customRequestId], references: [id])
+  customTourRequest   CustomTourRequest? @relation(fields: [customTourRequestId], references: [id])
   customer            User               @relation(fields: [customerId], references: [id])
   package             TravelPackage?     @relation(fields: [packageId], references: [id])
   reviews             Review[]
@@ -133,6 +135,7 @@ model TravelPackage {
   difficulty     String?
   durationText   String?
   excludes       String[]
+  galleryImages  String[]
   highlights     String[]
   imageUrl       String?
   includes       String[]
@@ -147,7 +150,6 @@ model TravelPackage {
   title          String?
   totalReviews   Int       @default(0)
   bookings       Booking[]
-  galleryImages  Gallery[]
   reviews        Review[]  @relation("PackageReviews")
 
   @@map("travel_packages")
@@ -167,29 +169,25 @@ model SystemLog {
 }
 
 model Gallery {
-  id          String             @id @default(cuid())
+  id          String          @id @default(cuid())
   title       String
   description String?
   imageUrl    String
   category    GalleryCategory
-  imageType   GalleryImageType   @default(GALLERY)
-  packageId   String?
   location    String
   tags        String[]
-  isActive    Boolean            @default(true)
+  isActive    Boolean         @default(true)
   uploadedBy  String?
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
-  package     TravelPackage?     @relation(fields: [packageId], references: [id])
-  uploader    User?              @relation(fields: [uploadedBy], references: [id])
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  uploader    User?           @relation(fields: [uploadedBy], references: [id])
 
   @@map("gallery_images")
 }
 
-model CustomRequest {
-  id                  String               @id @default(cuid())
-  requestNumber       String               @unique
-  requestType         CustomRequestType    @default(TOUR_REQUEST)
+model CustomTourRequest {
+  id                  String              @id @default(cuid())
+  trackingNumber      String              @unique
   userId              String?
   contactName         String
   contactEmail        String
@@ -204,24 +202,55 @@ model CustomRequest {
   activities          String?
   specialRequirements String?
   description         String?
-  requireGuide        Boolean              @default(false)
-  tripType            String?
-  status              CustomRequestStatus  @default(PENDING)
+  status              CustomRequestStatus @default(PENDING)
   assignedStaffId     String?
   responseNotes       String?
   estimatedCost       Float?
-  quotedPrice         Float?
   responseDate        DateTime?
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  packageId           Int?
+  pricePerPerson      Float?
+  selectedGroupSize   Int?
+  totalPrice          Float?
   bookings            Booking[]
-  assignedStaff       StaffProfile?        @relation(fields: [assignedStaffId], references: [id])
-  user                User?                @relation(fields: [userId], references: [id])
+  assignedStaff       StaffProfile?       @relation(fields: [assignedStaffId], references: [id])
+  user                User?               @relation(fields: [userId], references: [id])
 
-  @@map("custom_requests")
+  @@map("custom_tour_requests")
 }
 
+model CustomBooking {
+  id                  String              @id @default(cuid())
+  customBookingId     String              @unique
+  userId              String?
+  contactName         String
+  contactEmail        String
+  contactPhone        String
+  destination         String
+  tripType            String?
+  startDate           DateTime
+  endDate             DateTime
+  numberOfPeople      Int
+  budget              Float
+  accommodation       String?
+  transportation      String?
+  specialRequirements String?
+  description         String?
+  requireGuide        Boolean             @default(false)
+  proposalType        String              @default("custom_booking")
+  status              CustomRequestStatus @default(PENDING)
+  assignedStaffId     String?
+  responseNotes       String?
+  quotedPrice         Float?
+  responseDate        DateTime?
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  assignedStaff       StaffProfile?       @relation(fields: [assignedStaffId], references: [id])
+  user                User?               @relation(fields: [userId], references: [id])
 
+  @@map("custom_bookings")
+}
 
 enum UserRole {
   USER
@@ -283,11 +312,6 @@ enum GalleryCategory {
   OTHER
 }
 
-enum CustomRequestType {
-  TOUR_REQUEST
-  CUSTOM_BOOKING
-}
-
 enum CustomRequestStatus {
   PENDING
   IN_PROGRESS
@@ -295,10 +319,4 @@ enum CustomRequestStatus {
   CONFIRMED
   CANCELLED
   COMPLETED
-}
-
-enum GalleryImageType {
-  MAIN
-  ADDITIONAL
-  GALLERY
 }
