@@ -97,7 +97,6 @@ export function PackageFormNew({
         highlights: ensureArray(prev.highlights),
         tags: ensureArray(prev.tags),
         images: ensureArray(prev.images),
-        galleryImages: ensureArray(prev.galleryImages),
         itinerary: prev.itinerary || {},
         accommodation: prev.accommodation || {},
       };

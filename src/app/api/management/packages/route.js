@@ -81,9 +81,9 @@ export async function POST(request) {
       const body = await request.json();
       
       // Validate required fields based on current Prisma schema
-      if (!body.title || !body.name || !body.description || !body.location || !body.durationDays || !body.priceNumber || !body.maxCapacity) {
+      if (!body.name || !body.description || !body.location || !body.durationDays || !body.priceNumber || !body.maxCapacity) {
         return NextResponse.json({ 
-          message: 'Missing required fields: title, name, description, location, durationDays, priceNumber, maxCapacity' 
+          message: 'Missing required fields: name, description, location, durationDays, priceNumber, maxCapacity' 
         }, { status: 400 });
       }
 
@@ -103,15 +103,15 @@ export async function POST(request) {
       // Create new travel package with current schema
       const newPackage = await prisma.travelPackage.create({
         data: {
-          title: body.title.trim(),
           name: body.name.trim(),
+          title: body.title?.trim() || body.name.trim(), // Use name as fallback for title
           description: body.description.trim(),
           overview: body.overview?.trim() || '',
           highlights: body.highlights || [],
           price: parseFloat(body.priceNumber),
           priceDetails: body.priceDetails || {},
           duration: parseInt(body.durationDays),
-          durationText: body.duration?.trim() || `${body.durationDays} days`,
+          durationText: body.durationText?.trim() || `${body.durationDays} days`,
           maxCapacity: parseInt(body.maxCapacity),
           location: body.location.trim(),
           destination: body.destination?.trim() || body.location.trim(),
@@ -122,7 +122,6 @@ export async function POST(request) {
           accommodation: body.accommodation || {},
           images: body.images || [],
           imageUrl: body.imageUrl || (body.images && body.images[0]) || '',
-          galleryImages: body.galleryImages || [],
           isRecommended: body.isRecommended || false,
           isActive: body.isActive !== false,
           rating: parseFloat(body.rating) || 0,

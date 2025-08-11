@@ -227,24 +227,33 @@ export async function PUT(request, { params }) {
       }
       
       if (body.durationDays !== undefined) {
-        const durationDays = parseInt(body.durationDays);
-        if (!isNaN(durationDays)) {
-          updateData.durationDays = durationDays;
+        const duration = parseInt(body.durationDays);
+        if (isNaN(duration) || duration <= 0) {
+          return NextResponse.json({ 
+            message: 'Duration must be a positive number' 
+          }, { status: 400 });
         }
+        updateData.duration = duration;
       }
-      
+
+      if (body.priceNumber !== undefined) {
+        const price = parseFloat(body.priceNumber);
+        if (isNaN(price) || price <= 0) {
+          return NextResponse.json({ 
+            message: 'Price must be a positive number' 
+          }, { status: 400 });
+        }
+        updateData.price = price;
+      }
+
       if (body.maxCapacity !== undefined) {
         const maxCapacity = parseInt(body.maxCapacity);
-        if (!isNaN(maxCapacity)) {
-          updateData.maxCapacity = maxCapacity;
+        if (isNaN(maxCapacity) || maxCapacity <= 0) {
+          return NextResponse.json({ 
+            message: 'Max capacity must be a positive number' 
+          }, { status: 400 });
         }
-      }
-      
-      if (body.priceNumber !== undefined) {
-        const priceNumber = parseFloat(body.priceNumber);
-        if (!isNaN(priceNumber)) {
-          updateData.priceNumber = priceNumber;
-        }
+        updateData.maxCapacity = maxCapacity;
       }
       
       if (body.priceDetails !== undefined) {
@@ -293,30 +302,32 @@ export async function PUT(request, { params }) {
         updateData.price = price;
       }
 
-      if (body.maxTravelers !== undefined) {
-        const maxTravelers = parseInt(body.maxTravelers);
-        if (isNaN(maxTravelers) || maxTravelers <= 0) {
-          return NextResponse.json({ 
-            message: 'Max travelers must be a positive number' 
-          }, { status: 400 });
-        }
-        updateData.maxTravelers = maxTravelers;
-      }
-
       if (body.highlights !== undefined) {
         updateData.highlights = Array.isArray(body.highlights) ? body.highlights : [];
       }
 
-      if (body.included !== undefined) {
-        updateData.included = Array.isArray(body.included) ? body.included : [];
+      if (body.includes !== undefined) {
+        updateData.includes = Array.isArray(body.includes) ? body.includes : [];
       }
 
-      if (body.excluded !== undefined) {
-        updateData.excluded = Array.isArray(body.excluded) ? body.excluded : [];
+      if (body.excludes !== undefined) {
+        updateData.excludes = Array.isArray(body.excludes) ? body.excludes : [];
+      }
+
+      if (body.tags !== undefined) {
+        updateData.tags = Array.isArray(body.tags) ? body.tags : [];
       }
 
       if (body.images !== undefined) {
         updateData.images = Array.isArray(body.images) ? body.images : [];
+      }
+
+      if (body.imageUrl !== undefined) {
+        updateData.imageUrl = body.imageUrl;
+      }
+
+      if (body.durationText !== undefined) {
+        updateData.durationText = body.durationText;
       }
 
       // Update package

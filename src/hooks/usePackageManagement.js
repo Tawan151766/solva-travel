@@ -30,7 +30,6 @@ const getInitialFormData = () => ({
   // Images
   imageUrl: "",
   images: "",
-  galleryImages: "",
 
   // Content Arrays
   highlights: "",
@@ -102,7 +101,7 @@ export function usePackageManagement() {
   const handleEdit = (pkg) => {
     setSelectedPackage(pkg);
     setFormData({
-      title: pkg.title || "",
+      title: pkg.title || pkg.name || "",
       name: pkg.name || "",
       description: pkg.description || "",
       overview: pkg.overview || "",
@@ -110,11 +109,11 @@ export function usePackageManagement() {
       location: pkg.location || "",
       category: pkg.category || "Cultural",
       difficulty: pkg.difficulty || "Easy",
-      duration: pkg.duration || "",
-      durationDays: pkg.durationDays?.toString() || "",
+      duration: pkg.durationText || "",
+      durationDays: pkg.duration?.toString() || "",
       maxCapacity: pkg.maxCapacity?.toString() || "",
       price: pkg.price?.toString() || "",
-      priceNumber: pkg.priceNumber?.toString() || "",
+      priceNumber: pkg.price?.toString() || "",
       priceDetails: pkg.priceDetails || {
         "2_people": { total: "", per_person: "" },
         "4_people": { total: "", per_person: "" },
@@ -123,7 +122,7 @@ export function usePackageManagement() {
       },
       imageUrl: pkg.imageUrl || "",
       images: pkg.images?.join(", ") || "",
-      galleryImages: pkg.galleryImages?.join(", ") || "",
+      galleryImages: "", // Remove this as it's not in the schema anymore
       highlights: pkg.highlights?.join(", ") || "",
       includes: pkg.includes?.join(", ") || "",
       excludes: pkg.excludes?.join(", ") || "",
@@ -295,9 +294,6 @@ export function usePackageManagement() {
         images: Array.isArray(formData.images)
           ? formData.images.filter(Boolean)
           : formData.images.split(",").map((img) => img.trim()).filter(Boolean),
-        galleryImages: Array.isArray(formData.galleryImages)
-          ? formData.galleryImages.filter(Boolean)
-          : formData.galleryImages.split(",").map((img) => img.trim()).filter(Boolean),
 
         // JSON data
         itinerary: parsedItinerary,
