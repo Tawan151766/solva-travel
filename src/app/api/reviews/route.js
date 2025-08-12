@@ -1,41 +1,34 @@
 import { NextResponse } from 'next/server';
-import prisma from '../../../lib/prisma.js';
-import jwt from 'jsonwebtoken';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '../../../lib/nextauth.js';
+import { PrismaClient } from '@prisma/client';
 
-// Verify JWT token
-const verifyToken = (token) => {
-  const secret = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-this-in-production';
-  return jwt.verify(token, secret);
-};
+const prisma = new PrismaClient();
 
 export async function POST(request) {
   try {
     console.log('Reviews API: POST request received');
     
-    // Get authorization header
-    const authHeader = request.headers.get('authorization');
-    console.log('Reviews API: Auth header present:', !!authHeader);
+    // Get session using NextAuth
+    const session = await getServerSession(authOptions);
+    console.log('Reviews API: Session:', JSON.stringify(session, null, 2));
     
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      console.log('Reviews API: Missing or invalid auth header');
+    if (!session || !session.user) {
+      console.log('Reviews API: No authenticated session');
       return NextResponse.json({
         success: false,
-        message: 'Access token is required'
+        message: 'Authentication required'
       }, { status: 401 });
     }
 
-    const token = authHeader.substring(7);
-    console.log('Reviews API: Token extracted, length:', token.length);
+    const userId = session.user.id || session.user.sub || session.sub;
+    console.log('Reviews API: Authenticated user ID:', userId);
     
-    let decoded;
-    try {
-      decoded = verifyToken(token);
-      console.log('Reviews API: Token verified successfully, user ID:', decoded.userId);
-    } catch (tokenError) {
-      console.error('Reviews API: Token verification failed:', tokenError.message);
+    if (!userId) {
+      console.log('Reviews API: No user ID found in session');
       return NextResponse.json({
         success: false,
-        message: 'Invalid or expired token'
+        message: 'User ID not found in session'
       }, { status: 401 });
     }
 
@@ -47,8 +40,7 @@ export async function POST(request) {
       rating, 
       title, 
       comment, 
-      reviewType = 'SERVICE', 
-      bookingId 
+      reviewType = 'SERVICE'
     } = body;
 
     console.log('Reviews API: Parsed data:', {
@@ -56,8 +48,7 @@ export async function POST(request) {
       rating,
       title,
       comment,
-      reviewType,
-      bookingId
+      reviewType
     });
 
     // Validation
@@ -97,7 +88,7 @@ export async function POST(request) {
     }
 
     // Prevent self-review
-    if (decoded.userId === reviewedUserId) {
+    if (userId === reviewedUserId) {
       return NextResponse.json({
         success: false,
         message: 'You cannot review yourself'
@@ -107,13 +98,12 @@ export async function POST(request) {
     // Create review
     const review = await prisma.review.create({
       data: {
-        reviewerId: decoded.userId,
+        reviewerId: userId,
         reviewedUserId,
         rating,
         title,
         comment,
         reviewType,
-        bookingId,
         isPublic: true,
         isVerified: false
       },
@@ -135,8 +125,7 @@ export async function POST(request) {
             email: true,
             role: true
           }
-        },
-        booking: true
+        }
       }
     });
 
