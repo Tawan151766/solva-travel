@@ -209,7 +209,7 @@ export default function MyBookingsPage() {
                   {/* Actions */}
                   <div className="flex flex-col gap-3">
                     <Link
-                      href={`/booking-details/${booking.id}`}
+                      href={`/my-bookings/${booking.id}`}
                       className="flex items-center justify-center gap-2 bg-[#FFD700] text-black px-4 py-2 rounded-lg font-medium hover:bg-[#FFED4E] transition-colors text-sm"
                     >
                       <Eye className="w-4 h-4" />

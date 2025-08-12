@@ -2,10 +2,10 @@ export function generateOrganizationSchema() {
   return {
     "@context": "https://schema.org",
     "@type": "TravelAgency",
-    "name": "Wanderlust",
-    "description": "Discover amazing travel packages and explore the world with Wanderlust",
-    "url": "https://wanderlust-travel.com",
-    "logo": "https://wanderlust-travel.com/logo.png",
+    "name": "BK18PLUS",
+    "description": "Discover amazing travel packages and explore the world with BK18PLUS",
+    "url": "https://BK18PLUS-travel.com",
+    "logo": "https://BK18PLUS-travel.com/logo.png",
     "contactPoint": {
       "@type": "ContactPoint",
       "telephone": "+1-555-0123",
@@ -13,9 +13,9 @@ export function generateOrganizationSchema() {
       "availableLanguage": ["English", "Thai"]
     },
     "sameAs": [
-      "https://facebook.com/wanderlust",
-      "https://instagram.com/wanderlust",
-      "https://twitter.com/wanderlust"
+      "https://facebook.com/BK18PLUS",
+      "https://instagram.com/BK18PLUS",
+      "https://twitter.com/BK18PLUS"
     ],
     "address": {
       "@type": "PostalAddress",
@@ -36,12 +36,12 @@ export function generateWebsiteSchema() {
   return {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    "name": "Wanderlust - Travel Packages",
-    "url": "https://wanderlust-travel.com",
-    "description": "Discover amazing travel packages and explore the world with Wanderlust",
+    "name": "BK18PLUS Travel",
+    "url": "https://BK18PLUS-travel.com",
+    "description": "Discover amazing travel packages and explore the world with BK18PLUS",
     "potentialAction": {
       "@type": "SearchAction",
-      "target": "https://wanderlust-travel.com/search?q={search_term_string}",
+      "target": "https://BK18PLUS-travel.com/search?q={search_term_string}",
       "query-input": "required name=search_term_string"
     }
   };

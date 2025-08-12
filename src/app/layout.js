@@ -32,11 +32,11 @@ export const viewport = {
 
 export const metadata = {
   title: {
-    default: "Wanderlust - Travel Packages",
-    template: "%s | Wanderlust",
+    default: "BK18PLUS Travel",
+    template: "%s | BK18PLUS",
   },
   description:
-    "Discover amazing travel packages and explore the world with Wanderlust. Find your perfect destination and create unforgettable memories.",
+    "Discover amazing travel packages and explore the world with BK18PLUS. Find your perfect destination and create unforgettable memories.",
   keywords: [
     "travel",
     "packages",
@@ -44,32 +44,32 @@ export const metadata = {
     "tourism",
     "adventure",
     "destinations",
-    "wanderlust",
+    "BK18PLUS",
   ],
-  authors: [{ name: "Wanderlust Team" }],
-  creator: "Wanderlust",
-  publisher: "Wanderlust",
+  authors: [{ name: "BK18PLUS Team" }],
+  creator: "BK18PLUS",
+  publisher: "BK18PLUS",
   formatDetection: {
     email: false,
     address: false,
     telephone: false,
   },
-  metadataBase: new URL("https://wanderlust-travel.com"),
+  metadataBase: new URL("https://BK18PLUS-travel.com"),
   alternates: {
     canonical: "/",
   },
   openGraph: {
-    title: "Wanderlust - Travel Packages",
+    title: "BK18PLUS Travel",
     description:
-      "Discover amazing travel packages and explore the world with Wanderlust",
-    url: "https://wanderlust-travel.com",
-    siteName: "Wanderlust",
+      "Discover amazing travel packages and explore the world with BK18PLUS",
+    url: "https://BK18PLUS-travel.com",
+    siteName: "BK18PLUS",
     images: [
       {
         url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "Wanderlust Travel Packages",
+        alt: "BK18PLUS Travel Packages",
       },
     ],
     locale: "en_US",
@@ -77,11 +77,11 @@ export const metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Wanderlust - Travel Packages",
+    title: "BK18PLUS Travel",
     description:
-      "Discover amazing travel packages and explore the world with Wanderlust",
+      "Discover amazing travel packages and explore the world with BK18PLUS",
     images: ["/twitter-image.jpg"],
-    creator: "@wanderlust",
+    creator: "@BK18PLUS",
   },
   robots: {
     index: true,

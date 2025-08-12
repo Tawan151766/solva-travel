@@ -6,7 +6,7 @@ import { authOptions } from '../../../../lib/nextauth.js';
 // GET /api/bookings/[id] - Get specific booking by ID
 export async function GET(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     
     // Try NextAuth session first
     const session = await getServerSession(authOptions);
@@ -44,7 +44,7 @@ export async function GET(request, { params }) {
                 firstName: true,
                 lastName: true,
                 email: true,
-                phoneNumber: true
+                phone: true
               }
             }
           }

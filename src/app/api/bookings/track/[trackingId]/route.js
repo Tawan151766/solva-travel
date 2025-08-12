@@ -4,11 +4,19 @@ import { prisma } from '../../../../../lib/prisma.js';
 // GET /api/bookings/track/[trackingId] - Track booking by tracking ID
 export async function GET(request, { params }) {
   try {
-    const { trackingId } = params;
+    const { trackingId } = await params;
     
     if (!trackingId) {
       return NextResponse.json(
         { success: false, error: 'Tracking ID is required' },
+        { status: 400 }
+      );
+    }
+
+    // Validate tracking ID format (should start with TRK)
+    if (!trackingId.startsWith('TRK')) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid tracking ID format' },
         { status: 400 }
       );
     }
@@ -45,7 +53,7 @@ export async function GET(request, { params }) {
                 firstName: true,
                 lastName: true,
                 email: true,
-                phoneNumber: true
+                phone: true
               }
             }
           }
@@ -85,7 +93,7 @@ export async function GET(request, { params }) {
       assignedStaff: booking.assignedStaff ? {
         name: `${booking.assignedStaff.user.firstName} ${booking.assignedStaff.user.lastName}`,
         email: booking.assignedStaff.user.email,
-        phone: booking.assignedStaff.user.phoneNumber
+        phone: booking.assignedStaff.user.phone
       } : null
     };
 

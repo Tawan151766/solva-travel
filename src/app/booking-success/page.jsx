@@ -30,16 +30,28 @@ export default function BookingSuccessPage() {
     try {
       setLoading(true);
       const response = await fetch(`/api/bookings/track/${trackingId}`);
-      const result = await response.json();
-
+      
       if (!response.ok) {
+        // Handle different HTTP status codes
+        if (response.status === 404) {
+          throw new Error('Booking not found with this tracking ID');
+        } else if (response.status === 500) {
+          throw new Error('Server error. Please try again later.');
+        } else {
+          throw new Error(`Error ${response.status}: Unable to fetch booking details`);
+        }
+      }
+
+      const result = await response.json();
+      
+      if (!result.success) {
         throw new Error(result.error || 'Failed to fetch booking details');
       }
 
       setBookingData(result.data);
     } catch (error) {
       console.error('Error fetching booking details:', error);
-      setError(error.message);
+      setError(error.message || 'An unexpected error occurred');
     } finally {
       setLoading(false);
     }
