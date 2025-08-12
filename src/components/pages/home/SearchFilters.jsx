@@ -2,9 +2,7 @@
 
 import DropdownSelect from "@/components/ui/DropdownSelect";
 import PriceRangeSlider from "@/components/ui/PriceRangeSlider";
-import ButtonSolva from "@/components/ui/ButtonSolva";
 import { RecommendedToggle } from "@/components/ui/RecommendedToggle";
-import CustomTourModal from "./CustomTourModal";
 import { useState, useMemo, useEffect } from "react";
 
 export function SearchFilters() {
@@ -88,7 +86,6 @@ export function SearchFilters() {
     updateFilters({ isRecommendedOnly: checked });
   };
   
-  const [isModalOpen, setIsModalOpen] = useState(false);
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap justify-between gap-3 p-4">
@@ -110,11 +107,6 @@ export function SearchFilters() {
           value={filters.city}
           onChange={handleCityChange}
         />
-
-        <ButtonSolva
-          label="Customize Tour"
-          onClick={() => setIsModalOpen(true)}
-        />
       </div>
 
       <div className="@container">
@@ -131,11 +123,6 @@ export function SearchFilters() {
       <RecommendedToggle
         isChecked={filters.isRecommendedOnly}
         onChange={handleRecommendedToggle}
-      />
-      
-      <CustomTourModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
       />
     </div>
   );
