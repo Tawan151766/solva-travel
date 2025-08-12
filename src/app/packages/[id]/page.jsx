@@ -1448,6 +1448,7 @@ export default function PackagePage({ params }) {
                 selectedGroupSize === 6 ? 0.9 : 0.8;
               return Math.round(basePrice * multiplier);
             })(),
+            numberOfPeople: selectedGroupSize,
             maxCapacity: travelPackage?.maxCapacity || 50,
             imageUrl: travelPackage?.imageUrl
           }}

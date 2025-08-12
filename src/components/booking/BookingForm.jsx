@@ -1,28 +1,33 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import { Calendar, Users, Phone, Mail, User, FileText, DollarSign } from 'lucide-react';
+import React, { useState } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import {
+  Calendar,
+  Users,
+  Phone,
+  Mail,
+  User,
+  FileText,
+  DollarSign,
+} from "lucide-react";
 
-const BookingForm = ({ 
-  packageData,
-  isOpen,
-  onClose,
-  onSuccess
-}) => {
+const BookingForm = ({ packageData, isOpen, onClose, onSuccess }) => {
   const { data: session } = useSession();
   const router = useRouter();
-  
+
   const [formData, setFormData] = useState({
-    customerName: session?.user ? `${session.user.firstName || ''} ${session.user.lastName || ''}`.trim() : '',
-    customerEmail: session?.user?.email || '',
-    customerPhone: '',
-    startDate: '',
-    endDate: '',
-    numberOfPeople: 1,
-    specialRequirements: '',
-    notes: ''
+    customerName: session?.user
+      ? `${session.user.firstName || ""} ${session.user.lastName || ""}`.trim()
+      : "",
+    customerEmail: session?.user?.email || "",
+    customerPhone: "",
+    startDate: "",
+    endDate: "",
+    numberOfPeople: packageData?.numberOfPeople || 1,
+    specialRequirements: "",
+    notes: "",
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -32,8 +37,8 @@ const BookingForm = ({
   const getTodayString = () => {
     const today = new Date();
     const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
   };
 
@@ -42,8 +47,8 @@ const BookingForm = ({
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     const year = tomorrow.getFullYear();
-    const month = String(tomorrow.getMonth() + 1).padStart(2, '0');
-    const day = String(tomorrow.getDate()).padStart(2, '0');
+    const month = String(tomorrow.getMonth() + 1).padStart(2, "0");
+    const day = String(tomorrow.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
   };
 
@@ -65,25 +70,25 @@ const BookingForm = ({
     const newErrors = {};
 
     if (!formData.customerName.trim()) {
-      newErrors.customerName = 'Name is required';
+      newErrors.customerName = "Name is required";
     }
 
     if (!formData.customerEmail.trim()) {
-      newErrors.customerEmail = 'Email is required';
+      newErrors.customerEmail = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(formData.customerEmail)) {
-      newErrors.customerEmail = 'Email is invalid';
+      newErrors.customerEmail = "Email is invalid";
     }
 
     if (!formData.customerPhone.trim()) {
-      newErrors.customerPhone = 'Phone number is required';
+      newErrors.customerPhone = "Phone number is required";
     }
 
     if (!formData.startDate) {
-      newErrors.startDate = 'Start date is required';
+      newErrors.startDate = "Start date is required";
     }
 
     if (!formData.endDate) {
-      newErrors.endDate = 'End date is required';
+      newErrors.endDate = "End date is required";
     }
 
     if (formData.startDate && formData.endDate) {
@@ -93,19 +98,22 @@ const BookingForm = ({
       today.setHours(0, 0, 0, 0);
 
       if (startDate < today) {
-        newErrors.startDate = 'Start date cannot be in the past';
+        newErrors.startDate = "Start date cannot be in the past";
       }
 
       if (endDate <= startDate) {
-        newErrors.endDate = 'End date must be after start date';
+        newErrors.endDate = "End date must be after start date";
       }
     }
 
     if (formData.numberOfPeople < 1) {
-      newErrors.numberOfPeople = 'Number of people must be at least 1';
+      newErrors.numberOfPeople = "Number of people must be at least 1";
     }
 
-    if (packageData?.maxCapacity && formData.numberOfPeople > packageData.maxCapacity) {
+    if (
+      packageData?.maxCapacity &&
+      formData.numberOfPeople > packageData.maxCapacity
+    ) {
       newErrors.numberOfPeople = `Maximum ${packageData.maxCapacity} people allowed`;
     }
 
@@ -115,23 +123,23 @@ const BookingForm = ({
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
 
     // Clear error when user starts typing
     if (errors[name]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [name]: ''
+        [name]: "",
       }));
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -150,32 +158,33 @@ const BookingForm = ({
         specialRequirements: formData.specialRequirements,
         notes: formData.notes,
         totalAmount: calculateTotalAmount(),
-        pricePerPerson: packageData.price
+        pricePerPerson: packageData.price,
       };
 
-      const response = await fetch('/api/bookings', {
-        method: 'POST',
+      const response = await fetch("/api/bookings", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(bookingData)
+        body: JSON.stringify(bookingData),
       });
 
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to create booking');
+        throw new Error(result.error || "Failed to create booking");
       }
 
       // Success - redirect to booking success page
       if (onSuccess) {
         onSuccess(result.data);
       } else {
-        router.push(`/booking-success?trackingId=${result.trackingId}&bookingNumber=${result.bookingNumber}`);
+        router.push(
+          `/booking-success?trackingId=${result.trackingId}&bookingNumber=${result.bookingNumber}`
+        );
       }
-
     } catch (error) {
-      console.error('Booking submission error:', error);
+      console.error("Booking submission error:", error);
       setErrors({ submit: error.message });
     } finally {
       setIsSubmitting(false);
@@ -216,7 +225,9 @@ const BookingForm = ({
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-[#FFD700]">💰</span>
-                <span className="text-[#FFD700] font-semibold">${packageData?.price} per person</span>
+                <span className="text-[#FFD700] font-semibold">
+                  ${packageData?.price} per person
+                </span>
               </div>
             </div>
           </div>
@@ -227,7 +238,7 @@ const BookingForm = ({
               <User className="w-6 h-6 text-[#FFD700]" />
               Customer Information
             </h4>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-semibold text-[#FFD700] mb-2">
@@ -239,7 +250,9 @@ const BookingForm = ({
                   value={formData.customerName}
                   onChange={handleInputChange}
                   className={`w-full px-4 py-3 bg-black/30 border-2 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-[#FFD700] focus:border-[#FFD700] transition-all duration-200 ${
-                    errors.customerName ? 'border-red-500' : 'border-[#FFD700]/30 hover:border-[#FFD700]/50'
+                    errors.customerName
+                      ? "border-red-500"
+                      : "border-[#FFD700]/30 hover:border-[#FFD700]/50"
                   }`}
                   placeholder="Enter your full name"
                 />
@@ -260,7 +273,9 @@ const BookingForm = ({
                   value={formData.customerPhone}
                   onChange={handleInputChange}
                   className={`w-full px-4 py-3 bg-black/30 border-2 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-[#FFD700] focus:border-[#FFD700] transition-all duration-200 ${
-                    errors.customerPhone ? 'border-red-500' : 'border-[#FFD700]/30 hover:border-[#FFD700]/50'
+                    errors.customerPhone
+                      ? "border-red-500"
+                      : "border-[#FFD700]/30 hover:border-[#FFD700]/50"
                   }`}
                   placeholder="Enter your phone number"
                 />
@@ -282,7 +297,9 @@ const BookingForm = ({
                 value={formData.customerEmail}
                 onChange={handleInputChange}
                 className={`w-full px-4 py-3 bg-black/30 border-2 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-[#FFD700] focus:border-[#FFD700] transition-all duration-200 ${
-                  errors.customerEmail ? 'border-red-500' : 'border-[#FFD700]/30 hover:border-[#FFD700]/50'
+                  errors.customerEmail
+                    ? "border-red-500"
+                    : "border-[#FFD700]/30 hover:border-[#FFD700]/50"
                 }`}
                 placeholder="Enter your email address"
               />
@@ -300,7 +317,7 @@ const BookingForm = ({
               <Calendar className="w-6 h-6 text-[#FFD700]" />
               Trip Details
             </h4>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
                 <label className="block text-sm font-semibold text-[#FFD700] mb-2">
@@ -313,7 +330,9 @@ const BookingForm = ({
                   onChange={handleInputChange}
                   min={getTodayString()}
                   className={`w-full px-4 py-3 bg-black/30 border-2 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-[#FFD700] focus:border-[#FFD700] transition-all duration-200 ${
-                    errors.startDate ? 'border-red-500' : 'border-[#FFD700]/30 hover:border-[#FFD700]/50'
+                    errors.startDate
+                      ? "border-red-500"
+                      : "border-[#FFD700]/30 hover:border-[#FFD700]/50"
                   }`}
                 />
                 {errors.startDate && (
@@ -334,7 +353,9 @@ const BookingForm = ({
                   onChange={handleInputChange}
                   min={formData.startDate || getTomorrowString()}
                   className={`w-full px-4 py-3 bg-black/30 border-2 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-[#FFD700] focus:border-[#FFD700] transition-all duration-200 ${
-                    errors.endDate ? 'border-red-500' : 'border-[#FFD700]/30 hover:border-[#FFD700]/50'
+                    errors.endDate
+                      ? "border-red-500"
+                      : "border-[#FFD700]/30 hover:border-[#FFD700]/50"
                   }`}
                 />
                 {errors.endDate && (
@@ -349,6 +370,7 @@ const BookingForm = ({
                   Number of People *
                 </label>
                 <input
+                  disabled
                   type="number"
                   name="numberOfPeople"
                   value={formData.numberOfPeople}
@@ -356,7 +378,9 @@ const BookingForm = ({
                   min="1"
                   max={packageData?.maxCapacity || 50}
                   className={`w-full px-4 py-3 bg-black/30 border-2 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-[#FFD700] focus:border-[#FFD700] transition-all duration-200 ${
-                    errors.numberOfPeople ? 'border-red-500' : 'border-[#FFD700]/30 hover:border-[#FFD700]/50'
+                    errors.numberOfPeople
+                      ? "border-red-500"
+                      : "border-[#FFD700]/30 hover:border-[#FFD700]/50"
                   }`}
                 />
                 {errors.numberOfPeople && (
@@ -371,7 +395,8 @@ const BookingForm = ({
               <div className="bg-[#FFD700]/10 border border-[#FFD700]/30 rounded-lg p-3">
                 <p className="text-[#FFD700] font-medium flex items-center gap-2">
                   <span>✨</span>
-                  Trip duration: {calculateDuration()} day{calculateDuration() !== 1 ? 's' : ''}
+                  Trip duration: {calculateDuration()} day
+                  {calculateDuration() !== 1 ? "s" : ""}
                 </p>
               </div>
             )}
@@ -383,7 +408,7 @@ const BookingForm = ({
               <FileText className="w-6 h-6 text-[#FFD700]" />
               Additional Information
             </h4>
-            
+
             <div>
               <label className="block text-sm font-semibold text-[#FFD700] mb-2">
                 Special Requirements
@@ -422,11 +447,15 @@ const BookingForm = ({
             <div className="space-y-4">
               <div className="flex justify-between items-center text-white/90">
                 <span className="text-lg">Price per person:</span>
-                <span className="text-[#FFD700] font-semibold text-lg">${packageData?.price}</span>
+                <span className="text-[#FFD700] font-semibold text-lg">
+                  ${packageData?.price}
+                </span>
               </div>
               <div className="flex justify-between items-center text-white/90">
                 <span className="text-lg">Number of people:</span>
-                <span className="text-[#FFD700] font-semibold text-lg">{formData.numberOfPeople}</span>
+                <span className="text-[#FFD700] font-semibold text-lg">
+                  {formData.numberOfPeople}
+                </span>
               </div>
               <div className="border-t border-[#FFD700]/30 pt-4">
                 <div className="flex justify-between items-center">
@@ -471,7 +500,7 @@ const BookingForm = ({
                   Processing...
                 </div>
               ) : (
-                'Book Your Adventure'
+                "Book Your Adventure"
               )}
             </button>
           </div>
