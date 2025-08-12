@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Travel Package Creation</title>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .step { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #b8daff; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .form-group { margin: 10px 0; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, textarea, select { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        .result { margin-top: 20px; padding: 15px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Test Travel Package Creation</h1>
+        
+        <div class="step info">
+            <h3>📋 Instructions:</h3>
+            <ol>
+                <li>First, login as admin by clicking "Go to Login"</li>
+                <li>Use admin credentials: admin@solva.com / admin123</li>
+                <li>Come back to this page and test package creation</li>
+                <li>Or use the quick test with sample data</li>
+            </ol>
+        </div>
+
+        <div class="step">
+            <h3>🔗 Quick Actions:</h3>
+            <button onclick="goToMain()">Go to Main Site</button>
+            <button onclick="goToManagement()">Go to Management</button>
+            <button onclick="testQuickLogin()">Quick Admin Login Test</button>
+        </div>
+
+        <div class="step">
+            <h3>🧪 Test Package Creation with Sample Data:</h3>
+            <button onclick="testCreateSamplePackage()">Create Sample Package</button>
+            <button onclick="testGetPackages()">Get All Packages</button>
+            <button onclick="checkAuth()">Check Auth Status</button>
+        </div>
+
+        <div class="step">
+            <h3>📝 Manual Package Creation:</h3>
+            <form id="packageForm">
+                <div class="form-group">
+                    <label>Package Name:</label>
+                    <input type="text" id="name" value="ทดสอบแพ็กเกจ Chiang Mai" required>
+                </div>
+                <div class="form-group">
+                    <label>Description:</label>
+                    <textarea id="description" rows="3" required>สัมผัสความงามของเชียงใหม่ ดอยสุเทพ วัดแสงแก้ว และวัฟธรรมล้านนา</textarea>
+                </div>
+                <div class="form-group">
+                    <label>Location:</label>
+                    <input type="text" id="location" value="เชียงใหม่" required>
+                </div>
+                <div class="form-group">
+                    <label>Duration (Days):</label>
+                    <input type="number" id="durationDays" value="3" required>
+                </div>
+                <div class="form-group">
+                    <label>Price (THB):</label>
+                    <input type="number" id="priceNumber" value="8500" required>
+                </div>
+                <div class="form-group">
+                    <label>Max Capacity:</label>
+                    <input type="number" id="maxCapacity" value="15" required>
+                </div>
+                <button type="button" onclick="createCustomPackage()">Create This Package</button>
+            </form>
+        </div>
+
+        <div id="result" class="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        // Utility functions
+        function showResult(message, type = 'info') {
+            const result = document.getElementById('result');
+            result.className = `result ${type}`;
+            result.innerHTML = message;
+            result.style.display = 'block';
+            console.log(message);
+        }
+
+        function goToMain() {
+            window.open('http://localhost:3001', '_blank');
+        }
+
+        function goToManagement() {
+            window.open('http://localhost:3001/management', '_blank');
+        }
+
+        async function testQuickLogin() {
+            try {
+                const response = await fetch('http://localhost:3001/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@solva.com',
+                        password: 'admin123'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok && data.token) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    showResult(`✅ Login Successful!<br>Token: ${data.token.substring(0, 20)}...<br>User: ${data.user.firstName} ${data.user.lastName} (${data.user.role})`, 'success');
+                } else {
+                    showResult(`❌ Login Failed: ${data.message || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ Login Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function checkAuth() {
+            const token = localStorage.getItem('token');
+            const user = localStorage.getItem('user');
+            
+            if (token && user) {
+                const userData = JSON.parse(user);
+                showResult(`✅ Logged in as: ${userData.firstName} ${userData.lastName}<br>Role: ${userData.role}<br>Token exists: Yes`, 'success');
+            } else {
+                showResult(`❌ Not logged in. Please login first.`, 'error');
+            }
+        }
+
+        async function testGetPackages() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    showResult('❌ No token found. Please login first.', 'error');
+                    return;
+                }
+
+                const response = await fetch('http://localhost:3001/api/management/packages', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult(`✅ Packages Retrieved:<br>Total: ${data.total}<br>Count: ${data.data.length}<br><pre>${JSON.stringify(data.data.slice(0, 2), null, 2)}</pre>`, 'success');
+                } else {
+                    showResult(`❌ Failed to get packages: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ Error getting packages: ${error.message}`, 'error');
+            }
+        }
+
+        async function testCreateSamplePackage() {
+            const samplePackage = {
+                name: "ทัวร์เชียงใหม่ 3 วัน 2 คืน - ทดสอบ",
+                title: "ทัวร์เชียงใหม่ 3 วัน 2 คืน",
+                description: "สัมผัสความงามของดอยสุเทพ วัดแสงแก้ว และตลาดวันเสาร์ พร้อมอาหารขันโตกข้าวหลาม",
+                overview: "เที่ยวเชียงใหม่แบบครบครัน ชมวัฒนธรรมล้านนา",
+                location: "เชียงใหม่",
+                destination: "เชียงใหม่ และปริมณฑล",
+                category: "Cultural",
+                difficulty: "Easy",
+                durationDays: 3,
+                durationText: "3 วัน 2 คืน",
+                maxCapacity: 15,
+                priceNumber: 8500,
+                highlights: ["ดอยสุเทพ-ปุย", "วัดแสงแก้ว", "ตลาดวันเสาร์", "อาหารขันโตก"],
+                includes: ["ที่พัก 2 คืน", "อาหาร 6 มื้อ", "รถรับส่ง", "ไกด์ท้องถิ่น"],
+                excludes: ["ตั๋วเครื่องบิน", "ค่าใช้จ่ายส่วนตัว", "ทิปไกด์"],
+                tags: ["วัฒนธรรม", "ประวัติศาสตร์", "อาหาร", "ธรรมชาติ"],
+                images: ["https://example.com/chiangmai1.jpg", "https://example.com/chiangmai2.jpg"],
+                imageUrl: "https://example.com/chiangmai-main.jpg",
+                accommodation: {
+                    hotel_name: "โรงแรมเด วิง เชียงใหม่",
+                    room_type: "Superior Room",
+                    rating: 4.2,
+                    amenities: ["WiFi", "Breakfast", "Pool"]
+                },
+                itinerary: {
+                    day1: {
+                        title: "วันที่ 1 - เดินทางถึงเชียงใหม่",
+                        activities: ["รับจากสนามบิน", "เช็คอินโรงแรม", "เยี่ยมชมวัดแสงแก้ว", "ทานอาหารเย็นริมปิง"]
+                    },
+                    day2: {
+                        title: "วันที่ 2 - ดอยสุเทพและตลาดวันเสาร์",
+                        activities: ["ขึ้นดอยสุเทพ-ปุย", "ทานขันโตกข้าวหลาม", "ตลาดวันเสาร์", "นวดแผนไทย"]
+                    },
+                    day3: {
+                        title: "วันที่ 3 - ช้อปปิ้งและเดินทางกลับ",
+                        activities: ["ช้อปปิ้งของฝาก", "เช็คเอาต์", "ส่งสนามบิน"]
+                    }
+                },
+                isRecommended: true,
+                isActive: true,
+                rating: 4.8,
+                totalReviews: 0
+            };
+
+            await createPackage(samplePackage);
+        }
+
+        async function createCustomPackage() {
+            const packageData = {
+                name: document.getElementById('name').value,
+                title: document.getElementById('name').value,
+                description: document.getElementById('description').value,
+                location: document.getElementById('location').value,
+                destination: document.getElementById('location').value,
+                durationDays: parseInt(document.getElementById('durationDays').value),
+                priceNumber: parseFloat(document.getElementById('priceNumber').value),
+                maxCapacity: parseInt(document.getElementById('maxCapacity').value),
+                category: "Cultural",
+                difficulty: "Easy",
+                durationText: `${document.getElementById('durationDays').value} วัน`,
+                highlights: ["ทดสอบจุดเด่น 1", "ทดสอบจุดเด่น 2"],
+                includes: ["ทดสอบสิ่งที่รวม 1", "ทดสอบสิ่งที่รวม 2"],
+                excludes: ["ทดสอบสิ่งที่ไม่รวม 1"],
+                tags: ["ทดสอบ", "แพ็กเกจ"],
+                isRecommended: false,
+                isActive: true,
+                rating: 4.5,
+                totalReviews: 0
+            };
+
+            await createPackage(packageData);
+        }
+
+        async function createPackage(packageData) {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    showResult('❌ No token found. Please login first.', 'error');
+                    return;
+                }
+
+                showResult('🔄 Creating package...', 'info');
+
+                const response = await fetch('http://localhost:3001/api/management/packages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(packageData)
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showResult(`✅ Package Created Successfully!<br><strong>ID:</strong> ${result.data.id}<br><strong>Name:</strong> ${result.data.name}<br><strong>Price:</strong> ฿${result.data.price}<br><strong>Duration:</strong> ${result.data.duration} days<br><pre>${JSON.stringify(result.data, null, 2)}</pre>`, 'success');
+                } else {
+                    showResult(`❌ Failed to create package:<br><strong>Status:</strong> ${response.status}<br><strong>Error:</strong> ${result.message}<br><pre>${JSON.stringify(result, null, 2)}</pre>`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ Error creating package: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-check auth on page load
+        window.onload = function() {
+            checkAuth();
+        };
+    </script>
+</body>
+</html>
