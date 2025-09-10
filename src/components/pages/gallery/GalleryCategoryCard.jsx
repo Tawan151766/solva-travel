@@ -1,4 +1,7 @@
 export function GalleryCategoryCard({ name, imageUrl, count, onClick, isSelected }) {
+  // Fallback for missing image URL
+  const displayImageUrl = imageUrl || '/images/placeholder-gallery.jpg';
+  
   return (
     <div 
       className="flex h-full flex-1 flex-col gap-2 sm:gap-4 rounded-lg min-w-32 sm:min-w-40 cursor-pointer group"
@@ -8,9 +11,24 @@ export function GalleryCategoryCard({ name, imageUrl, count, onClick, isSelected
         <div
           className="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-lg sm:rounded-xl flex flex-col group-hover:scale-105 transition-transform duration-200 border border-[#FFD700]/20 shadow-lg shadow-black/50"
           style={{
-            backgroundImage: `url("${imageUrl}")`
+            backgroundImage: imageUrl ? `url("${imageUrl}")` : 'linear-gradient(135deg, #0a0804 0%, #FFD700/20 50%, #0a0804 100%)'
           }}
         >
+          {/* Show category icon if no image */}
+          {!imageUrl && (
+            <div className="flex items-center justify-center h-full">
+              <span className="text-4xl opacity-50">
+                {name === 'All' ? '🌍' : 
+                 name === 'Beach' ? '🏖️' :
+                 name === 'Mountain' ? '🏔️' :
+                 name === 'City' ? '🏙️' :
+                 name === 'Cultural' ? '🏛️' :
+                 name === 'Wildlife' ? '🦁' :
+                 name === 'Adventure' ? '🎯' : '📸'}
+              </span>
+            </div>
+          )}
+          
           <div className={`absolute inset-0 rounded-lg sm:rounded-xl transition-colors duration-200 ${
             isSelected 
               ? 'bg-[#FFD700]/30 border-2 border-[#FFD700]' 

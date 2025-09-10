@@ -5,13 +5,28 @@ import { GalleryCategoryCard } from "./GalleryCategoryCard";
 import { useGalleryContext } from "@/core/context";
 
 export function GalleryCategories() {
-  const { allCategories, selectedCategory, setSelectedCategory, loading } = useGalleryContext();
+  const { allCategories, selectedCategory, setSelectedCategory, loading, allGalleryImages } = useGalleryContext();
   const scrollContainerRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
 
   const handleCategorySelect = (categoryName) => {
     setSelectedCategory(categoryName);
+  };
+
+  // Get representative image for each category
+  const getCategoryImage = (categoryName) => {
+    if (categoryName === 'All') {
+      // Return first available image for "All" category
+      return allGalleryImages.length > 0 ? allGalleryImages[0].imageUrl : null;
+    }
+    
+    // Find first image in this category
+    const categoryImage = allGalleryImages.find(img => 
+      img.category.toLowerCase() === categoryName.toLowerCase()
+    );
+    
+    return categoryImage ? categoryImage.imageUrl : null;
   };
 
   const checkScrollButtons = () => {
@@ -101,7 +116,7 @@ export function GalleryCategories() {
               <GalleryCategoryCard 
                 key={category.id}
                 name={category.name}
-                imageUrl={category.imageUrl || "https://lh3.googleusercontent.com/aida-public/AB6AXuCoTOnBRsQvFW8jUzkabot7wsA5KLAfizO33873MigmnJqRi2YIDOM62IlqMXoEY4cBN8rWuZiI58LDlutJsRGj-BAPPBgICDGaOACUEObMA3h0xvJl72Y9EPiQ-pQVQERVHkGEObY0s5vOsLztqJGpN7BjkHa5mFIA_JhBEgv579sYzXuWtunun8Y9XwDiz_7BHxVMu3T5dT4OHGZ0jtPheGdbxl0mOIjBK3HMoh6wXmCjqxuHzWe7jcEQcqWwOsd_ksKqgMFIzUAF"}
+                imageUrl={getCategoryImage(category.name)}
                 count={category.count}
                 onClick={() => handleCategorySelect(category.name)}
                 isSelected={selectedCategory === category.name}

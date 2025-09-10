@@ -1024,7 +1024,7 @@ export default function PackagePage({ params }) {
                                   {groupSize >= 8 ? "+" : ""} คน
                                 </div>
                                 <div className="text-xs opacity-80">
-                                  ฿{priceInfo.per_person.toLocaleString()}/คน
+                                  ฿{(priceInfo?.per_person || 0).toLocaleString()}/คน
                                 </div>
                               </button>
                             );
@@ -1119,7 +1119,7 @@ export default function PackagePage({ params }) {
                             const priceInfo =
                               travelPackage.priceDetails[groupKey];
                             return priceInfo
-                              ? priceInfo.per_person.toLocaleString()
+                              ? (priceInfo.per_person || 0).toLocaleString()
                               : parseFloat(
                                   travelPackage.price
                                 ).toLocaleString();
@@ -1156,7 +1156,7 @@ export default function PackagePage({ params }) {
                             const priceInfo =
                               travelPackage.priceDetails[groupKey];
                             return priceInfo
-                              ? priceInfo.total.toLocaleString()
+                              ? (priceInfo.total || 0).toLocaleString()
                               : (
                                   parseFloat(travelPackage.price) *
                                   selectedGroupSize

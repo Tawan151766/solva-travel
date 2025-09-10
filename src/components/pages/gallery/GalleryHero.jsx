@@ -1,30 +1,28 @@
 "use client";
 
 import { useState, useEffect } from "react";
-
-const heroImages = [
-  {
-    id: 1,
-    url: "https://lh3.googleusercontent.com/aida-public/AB6AXuCoTOnBRsQvFW8jUzkabot7wsA5KLAfizO33873MigmnJqRi2YIDOM62IlqMXoEY4cBN8rWuZiI58LDlutJsRGj-BAPPBgICDGaOACUEObMA3h0xvJl72Y9EPiQ-pQVQERVHkGEObY0s5vOsLztqJGpN7BjkHa5mFIA_JhBEgv579sYzXuWtunun8Y9XwDiz_7BHxVMu3T5dT4OHGZ0jtPheGdbxl0mOIjBK3HMoh6wXmCjqxuHzWe7jcEQcqWwOsd_ksKqgMFIzUAF",
-    title: "Mountain Adventure",
-    description: "Discover breathtaking mountain landscapes"
-  },
-  {
-    id: 2,
-    url: "https://lh3.googleusercontent.com/aida-public/AB6AXuBG8y_CSV0QJbdsBg5-KbttQO1Zk09vTPnO7YcQw9nRwsmAA_YxpB3fYEIwfdNKGyFJbcGow9SADUQ_x3-FH17g7HMS2TrJptp6kPaR-KK3qq8J__yK7ZVHbYuYdf8SjemvJwgl29R3TANKjJZAC9TYcdMvi-v-yqYOmr5-7mNPGKXm5f87bczFQj7OkzPdJNw7Wmoi10N_Z0LocqbqQZfSGZY9Wbdm5hi-16CpITDyBnXY68FMsH2r91n5NRaAeSuqbe0LpAMFFydl",
-    title: "Beach Paradise",
-    description: "Relax on pristine tropical beaches"
-  },
-  {
-    id: 3,
-    url: "https://lh3.googleusercontent.com/aida-public/AB6AXuA84t4PXkFyjoU1omDp7hyENjvc86cn28sFw5nrOdXgCHDFhnUb242OQzgDmuuWrXCQswLqm3H4JSO108l3JVY4NmZoEUoyrazaBAI6m-M59SvsxVMAnOnE9b_BHTLRXp0TcKkTU-gZF013GpDu9_9J2SWX1L1f2d0_4H0G1KI14vdTFtQfbZ2TLfxtw9HvIAFaNn4Og19BnjxdOiWDHU5b0CnpimrlR2B-gToZ_5iEKfcUiEcINwFK848knBc9hVr5wSDOWffVxnR8",
-    title: "Urban Explorer",
-    description: "Experience vibrant city life"
-  }
-];
+import { useGalleryContext } from "@/core/context";
 
 export function GalleryHero() {
+  const { getRandomImages, loading } = useGalleryContext();
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [heroImages, setHeroImages] = useState([]);
+
+  // Load hero images from database
+  useEffect(() => {
+    if (!loading && getRandomImages) {
+      const randomImages = getRandomImages(3);
+      if (randomImages.length > 0) {
+        const transformedImages = randomImages.map(img => ({
+          id: img.id,
+          url: img.imageUrl || img.url,
+          title: img.title,
+          description: img.description || `Explore ${img.location} - ${img.category}`
+        }));
+        setHeroImages(transformedImages);
+      }
+    }
+  }, [loading, getRandomImages]);
 
   const nextSlide = () => {
     setCurrentIndex((prevIndex) => 
@@ -44,9 +42,26 @@ export function GalleryHero() {
 
   // Auto-play carousel
   useEffect(() => {
-    const interval = setInterval(nextSlide, 5000);
-    return () => clearInterval(interval);
-  }, []);
+    if (heroImages.length > 1) {
+      const interval = setInterval(nextSlide, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [heroImages.length]);
+
+  // Show loading state if no images yet
+  if (loading || heroImages.length === 0) {
+    return (
+      <div className="@container">
+        <div className="px-2 py-2 sm:px-4 sm:py-3">
+          <div className="relative w-full min-h-64 sm:min-h-80 md:min-h-96 rounded-lg sm:@[480px]:rounded-xl overflow-hidden border border-[#FFD700]/20 shadow-2xl shadow-black/50 bg-gradient-to-br from-black via-[#0a0804] to-black">
+            <div className="flex items-center justify-center h-full">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FFD700]"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const currentImage = heroImages[currentIndex];
 
