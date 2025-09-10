@@ -1383,9 +1383,11 @@ export function PackageFormNew({
           รูปภาพหลัก (Main Image) *
         </label>
         <ImageUploader
-          onImageUploaded={(imageUrl) => 
-            setFormData({ ...formData, imageUrl })
-          }
+          onImageUploaded={(imageUrl) => {
+            console.log('🔍 PackageFormNew - Main image uploaded:', imageUrl);
+            setFormData({ ...formData, imageUrl });
+            console.log('🔍 PackageFormNew - FormData updated with imageUrl:', imageUrl);
+          }}
           currentImage={formData.imageUrl}
           type="packages"
           multiple={false}

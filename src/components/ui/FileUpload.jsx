@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { useSession } from 'next-auth/react';
+import { useAuth } from '@/contexts/AuthContext-simple';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { 
@@ -23,10 +24,15 @@ export default function FileUpload({
   maxFiles = 5
 }) {
   const { data: session } = useSession();
+  const { user: legacyUser, isAuthenticated: legacyAuth } = useAuth();
   const [uploading, setUploading] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef(null);
+
+  // Check authentication from either NextAuth or legacy auth
+  const isAuthenticated = session?.user || (legacyAuth && legacyUser);
+  const currentUser = session?.user || legacyUser;
 
   const handleDrag = (e) => {
     e.preventDefault();
@@ -56,10 +62,16 @@ export default function FileUpload({
   };
 
   const handleFiles = async (files) => {
-    if (!session) {
+    if (!isAuthenticated) {
       onUploadError?.('Please sign in to upload files');
       return;
     }
+
+    console.log('🔍 Auth status:', { 
+      nextAuthSession: !!session?.user, 
+      legacyAuth: !!legacyAuth,
+      currentUser: currentUser?.email || currentUser?.firstName 
+    });
 
     const fileList = Array.from(files);
     
@@ -92,10 +104,22 @@ export default function FileUpload({
         formData.append('file', file);
         formData.append('type', uploadType);
 
+        // Prepare headers for authentication
+        const headers = {
+          'x-requested-with': 'XMLHttpRequest',
+        };
+        
+        // Add legacy auth token if available
+        const token = localStorage.getItem('token');
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+
         const response = await fetch('/api/upload', {
           method: 'POST',
           body: formData,
           credentials: 'include',
+          headers,
         });
 
         const result = await response.json();
@@ -169,7 +193,7 @@ export default function FileUpload({
         {uploading ? (
           <div className="flex flex-col items-center space-y-2">
             <Loader2 className="h-8 w-8 text-[#FFD700] animate-spin" />
-            <p className="text-white/80">Uploading to server...</p>
+            <p className="text-white/80">Uploading to Cloudinary...</p>
           </div>
         ) : (
           <div className="flex flex-col items-center space-y-2">
@@ -213,7 +237,7 @@ export default function FileUpload({
                       {file.name}
                     </p>
                     <p className="text-white/60 text-xs">
-                      Uploaded to server
+                      Uploaded to Cloudinary
                     </p>
                   </div>
                 </div>

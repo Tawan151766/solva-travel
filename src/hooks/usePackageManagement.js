@@ -310,6 +310,9 @@ export function usePackageManagement() {
         activeBookings: 0,
       };
 
+      console.log('🔍 usePackageManagement - Submit data imageUrl:', formData.imageUrl);
+      console.log('🔍 usePackageManagement - Complete submitData:', submitData);
+
       const url = isEdit
         ? `/api/management/packages/${selectedPackage.id}`
         : "/api/management/packages";

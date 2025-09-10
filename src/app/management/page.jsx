@@ -17,7 +17,8 @@ import UserManagement from "@/components/management/UserManagement";
 import BookingManagement from "@/components/management/BookingManagement";
 import PackageManagement from "@/components/management/PackageManagement";
 import GalleryManagement from "@/components/management/GalleryManagement";
-import { Users, Calendar, Package, BarChart3 } from "lucide-react";
+import FileUpload from "@/components/ui/FileUpload";
+import { Users, Calendar, Package, BarChart3, Upload } from "lucide-react";
 
 export default function ManagementPage() {
   const { user, isAuthenticated, loading } = useAuth();
@@ -158,8 +159,12 @@ export default function ManagementPage() {
             </div>
 
             {/* Tabs */}
-            <Tabs defaultValue="users" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-4">
+            <Tabs defaultValue="upload" className="space-y-6">
+              <TabsList className="grid w-full grid-cols-5">
+                <TabsTrigger value="upload">
+                  <Upload className="h-4 w-4 mr-2" />
+                  ทดสอบ Upload
+                </TabsTrigger>
                 <TabsTrigger value="users">
                   <Users className="h-4 w-4 mr-2" />
                   จัดการผู้ใช้งาน
@@ -183,6 +188,32 @@ export default function ManagementPage() {
                   จัดการแกลเลอรี่
                 </TabsTrigger>
               </TabsList>
+
+              <TabsContent value="upload">
+                <div className="space-y-4">
+                  <div className="border border-[#FFD700]/20 rounded-lg bg-black/60 backdrop-blur-xl p-6">
+                    <h3 className="text-lg font-semibold text-white mb-2">
+                      ทดสอบ Cloudinary Upload
+                    </h3>
+                    <p className="text-white/70 text-sm mb-4">
+                      ทดสอบการอัปโหลดไฟล์ไปยัง Cloudinary พร้อมการปรับขนาดและ optimization อัตโนมัติ
+                    </p>
+                    <FileUpload
+                      onUploadSuccess={(files) => {
+                        console.log('Upload success:', files);
+                        alert(`Upload สำเร็จ! ไฟล์: ${Array.isArray(files) ? files.map(f => f.name).join(', ') : files.name}`);
+                      }}
+                      onUploadError={(error) => {
+                        console.error('Upload error:', error);
+                        alert(`Upload ผิดพลาด: ${error}`);
+                      }}
+                      allowMultiple={true}
+                      uploadType="management-test"
+                      maxFiles={5}
+                    />
+                  </div>
+                </div>
+              </TabsContent>
 
               <TabsContent value="users">
                 <div className="space-y-4">

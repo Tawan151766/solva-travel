@@ -1,4 +1,6 @@
 import { useState, useRef } from 'react';
+import { useSession } from 'next-auth/react';
+import { useAuth } from '@/contexts/AuthContext-simple';
 import { Upload, X, Image as ImageIcon } from 'lucide-react';
 
 export default function ImageUploader({ 
@@ -8,40 +10,69 @@ export default function ImageUploader({
   multiple = false,
   className = '' 
 }) {
+  const { data: session } = useSession();
+  const { user: legacyUser, isAuthenticated: legacyAuth } = useAuth();
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef(null);
 
+  // Check authentication from either NextAuth or legacy auth
+  const isAuthenticated = session?.user || (legacyAuth && legacyUser);
+  const currentUser = session?.user || legacyUser;
+
   const handleUpload = async (files) => {
     if (!files || files.length === 0) return;
+
+    if (!isAuthenticated) {
+      alert('กรุณาเข้าสู่ระบบก่อนอัปโหลดไฟล์');
+      return;
+    }
 
     setUploading(true);
     
     try {
+      console.log('🔍 ImageUploader Auth status:', { 
+        nextAuthSession: !!session?.user, 
+        legacyAuth: !!legacyAuth,
+        currentUser: currentUser?.email || currentUser?.firstName 
+      });
+
       const uploadPromises = Array.from(files).map(async (file) => {
         const formData = new FormData();
         formData.append('file', file);
         formData.append('type', type);
 
+        // Prepare headers for authentication
+        const headers = {};
+        
+        // Add legacy auth token if available
+        const token = localStorage.getItem('token');
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+
         const response = await fetch('/api/upload', {
           method: 'POST',
           body: formData,
+          credentials: 'include',
+          headers,
         });
 
         if (!response.ok) {
           const error = await response.json();
-          throw new Error(error.error || 'Upload failed');
+          throw new Error(error.error || error.message || 'Upload failed');
         }
 
-        return await response.json();
+        const result = await response.json();
+        return result.data; // Return the data object with secure_url, etc.
       });
 
       const results = await Promise.all(uploadPromises);
       
       if (multiple) {
-        onImageUploaded(results.map(result => result.fileUrl));
+        onImageUploaded(results.map(result => result.secure_url)); // Use secure_url from Cloudinary
       } else {
-        onImageUploaded(results[0].fileUrl);
+        onImageUploaded(results[0].secure_url); // Use secure_url from Cloudinary
       }
 
     } catch (error) {
