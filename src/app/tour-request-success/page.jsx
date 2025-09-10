@@ -127,7 +127,7 @@ function TourRequestSuccessContent() {
                   {request.budget && (
                     <div>
                       <span className="text-white/60">งบประมาณ:</span>
-                      <span className="text-white ml-2">฿{parseFloat(request.budget).toLocaleString()}</span>
+                      <span className="text-white ml-2">฿{(parseFloat(request.budget) || 0).toLocaleString()}</span>
                     </div>
                   )}
                   {request.activities && (

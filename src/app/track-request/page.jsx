@@ -240,7 +240,7 @@ export default function TrackRequestPage() {
                       {requestType === 'booking' && request.totalAmount && (
                         <div>
                           <span className="text-white/60">ราคารวม:</span>
-                          <span className="text-white ml-2">฿{parseFloat(request.totalAmount).toLocaleString()}</span>
+                          <span className="text-white ml-2">฿{(parseFloat(request.totalAmount) || 0).toLocaleString()}</span>
                         </div>
                       )}
                     </div>
@@ -308,7 +308,7 @@ export default function TrackRequestPage() {
                       {request.budget && (
                         <div>
                           <span className="text-white/60">งบประมาณ:</span>
-                          <span className="text-white ml-2">฿{parseFloat(request.budget).toLocaleString()}</span>
+                          <span className="text-white ml-2">฿{(parseFloat(request.budget) || 0).toLocaleString()}</span>
                         </div>
                       )}
                       {request.activities && (
