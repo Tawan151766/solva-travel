@@ -1,40 +1,95 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '../../../../lib/prisma.js';
 import jwt from 'jsonwebtoken';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '../../../lib/nextauth.js';
+
+// Helper function to generate unique tracking ID
+function generateTrackingId() {
+  const timestamp = Date.now().toString();
+  const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+  return `TRK${timestamp.slice(-6)}${random}`;
+}
+
+// Helper function to generate unique booking number
+function generateBookingNumber() {
+  const timestamp = Date.now().toString();
+  const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+  return `BK${timestamp}${random}`;
+}
 
 // GET /api/bookings - Get user's bookings
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
-    const token = request.headers.get('authorization')?.replace('Bearer ', '');
     
-    if (!token) {
-      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    // Try NextAuth session first
+    const session = await getServerSession(authOptions);
+    let userId = session?.user?.id;
+    
+    // Fallback to JWT token
+    if (!userId) {
+      const token = request.headers.get('authorization')?.replace('Bearer ', '');
+      if (token) {
+        try {
+          const decoded = jwt.verify(token, process.env.JWT_SECRET);
+          userId = decoded.userId;
+        } catch (error) {
+          console.log('Invalid JWT token');
+        }
+      }
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const userId = decoded.userId;
+    // If no user ID, return empty result
+    if (!userId) {
+      return NextResponse.json({
+        success: true,
+        data: [],
+        total: 0,
+        message: 'No bookings found'
+      });
+    }
 
     const page = parseInt(searchParams.get('page')) || 1;
     const limit = parseInt(searchParams.get('limit')) || 10;
     const status = searchParams.get('status');
 
     const where = {
-      customerId: userId,
+      userId,
       ...(status && { status })
     };
 
     const bookings = await prisma.booking.findMany({
       where,
       include: {
-        package: true,
-        customTourRequest: true,
-        customer: {
+        package: {
+          select: {
+            id: true,
+            name: true,
+            location: true,
+            duration: true,
+            imageUrl: true,
+            images: true
+          }
+        },
+        user: {
           select: {
             id: true,
             firstName: true,
             lastName: true,
             email: true
+          }
+        },
+        assignedStaff: {
+          select: {
+            id: true,
+            user: {
+              select: {
+                firstName: true,
+                lastName: true,
+                email: true
+              }
+            }
           }
         }
       },
@@ -46,7 +101,8 @@ export async function GET(request) {
     const total = await prisma.booking.count({ where });
 
     return NextResponse.json({
-      bookings,
+      success: true,
+      data: bookings,
       pagination: {
         page,
         limit,
@@ -58,7 +114,11 @@ export async function GET(request) {
   } catch (error) {
     console.error('Get bookings error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { 
+        success: false,
+        error: 'Internal server error',
+        message: error.message 
+      },
       { status: 500 }
     );
   }
@@ -69,10 +129,7 @@ export async function POST(request) {
   try {
     const body = await request.json();
     const {
-      bookingType,
       packageId,
-      customTourRequestId,
-      selectedGroupSize,
       startDate,
       endDate,
       numberOfPeople,
@@ -80,140 +137,131 @@ export async function POST(request) {
       customerEmail,
       customerPhone,
       specialRequirements,
-      notes
+      notes,
+      totalAmount,
+      pricePerPerson
     } = body;
 
     // Validate required fields
-    if (!bookingType || !startDate || !endDate || !numberOfPeople || !customerName || !customerEmail || !customerPhone) {
+    if (!packageId || !startDate || !endDate || !numberOfPeople || 
+        !customerName || !customerEmail || !customerPhone || 
+        !totalAmount || !pricePerPerson) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { 
+          success: false,
+          error: 'Missing required fields',
+          required: ['packageId', 'startDate', 'endDate', 'numberOfPeople', 
+                    'customerName', 'customerEmail', 'customerPhone', 
+                    'totalAmount', 'pricePerPerson']
+        },
         { status: 400 }
       );
     }
 
-    // Validate booking type and related IDs
-    if (bookingType === 'PACKAGE' && !packageId) {
+    // Get package information
+    const packageData = await prisma.travelPackage.findUnique({
+      where: { id: packageId },
+      select: {
+        id: true,
+        name: true,
+        location: true,
+        maxCapacity: true,
+        isActive: true
+      }
+    });
+
+    if (!packageData) {
       return NextResponse.json(
-        { error: 'Package ID is required for package booking' },
+        { success: false, error: 'Package not found' },
+        { status: 404 }
+      );
+    }
+
+    if (!packageData.isActive) {
+      return NextResponse.json(
+        { success: false, error: 'Package is no longer available' },
         { status: 400 }
       );
     }
 
-    if (bookingType === 'CUSTOM' && !customTourRequestId) {
+    if (numberOfPeople > packageData.maxCapacity) {
       return NextResponse.json(
-        { error: 'Custom tour request ID is required for custom booking' },
+        { 
+          success: false, 
+          error: `Number of people exceeds package capacity (${packageData.maxCapacity})` 
+        },
         { status: 400 }
       );
     }
 
-    // Get user from token (optional for guest bookings)
+    // Try to get user ID from session or JWT
     let userId = null;
-    const token = request.headers.get('authorization')?.replace('Bearer ', '');
     
-    if (token) {
-      try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        userId = decoded.userId;
-      } catch (error) {
-        console.log('Invalid token, proceeding as guest booking');
+    // Try NextAuth session first
+    const session = await getServerSession(authOptions);
+    if (session?.user?.id) {
+      userId = session.user.id;
+    } else {
+      // Fallback to JWT token
+      const token = request.headers.get('authorization')?.replace('Bearer ', '');
+      if (token) {
+        try {
+          const decoded = jwt.verify(token, process.env.JWT_SECRET);
+          userId = decoded.userId;
+        } catch (error) {
+          console.log('Invalid JWT token, proceeding as guest booking');
+        }
       }
     }
 
-    // If no userId, create a guest user account
-    if (!userId) {
-      // Check if user exists with this email
-      let user = await prisma.user.findUnique({
+    // If no userId but we have email, try to find existing user
+    if (!userId && customerEmail) {
+      const existingUser = await prisma.user.findUnique({
         where: { email: customerEmail }
       });
-
-      if (!user) {
-        // Create guest user
-        user = await prisma.user.create({
-          data: {
-            email: customerEmail,
-            firstName: customerName.split(' ')[0] || customerName,
-            lastName: customerName.split(' ').slice(1).join(' ') || '',
-            phone: customerPhone,
-            password: Math.random().toString(36).substring(7), // Random password for guest
-            role: 'USER'
-          }
-        });
+      if (existingUser) {
+        userId = existingUser.id;
       }
-      userId = user.id;
     }
 
-    let totalAmount = 0;
-    let packageData = null;
-    let customTourRequestData = null;
-
-    // Calculate total amount based on booking type
-    if (bookingType === 'PACKAGE') {
-      packageData = await prisma.travelPackage.findUnique({
-        where: { id: packageId }
-      });
-
-      if (!packageData) {
-        return NextResponse.json(
-          { error: 'Package not found' },
-          { status: 404 }
-        );
-      }
-
-      // Calculate price based on group pricing if available
-      if (packageData.groupPricing && selectedGroupSize) {
-        const groupPricing = JSON.parse(packageData.groupPricing);
-        if (groupPricing[selectedGroupSize]) {
-          totalAmount = parseFloat(groupPricing[selectedGroupSize].price) * numberOfPeople;
-        } else {
-          totalAmount = parseFloat(packageData.price) * numberOfPeople;
-        }
-      } else {
-        totalAmount = parseFloat(packageData.price) * numberOfPeople;
-      }
-    } else if (bookingType === 'CUSTOM') {
-      customTourRequestData = await prisma.customTourRequest.findUnique({
-        where: { id: customTourRequestId }
-      });
-
-      if (!customTourRequestData) {
-        return NextResponse.json(
-          { error: 'Custom tour request not found' },
-          { status: 404 }
-        );
-      }
-
-      // Use estimated cost from custom tour request or default amount
-      totalAmount = customTourRequestData.estimatedCost || 0;
-    }
-
-    // Generate unique booking number
-    const bookingNumber = `BK${Date.now()}${Math.floor(Math.random() * 1000)}`;
+    // Generate unique identifiers
+    const bookingNumber = generateBookingNumber();
+    const trackingId = generateTrackingId();
 
     // Create booking
     const booking = await prisma.booking.create({
       data: {
         bookingNumber,
-        customerId: userId,
-        bookingType,
-        packageId: bookingType === 'PACKAGE' ? packageId : null,
-        customTourRequestId: bookingType === 'CUSTOM' ? customTourRequestId : null,
-        selectedGroupSize: bookingType === 'PACKAGE' && selectedGroupSize ? selectedGroupSize : null,
-        startDate: new Date(startDate),
-        endDate: new Date(endDate),
-        numberOfPeople: parseInt(numberOfPeople),
-        totalAmount,
+        trackingId,
+        userId,
         customerName,
         customerEmail,
         customerPhone,
+        packageId,
+        packageName: packageData.name,
+        packageLocation: packageData.location,
+        startDate: new Date(startDate),
+        endDate: new Date(endDate),
+        numberOfPeople: parseInt(numberOfPeople),
+        totalAmount: parseFloat(totalAmount),
+        pricePerPerson: parseFloat(pricePerPerson),
         specialRequirements,
         notes,
         status: 'PENDING',
         paymentStatus: 'PENDING'
       },
       include: {
-        package: true,
-        customTourRequest: true,
-        customer: {
+        package: {
+          select: {
+            id: true,
+            name: true,
+            location: true,
+            duration: true,
+            imageUrl: true,
+            images: true
+          }
+        },
+        user: {
           select: {
             id: true,
             firstName: true,
@@ -224,24 +272,22 @@ export async function POST(request) {
       }
     });
 
-    // Update custom tour request status if applicable
-    if (bookingType === 'CUSTOM') {
-      await prisma.customTourRequest.update({
-        where: { id: customTourRequestId },
-        data: { status: 'CONFIRMED' }
-      });
-    }
-
     return NextResponse.json({
       success: true,
-      booking,
-      message: 'Booking created successfully'
+      data: booking,
+      message: 'Booking created successfully',
+      trackingId: trackingId,
+      bookingNumber: bookingNumber
     }, { status: 201 });
 
   } catch (error) {
     console.error('Create booking error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { 
+        success: false,
+        error: 'Internal server error',
+        message: error.message 
+      },
       { status: 500 }
     );
   }

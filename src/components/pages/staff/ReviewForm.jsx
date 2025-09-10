@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useAuth } from "@/contexts/AuthContext-simple";
+import { useSession } from "next-auth/react";
 
 export function ReviewForm({ staffId, staffName, onReviewSubmitted }) {
-  const { user, isAuthenticated } = useAuth();
+  const { data: session, status } = useSession();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
@@ -17,7 +17,7 @@ export function ReviewForm({ staffId, staffName, onReviewSubmitted }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!isAuthenticated) {
+    if (status !== 'authenticated' || !session) {
       alert("กรุณาเข้าสู่ระบบก่อนเขียนรีวิว");
       return;
     }
@@ -25,12 +25,10 @@ export function ReviewForm({ staffId, staffName, onReviewSubmitted }) {
     setIsSubmitting(true);
 
     try {
-      const token = localStorage.getItem("token");
       const response = await fetch("/api/reviews", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           reviewedUserId: staffId,
@@ -75,7 +73,18 @@ export function ReviewForm({ staffId, staffName, onReviewSubmitted }) {
     setFormData({ ...formData, rating });
   };
 
-  if (!isAuthenticated) {
+  if (status === 'loading') {
+    return (
+      <div className="bg-gradient-to-br from-black/80 via-[#0a0804]/80 to-black/80 backdrop-blur-xl rounded-xl p-6 border border-[#FFD700]/20 shadow-2xl shadow-black/50">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-[#FFD700]/30 border-t-[#FFD700] rounded-full animate-spin mx-auto mb-2"></div>
+          <p className="text-white/80">กำลังโหลด...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (status !== 'authenticated' || !session) {
     return (
       <div className="bg-gradient-to-br from-black/80 via-[#0a0804]/80 to-black/80 backdrop-blur-xl rounded-xl p-6 border border-[#FFD700]/20 shadow-2xl shadow-black/50">
         <div className="text-center">
@@ -86,7 +95,7 @@ export function ReviewForm({ staffId, staffName, onReviewSubmitted }) {
             กรุณาเข้าสู่ระบบเพื่อเขียนรีวิวสำหรับ {staffName}
           </p>
           <button
-            onClick={() => (window.location.href = "/")}
+            onClick={() => (window.location.href = "/api/auth/signin")}
             className="bg-gradient-to-r from-[#FFD700] to-[#FFED4E] text-black px-6 py-2 rounded-xl font-medium hover:from-[#FFED4E] hover:to-[#FFD700] transition-all"
           >
             เข้าสู่ระบบ

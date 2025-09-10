@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { use, useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { getRelevantGalleryImages } from "@/data/galleryData";
+import BookingForm from "../../../components/booking/BookingForm";
 
 export default function PackagePage({ params }) {
   // Unwrap params Promise using React.use()
@@ -18,6 +18,7 @@ export default function PackagePage({ params }) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(null);
   const [showAllImages, setShowAllImages] = useState(false);
   const [selectedGroupSize, setSelectedGroupSize] = useState(2);
+  const [showBookingForm, setShowBookingForm] = useState(false);
 
   // Fetch package data from database API
   useEffect(() => {
@@ -1192,62 +1193,12 @@ export default function PackagePage({ params }) {
                     <div>ราคาลดตามจำนวนคน</div>
                     <div>*ราคาอาจแตกต่างตามช่วงเวลา</div>
                   </div>
-                  <Link
-                    href={`/tour-request?packageId=${id}&groupSize=${selectedGroupSize}&pricePerPerson=${(() => {
-                      if (
-                        travelPackage.priceDetails &&
-                        typeof travelPackage.priceDetails === "object"
-                      ) {
-                        const groupKey = `${selectedGroupSize}_people`;
-                        const priceInfo = travelPackage.priceDetails[groupKey];
-                        return priceInfo
-                          ? priceInfo.per_person
-                          : parseFloat(travelPackage.price);
-                      }
-                      const basePrice = parseFloat(travelPackage.price);
-                      const multiplier =
-                        selectedGroupSize === 2
-                          ? 1.2
-                          : selectedGroupSize === 4
-                          ? 1
-                          : selectedGroupSize === 6
-                          ? 0.9
-                          : 0.8;
-                      return Math.round(basePrice * multiplier);
-                    })()}&totalPrice=${(() => {
-                      if (
-                        travelPackage.priceDetails &&
-                        typeof travelPackage.priceDetails === "object"
-                      ) {
-                        const groupKey = `${selectedGroupSize}_people`;
-                        const priceInfo = travelPackage.priceDetails[groupKey];
-                        return priceInfo
-                          ? priceInfo.total
-                          : parseFloat(travelPackage.price) * selectedGroupSize;
-                      }
-                      const basePrice = parseFloat(travelPackage.price);
-                      const multiplier =
-                        selectedGroupSize === 2
-                          ? 1.2
-                          : selectedGroupSize === 4
-                          ? 1
-                          : selectedGroupSize === 6
-                          ? 0.9
-                          : 0.8;
-                      return Math.round(
-                        basePrice * multiplier * selectedGroupSize
-                      );
-                    })()}&packageTitle=${encodeURIComponent(
-                      travelPackage.title
-                    )}&destination=${encodeURIComponent(
-                      travelPackage.location
-                    )}`}
-                    className="block"
+                  <button 
+                    onClick={() => setShowBookingForm(true)}
+                    className="w-full bg-black text-[#FFD700] font-bold py-4 px-6 rounded-xl hover:bg-[#0a0804] transition-colors transform hover:scale-105 duration-200 shadow-lg"
                   >
-                    <button className="w-full bg-black text-[#FFD700] font-bold py-4 px-6 rounded-xl hover:bg-[#0a0804] transition-colors transform hover:scale-105 duration-200 shadow-lg">
-                      Book Now
-                    </button>
-                  </Link>
+                    Book Now
+                  </button>
                 </div>
               </section>
 
@@ -1472,6 +1423,44 @@ export default function PackagePage({ params }) {
           </div>
         )}
       </div>
+
+      {/* Booking Form Modal */}
+      {showBookingForm && (
+        <BookingForm
+          packageData={{
+            id: id,
+            name: travelPackage?.name || travelPackage?.title,
+            location: travelPackage?.location,
+            duration: travelPackage?.duration,
+            price: (() => {
+              if (
+                travelPackage?.priceDetails &&
+                typeof travelPackage.priceDetails === "object"
+              ) {
+                const groupKey = `${selectedGroupSize}_people`;
+                const priceInfo = travelPackage.priceDetails[groupKey];
+                return priceInfo ? priceInfo.per_person : parseFloat(travelPackage.price || 0);
+              }
+              const basePrice = parseFloat(travelPackage?.price || 0);
+              const multiplier =
+                selectedGroupSize === 2 ? 1.2 :
+                selectedGroupSize === 4 ? 1 :
+                selectedGroupSize === 6 ? 0.9 : 0.8;
+              return Math.round(basePrice * multiplier);
+            })(),
+            numberOfPeople: selectedGroupSize,
+            maxCapacity: travelPackage?.maxCapacity || 50,
+            imageUrl: travelPackage?.imageUrl
+          }}
+          isOpen={showBookingForm}
+          onClose={() => setShowBookingForm(false)}
+          onSuccess={(bookingData) => {
+            setShowBookingForm(false);
+            // Redirect to booking success page
+            window.location.href = `/booking-success?trackingId=${bookingData.trackingId}&bookingNumber=${bookingData.bookingNumber}`;
+          }}
+        />
+      )}
     </div>
   );
 }

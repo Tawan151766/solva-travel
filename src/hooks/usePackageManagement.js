@@ -30,7 +30,6 @@ const getInitialFormData = () => ({
   // Images
   imageUrl: "",
   images: "",
-  galleryImages: "",
 
   // Content Arrays
   highlights: "",
@@ -102,7 +101,7 @@ export function usePackageManagement() {
   const handleEdit = (pkg) => {
     setSelectedPackage(pkg);
     setFormData({
-      title: pkg.title || "",
+      title: pkg.title || pkg.name || "",
       name: pkg.name || "",
       description: pkg.description || "",
       overview: pkg.overview || "",
@@ -110,11 +109,11 @@ export function usePackageManagement() {
       location: pkg.location || "",
       category: pkg.category || "Cultural",
       difficulty: pkg.difficulty || "Easy",
-      duration: pkg.duration || "",
-      durationDays: pkg.durationDays?.toString() || "",
+      duration: pkg.durationText || "",
+      durationDays: pkg.duration?.toString() || "",
       maxCapacity: pkg.maxCapacity?.toString() || "",
       price: pkg.price?.toString() || "",
-      priceNumber: pkg.priceNumber?.toString() || "",
+      priceNumber: pkg.price?.toString() || "",
       priceDetails: pkg.priceDetails || {
         "2_people": { total: "", per_person: "" },
         "4_people": { total: "", per_person: "" },
@@ -123,7 +122,7 @@ export function usePackageManagement() {
       },
       imageUrl: pkg.imageUrl || "",
       images: pkg.images?.join(", ") || "",
-      galleryImages: pkg.galleryImages?.join(", ") || "",
+      galleryImages: "", // Remove this as it's not in the schema anymore
       highlights: pkg.highlights?.join(", ") || "",
       includes: pkg.includes?.join(", ") || "",
       excludes: pkg.excludes?.join(", ") || "",
@@ -176,13 +175,15 @@ export function usePackageManagement() {
       
       if (formData.accommodation) {
         try {
-          // If it's already an object, no need to parse
-          if (typeof formData.accommodation === 'object') {
+          // If it's already an object, use it directly
+          if (typeof formData.accommodation === 'object' && formData.accommodation !== null) {
             parsedAccommodation = formData.accommodation;
-          } else {
+          } else if (typeof formData.accommodation === 'string') {
             // Ensure it's a proper JSON string before parsing
             const accommodationStr = formData.accommodation.trim();
-            if ((accommodationStr.startsWith('{') && accommodationStr.endsWith('}')) || 
+            if (accommodationStr === '') {
+              parsedAccommodation = {};
+            } else if ((accommodationStr.startsWith('{') && accommodationStr.endsWith('}')) || 
                 (accommodationStr.startsWith('[') && accommodationStr.endsWith(']'))) {
               parsedAccommodation = JSON.parse(accommodationStr);
             } else {
@@ -194,12 +195,15 @@ export function usePackageManagement() {
               });
               return;
             }
+          } else {
+            // Handle other types
+            parsedAccommodation = {};
           }
         } catch (error) {
           console.error("Accommodation parsing error:", error);
           toast({
             title: "Error",
-            description: "Invalid JSON format in Accommodation field",
+            description: "Invalid JSON format in Accommodation field. Must be an object or array.",
             variant: "destructive",
           });
           return;
@@ -290,9 +294,6 @@ export function usePackageManagement() {
         images: Array.isArray(formData.images)
           ? formData.images.filter(Boolean)
           : formData.images.split(",").map((img) => img.trim()).filter(Boolean),
-        galleryImages: Array.isArray(formData.galleryImages)
-          ? formData.galleryImages.filter(Boolean)
-          : formData.galleryImages.split(",").map((img) => img.trim()).filter(Boolean),
 
         // JSON data
         itinerary: parsedItinerary,
@@ -308,6 +309,9 @@ export function usePackageManagement() {
         totalBookings: 0,
         activeBookings: 0,
       };
+
+      console.log('🔍 usePackageManagement - Submit data imageUrl:', formData.imageUrl);
+      console.log('🔍 usePackageManagement - Complete submitData:', submitData);
 
       const url = isEdit
         ? `/api/management/packages/${selectedPackage.id}`

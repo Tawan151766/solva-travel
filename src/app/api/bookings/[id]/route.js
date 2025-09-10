@@ -1,43 +1,50 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '../../../../../lib/prisma.js';
-import jwt from 'jsonwebtoken';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '../../../../lib/nextauth.js';
 
-// GET /api/bookings/[id] - Get specific booking
+// GET /api/bookings/[id] - Get specific booking by ID
 export async function GET(request, { params }) {
   try {
-    const { id } = params;
-    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    const { id } = await params;
     
-    if (!token) {
-      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
-    }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const userId = decoded.userId;
-
-    const booking = await prisma.booking.findFirst({
-      where: {
-        id,
-        customerId: userId // Ensure user can only access their own bookings
-      },
+    // Try NextAuth session first
+    const session = await getServerSession(authOptions);
+    const currentUserId = session?.user?.id;
+    
+    const booking = await prisma.booking.findUnique({
+      where: { id },
       include: {
-        package: true,
-        customTourRequest: true,
-        customer: {
+        package: {
+          select: {
+            id: true,
+            name: true,
+            location: true,
+            duration: true,
+            imageUrl: true,
+            images: true,
+            description: true,
+            includes: true,
+            excludes: true
+          }
+        },
+        user: {
           select: {
             id: true,
             firstName: true,
             lastName: true,
-            email: true,
-            phone: true
+            email: true
           }
         },
-        reviews: {
-          include: {
-            reviewer: {
+        assignedStaff: {
+          select: {
+            id: true,
+            user: {
               select: {
                 firstName: true,
-                lastName: true
+                lastName: true,
+                email: true,
+                phone: true
               }
             }
           }
@@ -47,17 +54,32 @@ export async function GET(request, { params }) {
 
     if (!booking) {
       return NextResponse.json(
-        { error: 'Booking not found' },
+        { success: false, error: 'Booking not found' },
         { status: 404 }
       );
     }
 
-    return NextResponse.json({ booking });
+    // Check if user has access to this booking
+    if (currentUserId && booking.userId && booking.userId !== currentUserId) {
+      return NextResponse.json(
+        { success: false, error: 'Access denied' },
+        { status: 403 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: booking
+    });
 
   } catch (error) {
     console.error('Get booking error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { 
+        success: false,
+        error: 'Internal server error',
+        message: error.message 
+      },
       { status: 500 }
     );
   }
@@ -68,73 +90,93 @@ export async function PUT(request, { params }) {
   try {
     const { id } = params;
     const body = await request.json();
-    const token = request.headers.get('authorization')?.replace('Bearer ', '');
     
-    if (!token) {
-      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
-    }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const userId = decoded.userId;
-
-    // Check if booking exists and belongs to user
-    const existingBooking = await prisma.booking.findFirst({
-      where: {
-        id,
-        customerId: userId
+    // Try NextAuth session first
+    const session = await getServerSession(authOptions);
+    const currentUserId = session?.user?.id;
+    
+    // Check if booking exists
+    const existingBooking = await prisma.booking.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        userId: true,
+        status: true
       }
     });
 
     if (!existingBooking) {
       return NextResponse.json(
-        { error: 'Booking not found' },
+        { success: false, error: 'Booking not found' },
         { status: 404 }
       );
     }
 
-    // Validate update permissions based on booking status
-    if (existingBooking.status === 'COMPLETED' || existingBooking.status === 'CANCELLED') {
+    // Check access permissions
+    if (currentUserId && existingBooking.userId && existingBooking.userId !== currentUserId) {
       return NextResponse.json(
-        { error: 'Cannot modify completed or cancelled bookings' },
-        { status: 400 }
+        { success: false, error: 'Access denied' },
+        { status: 403 }
       );
     }
 
-    const {
-      startDate,
-      endDate,
-      numberOfPeople,
-      customerName,
-      customerEmail,
-      customerPhone,
-      specialRequirements,
-      notes,
-      status
-    } = body;
+    // Prepare update data
+    const updateData = {};
+    const allowedFields = [
+      'customerName', 'customerEmail', 'customerPhone',
+      'startDate', 'endDate', 'numberOfPeople',
+      'specialRequirements', 'notes', 'status',
+      'paymentStatus', 'totalAmount', 'pricePerPerson'
+    ];
+
+    // Only include allowed fields in update
+    for (const field of allowedFields) {
+      if (body[field] !== undefined) {
+        if (field === 'startDate' || field === 'endDate') {
+          updateData[field] = new Date(body[field]);
+        } else if (field === 'numberOfPeople') {
+          updateData[field] = parseInt(body[field]);
+        } else if (field === 'totalAmount' || field === 'pricePerPerson') {
+          updateData[field] = parseFloat(body[field]);
+        } else {
+          updateData[field] = body[field];
+        }
+      }
+    }
 
     // Update booking
     const updatedBooking = await prisma.booking.update({
       where: { id },
-      data: {
-        ...(startDate && { startDate: new Date(startDate) }),
-        ...(endDate && { endDate: new Date(endDate) }),
-        ...(numberOfPeople && { numberOfPeople: parseInt(numberOfPeople) }),
-        ...(customerName && { customerName }),
-        ...(customerEmail && { customerEmail }),
-        ...(customerPhone && { customerPhone }),
-        ...(specialRequirements !== undefined && { specialRequirements }),
-        ...(notes !== undefined && { notes }),
-        ...(status && { status })
-      },
+      data: updateData,
       include: {
-        package: true,
-        customTourRequest: true,
-        customer: {
+        package: {
+          select: {
+            id: true,
+            name: true,
+            location: true,
+            duration: true,
+            imageUrl: true,
+            images: true
+          }
+        },
+        user: {
           select: {
             id: true,
             firstName: true,
             lastName: true,
             email: true
+          }
+        },
+        assignedStaff: {
+          select: {
+            id: true,
+            user: {
+              select: {
+                firstName: true,
+                lastName: true,
+                email: true
+              }
+            }
           }
         }
       }
@@ -142,86 +184,96 @@ export async function PUT(request, { params }) {
 
     return NextResponse.json({
       success: true,
-      booking: updatedBooking,
+      data: updatedBooking,
       message: 'Booking updated successfully'
     });
 
   } catch (error) {
     console.error('Update booking error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { 
+        success: false,
+        error: 'Internal server error',
+        message: error.message 
+      },
       { status: 500 }
     );
   }
 }
 
-// DELETE /api/bookings/[id] - Cancel booking
+// DELETE /api/bookings/[id] - Cancel/Delete booking
 export async function DELETE(request, { params }) {
   try {
     const { id } = params;
-    const token = request.headers.get('authorization')?.replace('Bearer ', '');
     
-    if (!token) {
-      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
-    }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const userId = decoded.userId;
-
-    // Check if booking exists and belongs to user
-    const existingBooking = await prisma.booking.findFirst({
-      where: {
-        id,
-        customerId: userId
+    // Try NextAuth session first
+    const session = await getServerSession(authOptions);
+    const currentUserId = session?.user?.id;
+    
+    // Check if booking exists
+    const existingBooking = await prisma.booking.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        userId: true,
+        status: true,
+        startDate: true
       }
     });
 
     if (!existingBooking) {
       return NextResponse.json(
-        { error: 'Booking not found' },
+        { success: false, error: 'Booking not found' },
         { status: 404 }
       );
     }
 
-    // Check if booking can be cancelled
-    if (existingBooking.status === 'COMPLETED' || existingBooking.status === 'CANCELLED') {
+    // Check access permissions
+    if (currentUserId && existingBooking.userId && existingBooking.userId !== currentUserId) {
       return NextResponse.json(
-        { error: 'Cannot cancel completed or already cancelled bookings' },
+        { success: false, error: 'Access denied' },
+        { status: 403 }
+      );
+    }
+
+    // Check if booking can be cancelled
+    const now = new Date();
+    const startDate = new Date(existingBooking.startDate);
+    const daysDifference = Math.ceil((startDate - now) / (1000 * 60 * 60 * 24));
+
+    if (daysDifference < 3 && existingBooking.status === 'CONFIRMED') {
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: 'Cannot cancel booking less than 3 days before travel date' 
+        },
         { status: 400 }
       );
     }
 
-    // Update booking status to cancelled
-    const cancelledBooking = await prisma.booking.update({
+    // Update booking status to CANCELLED instead of deleting
+    const updatedBooking = await prisma.booking.update({
       where: { id },
-      data: {
+      data: { 
         status: 'CANCELLED',
-        paymentStatus: existingBooking.paymentStatus === 'PAID' ? 'REFUNDED' : 'PENDING'
-      },
-      include: {
-        package: true,
-        customTourRequest: true,
-        customer: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true
-          }
-        }
+        cancelledAt: new Date()
       }
     });
 
     return NextResponse.json({
       success: true,
-      booking: cancelledBooking,
+      data: updatedBooking,
       message: 'Booking cancelled successfully'
     });
 
   } catch (error) {
     console.error('Cancel booking error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { 
+        success: false,
+        error: 'Internal server error',
+        message: error.message 
+      },
       { status: 500 }
     );
   }

@@ -1,13 +1,28 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useSession, signOut } from "next-auth/react";
 import { useAuth } from "@/contexts/AuthContext-simple";
 import Link from "next/link";
 
 export function UserProfile({ onOpenAuthModal }) {
-  const { user, isAuthenticated, logout: authLogout } = useAuth();
+  const { data: session, status } = useSession();
+  const { user: authUser, isAuthenticated: authIsAuthenticated, logout: authLogout } = useAuth();
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
+
+  // Determine which auth system to use
+  const isNextAuthUser = status === "authenticated" && session;
+  const isLegacyAuthUser = authIsAuthenticated && authUser;
+  const isAuthenticated = isNextAuthUser || isLegacyAuthUser;
+  
+  const user = isNextAuthUser ? {
+    firstName: session.user.firstName || session.user.name?.split(' ')[0] || 'User',
+    lastName: session.user.lastName || session.user.name?.split(' ').slice(1).join(' ') || '',
+    email: session.user.email,
+    role: session.user.role || 'USER',
+    profileImage: session.user.image
+  } : authUser;
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -35,7 +50,11 @@ export function UserProfile({ onOpenAuthModal }) {
   };
 
   const handleLogout = async () => {
-    await authLogout();
+    if (isNextAuthUser) {
+      await signOut({ redirect: false });
+    } else {
+      await authLogout();
+    }
     setShowDropdown(false);
   };
 

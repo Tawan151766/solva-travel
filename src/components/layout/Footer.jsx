@@ -18,10 +18,10 @@ export function Footer() {
                   />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold">Wanderlust</h3>
+              <h3 className="text-xl font-bold">BK18PLUS</h3>
             </div>
             <p className="text-[#cdc08e] mb-4 max-w-md">
-              Discover amazing travel packages and explore the world with Wanderlust. 
+              Discover amazing travel packages and explore the world with BK18PLUS. 
               Create unforgettable memories with our carefully curated destinations.
             </p>
             <div className="flex space-x-4">
@@ -103,7 +103,7 @@ export function Footer() {
 
         <div className="mt-8 pt-8 border-t border-[#4a4221] flex flex-col sm:flex-row justify-between items-center">
           <p className="text-[#cdc08e] text-sm">
-            © 2025 Wanderlust. All rights reserved.
+            © 2025 BK18PLUS. All rights reserved.
           </p>
           <div className="flex space-x-6 mt-4 sm:mt-0">
             <a href="#" className="text-[#cdc08e] hover:text-[#efc004] text-sm transition-colors">

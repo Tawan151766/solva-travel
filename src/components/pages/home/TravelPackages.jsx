@@ -1,29 +1,8 @@
 import { TravelCard } from "./TravelCard";
-import { useState, useEffect } from "react";
+import { useFilter } from "@/contexts/FilterContext";
 
 export function TravelPackages() {
-  const [packages, setPackages] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  // ง่าย ๆ แค่ดึงข้อมูลจาก API ตรง ๆ
-  useEffect(() => {
-    console.log('🎯 TravelPackages: Fetching data...');
-    fetch('/api/travel/packages')
-      .then(res => res.json())
-      .then(data => {
-        console.log('🎯 TravelPackages: Got data:', data);
-        if (data.success) {
-          setPackages(data.data.packages || []);
-        }
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error('🎯 TravelPackages: Error:', err);
-        setError(err.message);
-        setLoading(false);
-      });
-  }, []);
+  const { filteredPackages, loading, error } = useFilter();
 
   // Loading state
   if (loading) {
@@ -61,15 +40,15 @@ export function TravelPackages() {
   }
 
   // No packages available
-  if (!packages || packages.length === 0) {
+  if (!filteredPackages || filteredPackages.length === 0) {
     return (
       <div className="space-y-4">
         <div className="flex justify-center items-center p-12">
           <div className="text-center max-w-md">
-            <div className="text-[#FFD700] text-6xl mb-4">🏖️</div>
-            <h2 className="text-white text-xl font-bold mb-2">No Travel Packages Found</h2>
+            <div className="text-[#FFD700] text-6xl mb-4">🔍</div>
+            <h2 className="text-white text-xl font-bold mb-2">No Packages Found</h2>
             <p className="text-white/70">
-              We're currently updating our travel packages. Please check back soon for exciting new destinations!
+              No travel packages match your current filters. Try adjusting your search criteria.
             </p>
           </div>
         </div>
@@ -77,17 +56,17 @@ export function TravelPackages() {
     );
   }
 
-  // Success state with packages
+  // Success state with filtered packages
   return (
     <div className="space-y-4">
       <div className="p-4">
         <p className="text-[#FFD700]/80 text-sm mb-4">
-          Found {packages.length} travel packages
+          Found {filteredPackages.length} travel packages
         </p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
-        {packages.map((pkg) => (
+        {filteredPackages.map((pkg) => (
           <TravelCard
             key={pkg.id}
             id={pkg.id}
