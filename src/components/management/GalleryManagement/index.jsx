@@ -1,30 +1,35 @@
-"use client";
-
+﻿"use client";
+import { filterImages } from "@/components/management/GalleryManagement/filteredImages";
+import { handleCloseModal } from "@/components/management/GalleryManagement/handleCloseModal";
+import { handleEdit } from "@/components/management/GalleryManagement/handleEdit";
+import { handleToggleActive } from "@/components/management/GalleryManagement/handleToggleActive";
+import { handleDelete } from "@/components/management/GalleryManagement/handleDelete";
+import { handleSubmit } from "@/components/management/GalleryManagement/handleSubmit";
+import { fetchImages } from "@/components/management/GalleryManagement/fetchImages";
+import { categories } from "@/components/management/GalleryManagement/categories";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import ImageUploader from "../ui/ImageUploader";
-import { 
-  Plus, 
-  Edit, 
-  Trash2, 
-  Search, 
-  Filter, 
-  Upload,
+import ImageUploader from "@/components/ui/ImageUploader";
+import {
+  Plus,
+  Edit,
+  Trash2,
+  Search,
   Eye,
   EyeOff,
   MapPin,
-  Tag,
-  Calendar
+  Calendar,
 } from "lucide-react";
 
 export default function GalleryManagement() {
-  // Inline SVG fallback to avoid 404 loops
-  const FALLBACK_IMG = "data:image/svg+xml;utf8,\
+  const FALLBACK_IMG =
+    "data:image/svg+xml;utf8,\
 <svg xmlns='http://www.w3.org/2000/svg' width='800' height='450' viewBox='0 0 800 450'>\
 <rect width='100%' height='100%' fill='%23222222'/>\
 <text x='50%' y='50%' fill='%23aaaaaa' font-size='32' font-family='Arial, Helvetica, sans-serif' text-anchor='middle' dominant-baseline='middle'>No Image</text>\
 </svg>";
+
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -39,169 +44,21 @@ export default function GalleryManagement() {
     category: "BEACH",
     location: "",
     tags: "",
-    isActive: true
+    isActive: true,
   });
-
-  const categories = [
-    { value: "ALL", label: "ทั้งหมด", icon: "🌍" },
-    { value: "BEACH", label: "ชายหาด", icon: "🏖️" },
-    { value: "MOUNTAIN", label: "ภูเขา", icon: "⛰️" },
-    { value: "CITY", label: "เมือง", icon: "🏙️" },
-    { value: "FOREST", label: "ป่าไผ่", icon: "🌲" },
-    { value: "DESERT", label: "ทะเลทราย", icon: "🏜️" },
-    { value: "CULTURAL", label: "วัฒนธรรม", icon: "🏛️" },
-    { value: "ADVENTURE", label: "ผจญภัย", icon: "🎯" },
-    { value: "LUXURY", label: "หรูหรา", icon: "💎" },
-    { value: "WILDLIFE", label: "สัตว์ป่า", icon: "🦁" },
-    { value: "OTHER", label: "อื่นๆ", icon: "📷" }
-  ];
 
   useEffect(() => {
-    fetchImages();
+    fetchImages({ setImages, setLoading });
   }, []);
 
-  const fetchImages = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch("/api/gallery?limit=100&showAll=true", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+  const refresh = () => fetchImages({ setImages, setLoading });
 
-      if (response.ok) {
-        const data = await response.json();
-        setImages(data.data?.images || []);
-      }
-    } catch (error) {
-      console.error("Error fetching images:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    try {
-      const tagsArray = formData.tags.split(",").map(tag => tag.trim()).filter(Boolean);
-      
-      const payload = {
-        ...formData,
-        tags: tagsArray
-      };
-
-      const url = selectedImage ? `/api/gallery/${selectedImage.id}` : "/api/gallery";
-      const method = selectedImage ? "PUT" : "POST";
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (response.ok) {
-        await fetchImages();
-        handleCloseModal();
-        alert(selectedImage ? "อัปเดตรูปภาพเรียบร้อยแล้ว" : "เพิ่มรูปภาพเรียบร้อยแล้ว");
-      } else {
-        const error = await response.json();
-        alert(error.message || "เกิดข้อผิดพลาด");
-      }
-    } catch (error) {
-      console.error("Error saving image:", error);
-      alert("เกิดข้อผิดพลาดในการบันทึก");
-    }
-  };
-
-  const handleDelete = async (imageId) => {
-    if (!confirm("คุณแน่ใจหรือไม่ที่จะลบรูปภาพนี้?")) return;
-
-    try {
-      const response = await fetch(`/api/gallery/${imageId}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-
-      if (response.ok) {
-        await fetchImages();
-        alert("ลบรูปภาพเรียบร้อยแล้ว");
-      } else {
-        alert("เกิดข้อผิดพลาดในการลบ");
-      }
-    } catch (error) {
-      console.error("Error deleting image:", error);
-      alert("เกิดข้อผิดพลาดในการลบ");
-    }
-  };
-
-  const handleToggleActive = async (imageId, currentStatus) => {
-    try {
-      const response = await fetch(`/api/gallery/${imageId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({ isActive: !currentStatus }),
-      });
-
-      if (response.ok) {
-        await fetchImages();
-      }
-    } catch (error) {
-      console.error("Error toggling status:", error);
-    }
-  };
-
-  const handleEdit = (image) => {
-    setSelectedImage(image);
-    setFormData({
-      title: image.title,
-      description: image.description || "",
-      imageUrl: image.imageUrl,
-      category: image.category,
-      location: image.location,
-      tags: image.tags?.join(", ") || "",
-      isActive: image.isActive
-    });
-    setShowEditModal(true);
-  };
-
-  const handleCloseModal = () => {
-    setShowAddModal(false);
-    setShowEditModal(false);
-    setSelectedImage(null);
-    setFormData({
-      title: "",
-      description: "",
-      imageUrl: "",
-      category: "BEACH",
-      location: "",
-      tags: "",
-      isActive: true
-    });
-  };
-
-  const filteredImages = images.filter(image => {
-    const matchesSearch = image.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         image.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         image.tags?.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
-    
-    const matchesCategory = selectedCategory === "ALL" || image.category === selectedCategory;
-    
-    return matchesSearch && matchesCategory;
-  });
+  const filtered = filterImages({ images, searchTerm, selectedCategory });
 
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FFD700]"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FFD700]" />
       </div>
     );
   }
@@ -213,7 +70,7 @@ export default function GalleryManagement() {
         <div className="flex flex-col sm:flex-row gap-4 flex-1">
           {/* Search */}
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/50 h-4 w-4" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50 h-4 w-4" />
             <input
               type="text"
               placeholder="ค้นหารูปภาพ..."
@@ -229,7 +86,7 @@ export default function GalleryManagement() {
             onChange={(e) => setSelectedCategory(e.target.value)}
             className="px-4 py-2 bg-black/50 border border-[#FFD700]/30 rounded-xl text-white focus:outline-none focus:border-[#FFD700] focus:bg-black/70 transition-all"
           >
-            {categories.map(category => (
+            {categories.map((category) => (
               <option key={category.value} value={category.value}>
                 {category.icon} {category.label}
               </option>
@@ -249,7 +106,7 @@ export default function GalleryManagement() {
 
       {/* Images Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredImages.map((image) => (
+        {filtered.map((image) => (
           <div
             key={image.id}
             className="bg-black/40 border border-[#FFD700]/20 rounded-xl overflow-hidden hover:border-[#FFD700]/40 transition-all duration-300"
@@ -261,49 +118,61 @@ export default function GalleryManagement() {
                 alt={image.title}
                 className="w-full h-full object-cover"
                 onError={(e) => {
-                  // Prevent infinite onError loop then set fallback
                   e.currentTarget.onerror = null;
                   e.currentTarget.src = FALLBACK_IMG;
                 }}
               />
-              
+
               {/* Status Badge */}
               <div className="absolute top-2 right-2">
                 <button
-                  onClick={() => handleToggleActive(image.id, image.isActive)}
+                  onClick={() =>
+                    handleToggleActive({
+                      imageId: image.id,
+                      currentStatus: image.isActive,
+                      refresh,
+                    })
+                  }
                   className={`p-1 rounded-full ${
-                    image.isActive 
-                      ? "bg-green-500/80 text-white" 
+                    image.isActive
+                      ? "bg-green-500/80 text-white"
                       : "bg-red-500/80 text-white"
                   }`}
                 >
-                  {image.isActive ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                  {image.isActive ? (
+                    <Eye className="h-4 w-4" />
+                  ) : (
+                    <EyeOff className="h-4 w-4" />
+                  )}
                 </button>
               </div>
 
               {/* Category Badge */}
               <div className="absolute top-2 left-2">
                 <Badge className="bg-[#FFD700]/90 text-black text-xs">
-                  {categories.find(c => c.value === image.category)?.icon} {categories.find(c => c.value === image.category)?.label}
+                  {categories.find((c) => c.value === image.category)?.icon}{" "}
+                  {categories.find((c) => c.value === image.category)?.label}
                 </Badge>
               </div>
             </div>
 
             {/* Content */}
             <div className="p-4">
-              <h3 className="text-white font-semibold mb-2 line-clamp-1">{image.title}</h3>
-              
+              <h3 className="text-white font-semibold mb-2 line-clamp-1">
+                {image.title}
+              </h3>
+
               {image.description && (
-                <p className="text-white/70 text-sm mb-3 line-clamp-2">{image.description}</p>
+                <p className="text-white/70 text-sm mb-3 line-clamp-2">
+                  {image.description}
+                </p>
               )}
 
-              {/* Location */}
               <div className="flex items-center text-white/60 text-sm mb-3">
                 <MapPin className="h-3 w-3 mr-1" />
                 {image.location}
               </div>
 
-              {/* Tags */}
               {image.tags && image.tags.length > 0 && (
                 <div className="flex flex-wrap gap-1 mb-4">
                   {image.tags.slice(0, 3).map((tag, index) => (
@@ -322,12 +191,18 @@ export default function GalleryManagement() {
                 </div>
               )}
 
-              {/* Actions */}
               <div className="flex gap-2">
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => handleEdit(image)}
+                  onClick={() =>
+                    handleEdit({
+                      image,
+                      setSelectedImage,
+                      setFormData,
+                      setShowEditModal,
+                    })
+                  }
                   className="flex-1 border-[#FFD700]/30 text-[#FFD700] hover:bg-[#FFD700]/10"
                 >
                   <Edit className="h-3 w-3 mr-1" />
@@ -336,28 +211,42 @@ export default function GalleryManagement() {
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => handleDelete(image.id)}
+                  onClick={() =>
+                    handleDelete({
+                      imageId: image.id,
+                      refresh,
+                    })
+                  }
                   className="border-red-500/30 text-red-400 hover:bg-red-500/10"
                 >
                   <Trash2 className="h-3 w-3" />
                 </Button>
               </div>
 
-              {/* Created Date */}
               <div className="flex items-center text-white/40 text-xs mt-2">
                 <Calendar className="h-3 w-3 mr-1" />
-                {new Date(image.createdAt).toLocaleDateString('th-TH')}
+                {new Date(image.createdAt).toLocaleDateString("th-TH")}
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      {filteredImages.length === 0 && (
+      {filtered.length === 0 && (
         <div className="text-center py-12">
           <div className="text-white/60 mb-4">
-            <svg className="mx-auto h-12 w-12 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            <svg
+              className="mx-auto h-12 w-12 mb-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1}
+                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
             </svg>
             <p className="text-lg">ไม่พบรูปภาพ</p>
             <p className="text-sm">ลองเปลี่ยนคำค้นหาหรือหมวดหมู่</p>
@@ -375,14 +264,23 @@ export default function GalleryManagement() {
                   {selectedImage ? "แก้ไขรูปภาพ" : "เพิ่มรูปภาพใหม่"}
                 </h2>
                 <button
-                  onClick={handleCloseModal}
+                  onClick={() => handleCloseModal({ setShowAddModal, setShowEditModal, setSelectedImage, setFormData })}
                   className="text-white/60 hover:text-white transition-colors"
                 >
                   ✕
                 </button>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form
+                onSubmit={(e) => handleSubmit({
+                  e,
+                  formData,
+                  selectedImage,
+                  fetchImages: refresh,
+                  handleCloseModal: () => handleCloseModal({ setShowAddModal, setShowEditModal, setSelectedImage, setFormData })
+                })}
+                className="space-y-4"
+              >
                 {/* Title */}
                 <div>
                   <label className="block text-[#FFD700] text-sm font-medium mb-2">
@@ -418,9 +316,7 @@ export default function GalleryManagement() {
                     รูปภาพ *
                   </label>
                   <ImageUploader
-                    onImageUploaded={(imageUrl) => 
-                      setFormData({ ...formData, imageUrl })
-                    }
+                    onImageUploaded={(imageUrl) => setFormData(prev => ({ ...prev, imageUrl }))}
                     currentImage={formData.imageUrl}
                     type="gallery"
                     multiple={false}
@@ -440,7 +336,7 @@ export default function GalleryManagement() {
                       onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                       className="w-full px-4 py-2 bg-black/50 border border-[#FFD700]/30 rounded-xl text-white focus:outline-none focus:border-[#FFD700] focus:bg-black/70 transition-all"
                     >
-                      {categories.filter(c => c.value !== "ALL").map(category => (
+                      {categories.filter((c) => c.value !== "ALL").map((category) => (
                         <option key={category.value} value={category.value}>
                           {category.icon} {category.label}
                         </option>
@@ -496,7 +392,7 @@ export default function GalleryManagement() {
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={handleCloseModal}
+                    onClick={() => handleCloseModal({ setShowAddModal, setShowEditModal, setSelectedImage, setFormData })}
                     className="flex-1 border-white/30 text-white hover:bg-white/10"
                   >
                     ยกเลิก
@@ -513,6 +409,10 @@ export default function GalleryManagement() {
           </div>
         </div>
       )}
+
     </div>
   );
 }
+
+
+
