@@ -53,7 +53,7 @@ const ItemCard = ({ pkg }) => {
 
         {/* ราคา */}
         <div className="text-red-600 font-bold text-sm sm:text-base">
-          THB {pkg.price.toLocaleString()}
+          THB {(pkg?.price || 0).toLocaleString()}
         </div>
       </div>
     </div>

@@ -181,7 +181,7 @@ export default function BookingDetailPage() {
             </div>
             <div className="text-right">
               <div className="text-2xl font-bold text-[#FFD700]">
-                ฿{parseFloat(booking.totalAmount).toLocaleString()}
+                ฿{(parseFloat(booking.totalAmount) || 0).toLocaleString()}
               </div>
               <div className="text-white/60 text-sm">
                 ยอดรวมทั้งหมด
@@ -251,10 +251,10 @@ export default function BookingDetailPage() {
                 <div>วันที่จอง: {new Date(booking.createdAt).toLocaleDateString('th-TH')}</div>
                 <div>วันที่อัปเดตล่าสุด: {new Date(booking.updatedAt).toLocaleDateString('th-TH')}</div>
                 {booking.bookingType === 'PACKAGE' && (
-                  <div>ราคาต่อคน: ฿{parseFloat(booking.package?.price || 0).toLocaleString()}</div>
+                  <div>ราคาต่อคน: ฿{(parseFloat(booking.package?.price) || 0).toLocaleString()}</div>
                 )}
                 {booking.bookingType === 'CUSTOM' && (
-                  <div>ราคาประมาณการ: ฿{parseFloat(booking.customTourRequest?.estimatedCost || 0).toLocaleString()}</div>
+                  <div>ราคาประมาณการ: ฿{(parseFloat(booking.customTourRequest?.estimatedCost) || 0).toLocaleString()}</div>
                 )}
               </div>
             </div>
