@@ -11,7 +11,12 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (e) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    }
     const userId = decoded.userId;
 
     // Check if user has admin role
@@ -32,7 +37,8 @@ export async function GET(request) {
       ...(status && status !== 'ALL' && { status })
     };
 
-    const customTourRequests = await prisma.customTourRequest.findMany({
+    // Use correct Prisma model name: CustomRequest -> prisma.customRequest
+    const customTourRequests = await prisma.customRequest.findMany({
       where,
       include: {
         user: {
@@ -53,17 +59,6 @@ export async function GET(request) {
               }
             }
           }
-        },
-        bookings: {
-          include: {
-            customer: {
-              select: {
-                firstName: true,
-                lastName: true,
-                email: true
-              }
-            }
-          }
         }
       },
       orderBy: { createdAt: 'desc' },
@@ -71,11 +66,17 @@ export async function GET(request) {
       take: limit
     });
 
-    const total = await prisma.customTourRequest.count({ where });
+    const total = await prisma.customRequest.count({ where });
+
+    // Map response to include UI-expected field name `trackingNumber`
+    const data = customTourRequests.map((req) => ({
+      ...req,
+      trackingNumber: req.requestNumber || req.trackingNumber || null,
+    }));
 
     return NextResponse.json({
       success: true,
-      data: customTourRequests,
+      data,
       pagination: {
         page,
         limit,

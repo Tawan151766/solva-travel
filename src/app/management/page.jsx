@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import UserManagement from "@/components/management/UserManagement";
+import UserManagement from "@/components/management/User management";
 import BookingManagement from "@/components/management/BookingManagement";
 import GalleryManagement from "@/components/management/GalleryManagement";
 import FileUpload from "@/components/ui/FileUpload";

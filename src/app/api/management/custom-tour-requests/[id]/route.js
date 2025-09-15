@@ -11,7 +11,12 @@ export async function PUT(request, { params }) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (e) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    }
     const userId = decoded.userId;
 
     // Check if user has admin role
@@ -28,7 +33,7 @@ export async function PUT(request, { params }) {
     const { status, responseNotes, estimatedCost } = body;
 
     // Validate the custom tour request exists
-    const existingRequest = await prisma.customTourRequest.findUnique({
+    const existingRequest = await prisma.customRequest.findUnique({
       where: { id }
     });
 
@@ -47,7 +52,7 @@ export async function PUT(request, { params }) {
       responseDate: new Date()
     };
 
-    const updatedRequest = await prisma.customTourRequest.update({
+    const updatedRequest = await prisma.customRequest.update({
       where: { id },
       data: updateData,
       include: {
@@ -97,7 +102,12 @@ export async function DELETE(request, { params }) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (e) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    }
     const userId = decoded.userId;
 
     // Check if user has admin role
@@ -112,11 +122,8 @@ export async function DELETE(request, { params }) {
     const { id } = await params;
 
     // Check if the request exists
-    const existingRequest = await prisma.customTourRequest.findUnique({
-      where: { id },
-      include: {
-        bookings: true
-      }
+    const existingRequest = await prisma.customRequest.findUnique({
+      where: { id }
     });
 
     if (!existingRequest) {
@@ -126,15 +133,7 @@ export async function DELETE(request, { params }) {
       );
     }
 
-    // Check if there are related bookings
-    if (existingRequest.bookings.length > 0) {
-      return NextResponse.json(
-        { error: 'Cannot delete custom tour request with associated bookings' },
-        { status: 400 }
-      );
-    }
-
-    await prisma.customTourRequest.delete({
+    await prisma.customRequest.delete({
       where: { id }
     });
 

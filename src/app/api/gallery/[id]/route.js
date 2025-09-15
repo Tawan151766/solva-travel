@@ -8,7 +8,7 @@ export async function GET(request, { params }) {
     console.log('Individual gallery image API called for ID:', id);
 
     // Find the gallery image by ID
-    const galleryImage = await prisma.gallery.findUnique({
+    const travelPackage = await prisma.gallery.findUnique({
       where: { 
         id: id,
         isActive: true 

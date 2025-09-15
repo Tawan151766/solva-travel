@@ -19,6 +19,12 @@ import {
 } from "lucide-react";
 
 export default function GalleryManagement() {
+  // Inline SVG fallback to avoid 404 loops
+  const FALLBACK_IMG = "data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' width='800' height='450' viewBox='0 0 800 450'>\
+<rect width='100%' height='100%' fill='%23222222'/>\
+<text x='50%' y='50%' fill='%23aaaaaa' font-size='32' font-family='Arial, Helvetica, sans-serif' text-anchor='middle' dominant-baseline='middle'>No Image</text>\
+</svg>";
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -255,7 +261,9 @@ export default function GalleryManagement() {
                 alt={image.title}
                 className="w-full h-full object-cover"
                 onError={(e) => {
-                  e.target.src = "/images/placeholder.jpg";
+                  // Prevent infinite onError loop then set fallback
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = FALLBACK_IMG;
                 }}
               />
               
