@@ -15,10 +15,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import UserManagement from "@/components/management/UserManagement";
 import BookingManagement from "@/components/management/BookingManagement";
-import PackageManagement from "@/components/management/PackageManagement";
 import GalleryManagement from "@/components/management/GalleryManagement";
 import FileUpload from "@/components/ui/FileUpload";
 import { Users, Calendar, Package, BarChart3, Upload } from "lucide-react";
+import PackageManagement from "@/components/management/PackgeManagement";
 
 export default function ManagementPage() {
   const { user, isAuthenticated, loading } = useAuth();
@@ -196,15 +196,22 @@ export default function ManagementPage() {
                       ทดสอบ Cloudinary Upload
                     </h3>
                     <p className="text-white/70 text-sm mb-4">
-                      ทดสอบการอัปโหลดไฟล์ไปยัง Cloudinary พร้อมการปรับขนาดและ optimization อัตโนมัติ
+                      ทดสอบการอัปโหลดไฟล์ไปยัง Cloudinary พร้อมการปรับขนาดและ
+                      optimization อัตโนมัติ
                     </p>
                     <FileUpload
                       onUploadSuccess={(files) => {
-                        console.log('Upload success:', files);
-                        alert(`Upload สำเร็จ! ไฟล์: ${Array.isArray(files) ? files.map(f => f.name).join(', ') : files.name}`);
+                        console.log("Upload success:", files);
+                        alert(
+                          `Upload สำเร็จ! ไฟล์: ${
+                            Array.isArray(files)
+                              ? files.map((f) => f.name).join(", ")
+                              : files.name
+                          }`
+                        );
                       }}
                       onUploadError={(error) => {
-                        console.error('Upload error:', error);
+                        console.error("Upload error:", error);
                         alert(`Upload ผิดพลาด: ${error}`);
                       }}
                       allowMultiple={true}

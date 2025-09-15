@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import ImageUploader from "../ui/ImageUploader";
+import ImageUploader from "../../ui/ImageUploader";
 
-export function PackageFormNew({
+export function PackageForm({
   formData,
   setFormData,
   onSubmit,
@@ -1384,9 +1384,9 @@ export function PackageFormNew({
         </label>
         <ImageUploader
           onImageUploaded={(imageUrl) => {
-            console.log('🔍 PackageFormNew - Main image uploaded:', imageUrl);
+            console.log('🔍 PackageForm - Main image uploaded:', imageUrl);
             setFormData({ ...formData, imageUrl });
-            console.log('🔍 PackageFormNew - FormData updated with imageUrl:', imageUrl);
+            console.log('🔍 PackageForm - FormData updated with imageUrl:', imageUrl);
           }}
           currentImage={formData.imageUrl}
           type="packages"
