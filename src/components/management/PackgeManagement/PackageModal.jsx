@@ -1,6 +1,6 @@
 "use client";
 
-import { PackageFormNew } from "./PackageFormNew";
+import { PackageForm } from "./PackageForm";
 
 export function PackageModal({
   isOpen,
@@ -56,7 +56,7 @@ export function PackageModal({
               <p className="text-white/70 text-sm">{subtitle}</p>
             </div>
 
-            <PackageFormNew
+            <PackageForm
               formData={formData}
               setFormData={setFormData}
               onSubmit={onSubmit}
