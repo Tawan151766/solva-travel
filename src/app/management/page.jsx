@@ -14,7 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import UserManagement from "@/components/management/User management";
-import BookingManagement from "@/components/management/BookingManagement";
+import BookingManagement from "@/components/management/BookingManagement/index.jsx";
 import GalleryManagement from "@/components/management/GalleryManagement";
 import FileUpload from "@/components/ui/FileUpload";
 import { Users, Calendar, Package, BarChart3, Upload } from "lucide-react";
