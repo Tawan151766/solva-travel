@@ -57,7 +57,7 @@ export async function PUT(request) {
     }
 
     const body = await request.json();
-    const { id, title, content, published } = body || {};
+    const { id, title, content, published, authorId } = body || {};
 
     if (!id) {
       return NextResponse.json({
@@ -70,6 +70,7 @@ export async function PUT(request) {
     if (typeof title === 'string') data.title = title.trim();
     if (typeof content === 'string') data.content = content.trim();
     if (typeof published === 'boolean') data.published = published;
+    if (typeof authorId === 'string' && authorId.trim()) data.authorId = authorId.trim();
 
     if (Object.keys(data).length === 0) {
       return NextResponse.json({
@@ -99,7 +100,7 @@ export async function PUT(request) {
           published: updated.published,
           createdAt: updated.createdAt,
           updatedAt: updated.updatedAt,
-        }
+        } 
       }
     }, { status: 200 });
   } catch (error) {
