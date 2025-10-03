@@ -326,7 +326,7 @@ export default function ManagementPage() {
                     </h3>
                     <p className="text-white/70 text-sm mb-4">
                       {blogMeta.loading
-                        ? "กำลังโหลดข้อมูลบทความ..."
+                        ? "กำลังโหลดข้อมูล Blog ..."
                         : `ดูเเละเเก้ไขจัดการ Blog `}
                     </p>
                     <BlogManagement showHeader={false} onStatsChange={setBlogMeta} />

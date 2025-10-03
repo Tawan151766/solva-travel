@@ -1,4 +1,5 @@
-﻿import { CalendarDays, Quote, UserRound } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { CalendarDays, Eye, EyeOff, Quote, UserRound } from "lucide-react";
 
 const dateFormatter = new Intl.DateTimeFormat("th-TH", {
   day: "numeric",
@@ -45,7 +46,18 @@ export function BlogCard({ blog }) {
     createdAt,
   } = blog || {};
 
-  const excerpt = buildExcerpt(content);
+  const collapsedText = useMemo(() => buildExcerpt(content), [content]);
+  const fullText = useMemo(() => toPlainText(content), [content]);
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  useEffect(() => {
+    setIsExpanded(false);
+  }, [collapsedText]);
+
+  const hasContent = Boolean(fullText);
+  const displayText = isExpanded && fullText ? fullText : collapsedText;
+  const expandedTextClasses = isExpanded ? "max-h-80 overflow-y-auto pr-1" : "";
+
   const rawDate = castToDate(createdAt);
   const formattedDate = formatDate(rawDate);
 
@@ -69,9 +81,31 @@ export function BlogCard({ blog }) {
             <h3 className="text-lg sm:text-xl font-semibold leading-snug text-white transition-colors duration-300 group-hover:text-[#FFD700]">
               {title}
             </h3>
-            <p className="text-sm text-white/70 leading-relaxed line-clamp-3">
-              {excerpt}
+            <p
+              className={`text-sm text-white/70 leading-relaxed whitespace-pre-line break-words ${isExpanded ? "" : "line-clamp-3"} ${expandedTextClasses}`}
+            >
+              {displayText}
             </p>
+            {hasContent ? (
+              <button
+                type="button"
+                onClick={() => setIsExpanded((prev) => !prev)}
+                aria-expanded={isExpanded}
+                className="inline-flex items-center gap-2 rounded-full border border-[#FFD700]/25 bg-[#FFD700]/8 px-3 py-1 text-xs font-medium text-[#FFED4E] transition-colors hover:bg-[#FFD700]/16 hover:text-[#FFD700]"
+              >
+                {isExpanded ? (
+                  <>
+                    <EyeOff className="h-4 w-4" aria-hidden="true" />
+                    <span>ซ่อนรีวิว</span>
+                  </>
+                ) : (
+                  <>
+                    <Eye className="h-4 w-4" aria-hidden="true" />
+                    <span>อ่านรีวิวเต็ม</span>
+                  </>
+                )}
+              </button>
+            ) : null}
           </div>
         </div>
 
