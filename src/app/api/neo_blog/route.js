@@ -1,104 +1,209 @@
 import { NextResponse } from 'next/server';
+import jwt from 'jsonwebtoken';
 import { prisma } from '../../../../lib/prisma.js';
 
-export async function GET() {
-  try {
-    const blog = await prisma.blog.findMany({
-      include: { author: true },
-    });
+const MAX_LIMIT = 20;
 
-    const transformed = blog.map(blog => ({
-        id: blog.id,
-  title: blog.title,
-  content: blog.content,
-  authorId: blog.authorId,
-  published: blog.published,
-  createdAt: blog.createdAt,
-  updatedAt: blog.updatedAt,
-  author: blog.author, 
+const authorSelect = {
+  select: {
+    id: true,
+    firstName: true,
+    lastName: true,
+    email: true,
+  },
+};
+
+const resolveAuthorName = (author) => {
+  if (!author) {
+    return null;
+  }
+
+  const first = typeof author.firstName === 'string' ? author.firstName.trim() : '';
+  const last = typeof author.lastName === 'string' ? author.lastName.trim() : '';
+  const combined = `${first} ${last}`.trim();
+
+  if (combined) {
+    return combined;
+  }
+
+  if (typeof author.email === 'string' && author.email.trim()) {
+    return author.email.trim();
+  }
+
+  return null;
+};
+
+export async function GET(request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const page = Math.max(parseInt(searchParams.get('page') || '1', 10), 1);
+    const limit = Math.min(Math.max(parseInt(searchParams.get('limit') || '5', 10), 1), MAX_LIMIT);
+    const skip = (page - 1) * limit;
+
+    const where = { published: true };
+
+    const [blogs, total] = await Promise.all([
+      prisma.blog.findMany({
+        where,
+        include: {
+          author: authorSelect,
+        },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      prisma.blog.count({ where }),
+    ]);
+
+    const data = blogs.map((blog) => ({
+      id: blog.id,
+      title: blog.title,
+      content: blog.content,
+      authorId: blog.authorId,
+      authorName: resolveAuthorName(blog.author),
+      published: blog.published,
+      createdAt: blog.createdAt,
+      updatedAt: blog.updatedAt,
     }));
 
-    return NextResponse.json({
-      success: true,
-      message: 'blog retrieved successfully',
-      data: transformed
-    }, { status: 200 });
+    const totalPages = Math.max(Math.ceil(total / limit), 1);
 
+    return NextResponse.json(
+      {
+        success: true,
+        message: 'Blogs retrieved successfully',
+        data: {
+          blogs: data,
+          pagination: {
+            currentPage: page,
+            totalPages,
+            totalCount: total,
+            hasNextPage: page < totalPages,
+            hasPrevPage: page > 1,
+            limit,
+          },
+        },
+      },
+      { status: 200 },
+    );
   } catch (error) {
     console.error('Get all blog error:', error);
-    return NextResponse.json({
-      success: false,
-      message: 'Internal server error',
-      error: error.message
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        success: false,
+        message: 'Internal server error',
+        error: error.message,
+      },
+      { status: 500 },
+    );
   }
 }
 
 export async function POST(request) {
   try {
-    // Get authorization header
     const authHeader = request.headers.get('authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json({
-        success: false,
-        message: 'Access token is required'
-      }, { status: 401 });
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Access token is required',
+        },
+        { status: 401 },
+      );
     }
 
     const token = authHeader.substring(7);
-    
-    // Verify JWT token (you might want to add proper JWT verification here)
-    // For now, we'll assume the token is valid if it exists
-    
-    const body = await request.json();
-    const {
-      title,
-      content,
-      authorId,
-      published = false
-    } = body;
 
-    // Validation
-    if (!title || !content || !authorId) {
-      return NextResponse.json({
-        success: false,
-        message: 'title, content, authorId'
-      }, { status: 400 });
+    let payload;
+    try {
+      payload = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    } catch (error) {
+      console.error('Invalid token when creating blog:', error);
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Invalid or expired token',
+        },
+        { status: 401 },
+      );
     }
 
-    // Create new blog
-    const newblog = await prisma.blog.create({
+    if (!payload?.userId) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Authenticated user not found',
+        },
+        { status: 401 },
+      );
+    }
+
+    const body = await request.json();
+    const { title, content, published = false } = body ?? {};
+
+    if (!title || !content) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'title and content are required fields',
+        },
+        { status: 400 },
+      );
+    }
+
+    const trimmedTitle = String(title).trim();
+    const trimmedContent = String(content).trim();
+
+    if (!trimmedTitle || !trimmedContent) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'title and content must not be empty',
+        },
+        { status: 400 },
+      );
+    }
+
+    const newBlog = await prisma.blog.create({
       data: {
-      title,
-      content,
-      authorId,
-      published
+        title: trimmedTitle,
+        content: trimmedContent,
+        authorId: payload.userId,
+        published: Boolean(published),
       },
-      include: { author: true },
-      
+      include: {
+        author: authorSelect,
+      },
     });
 
-    return NextResponse.json({
-      success: true,
-      message: 'blog created successfully',
-      data: {
-        id: newblog.id,
-        title: newblog.title,
-        content: newblog.content,
-        authorId: newblog.authorId,
-        published: newblog.published,
-        createdAt: newblog.createdAt,
-        updatedAt: newblog.updatedAt,
-        author: newblog.author,
-      }
-    }, { status: 201 });
-
+    return NextResponse.json(
+      {
+        success: true,
+        message: 'Blog created successfully',
+        data: {
+          blog: {
+            id: newBlog.id,
+            title: newBlog.title,
+            content: newBlog.content,
+            authorId: newBlog.authorId,
+            authorName: resolveAuthorName(newBlog.author),
+            published: newBlog.published,
+            createdAt: newBlog.createdAt,
+            updatedAt: newBlog.updatedAt,
+          },
+        },
+      },
+      { status: 201 },
+    );
   } catch (error) {
     console.error('Create blog error:', error);
-    return NextResponse.json({
-      success: false,
-      message: 'Internal server error',
-      error: error.message
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        success: false,
+        message: 'Internal server error',
+        error: error.message,
+      },
+      { status: 500 },
+    );
   }
 }
