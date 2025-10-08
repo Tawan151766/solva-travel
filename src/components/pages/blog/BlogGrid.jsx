@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { CalendarDays, ChevronLeft, ChevronRight, Eye, EyeOff, UserRound } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight, Eye, EyeOff, Search, UserRound } from "lucide-react";
 import { BlogCard } from "./BlogCard";
 
 const BLOGS_PER_PAGE = 7;
@@ -70,7 +70,7 @@ function LatestBadge({ formattedDate }) {
   );
 }
 
-function FeaturedBlogCard({ blog }) {
+function FeaturedBlogCard({ blog, showLatestBadge = true }) {
   if (!blog) return null;
 
   const {
@@ -102,9 +102,11 @@ function FeaturedBlogCard({ blog }) {
       </div>
 
       <div className="relative flex flex-col gap-5 text-left text-white">
-        <span className="inline-flex w-fit items-center gap-2 rounded-full border border-[#FFD700]/40 bg-[#FFD700]/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.32em] text-[#FFD700]">
-          Latest Reviews
-        </span>
+        {showLatestBadge ? (
+          <span className="inline-flex w-fit items-center gap-2 rounded-full border border-[#FFD700]/40 bg-[#FFD700]/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.32em] text-[#FFD700]">
+            Latest Reviews
+          </span>
+        ) : null}
 
         <div className="space-y-4">
           <h3 className="text-2xl sm:text-3xl font-semibold leading-tight text-white">
@@ -153,12 +155,52 @@ function FeaturedBlogCard({ blog }) {
 }
 
 export function BlogGrid({ blogs = [], totalBlogs = 0, latestPublishedAt = null }) {
+  const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const totalPages = Math.max(1, Math.ceil((blogs?.length ?? 0) / BLOGS_PER_PAGE));
+
+  const normalizedSearch = useMemo(
+    () => searchTerm.trim().toLowerCase(),
+    [searchTerm]
+  );
+
+  const filteredBlogs = useMemo(() => {
+    if (!Array.isArray(blogs)) {
+      return [];
+    }
+
+    if (!normalizedSearch) {
+      return blogs;
+    }
+
+    return blogs.filter((blog) => {
+      if (!blog) {
+        return false;
+      }
+
+      const fields = [
+        typeof blog.title === "string" ? blog.title : "",
+        typeof blog.authorName === "string" ? blog.authorName : "",
+        toPlainText(blog.content),
+      ];
+
+      return fields.some((field) => {
+        if (typeof field !== "string" || !field) {
+          return false;
+        }
+
+        return field.toLowerCase().includes(normalizedSearch);
+      });
+    });
+  }, [blogs, normalizedSearch]);
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredBlogs.length / BLOGS_PER_PAGE)
+  );
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [blogs]);
+  }, [filteredBlogs]);
 
   useEffect(() => {
     if (currentPage > totalPages) {
@@ -168,14 +210,16 @@ export function BlogGrid({ blogs = [], totalBlogs = 0, latestPublishedAt = null 
 
   const pageBlogs = useMemo(() => {
     const startIndex = (currentPage - 1) * BLOGS_PER_PAGE;
-    return blogs.slice(startIndex, startIndex + BLOGS_PER_PAGE);
-  }, [blogs, currentPage]);
+    return filteredBlogs.slice(startIndex, startIndex + BLOGS_PER_PAGE);
+  }, [filteredBlogs, currentPage]);
 
-  const hasOverallBlogs = Array.isArray(blogs) && blogs.length > 0;
+  const hasAnyBlogs = Array.isArray(blogs) && blogs.length > 0;
+  const hasFilteredBlogs = filteredBlogs.length > 0;
   const hasBlogsOnPage = pageBlogs.length > 0;
 
-  const featuredBlog = hasBlogsOnPage ? pageBlogs[0] : null;
-  const remainingBlogs = hasBlogsOnPage ? pageBlogs.slice(1) : [];
+  const featuredBlog =
+    currentPage === 1 && hasBlogsOnPage ? pageBlogs[0] : null;
+  const remainingBlogs = currentPage === 1 ? pageBlogs.slice(1) : pageBlogs;
 
   const formattedTotal = typeof totalBlogs === "number" && totalBlogs > 0
     ? thaiNumberFormatter.format(totalBlogs)
@@ -191,64 +235,100 @@ export function BlogGrid({ blogs = [], totalBlogs = 0, latestPublishedAt = null 
         </div>
 
         <div className="relative space-y-8">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <h2 className="text-xl sm:text-2xl font-semibold text-white">Blog ทั้งหมด</h2>
-            <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
-              <StatBadge label="จำนวนบล็อกทั้งหมด" value={formattedTotal} />
-              <LatestBadge formattedDate={formattedLatest} />
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex w-full flex-col sm:w-auto">
+              <div className="flex items-center gap-3">
+                
+                <span className="hidden sm:block h-px flex-1 min-w-[240px] max-w-[504px] bg-gradient-to-r from-[#FFED4E] via-[#FFD700] to-transparent"></span>
+              </div>
+              <h2 className="relative mt-2 inline-flex text-2xl sm:text-[32px] md:text-[36px] font-semibold text-white">
+                <span className="relative inline-flex items-center">
+                  <span className="absolute -inset-3 rounded-[28px] bg-[#FFD700]/10 blur-xl"></span>
+                  <span className="relative bg-gradient-to-r from-[#FFED4E] via-[#FFD700] to-[#B68B00] bg-clip-text text-transparent drop-shadow-[0_4px_14px_rgba(255,215,0,0.28)]">
+                    All Blogs
+                  </span>
+                </span>
+              </h2>
+              
+            </div>
+            <div className="flex flex-col gap-4 w-full sm:w-auto sm:items-end">
+              <div className="flex flex-wrap items-center gap-3 justify-start sm:justify-end">
+                <StatBadge label="จำนวนบล็อกทั้งหมด" value={formattedTotal} />
+                <LatestBadge formattedDate={formattedLatest} />
+              </div>
+              <div className="relative w-full sm:w-72 sm:self-end">
+                <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#FFD700]/70" aria-hidden="true" />
+                <input
+                  type="search"
+                  value={searchTerm}
+                  onChange={(event) => setSearchTerm(event.target.value)}
+                  placeholder="Search your blog posts..."
+                  aria-label="Search blog posts"
+                  className="w-full rounded-full border border-[#FFD700]/25 bg-black/50 py-2.5 pl-11 pr-4 text-sm text-white placeholder:text-white/40 focus:border-[#FFD700] focus:outline-none focus:ring-2 focus:ring-[#FFD700]/40"
+                />
+              </div>
             </div>
           </div>
 
-          {hasOverallBlogs ? (
-            <div className="space-y-8">
-              <FeaturedBlogCard blog={featuredBlog} />
+          {hasAnyBlogs ? (
+            hasFilteredBlogs ? (
+              <div className="space-y-8">
+                <FeaturedBlogCard
+                  blog={featuredBlog}
+                  showLatestBadge={currentPage === 1 && !normalizedSearch}
+                />
 
-              {remainingBlogs.length > 0 ? (
-                <div className="grid gap-4 sm:gap-6 lg:gap-8 sm:grid-cols-2 xl:grid-cols-3">
-                  {remainingBlogs.map((blog, index) => (
-                    <div
-                      key={blog.id || index}
-                      className="animate-fade-in"
-                      style={{ animationDelay: `${index * 60}ms` }}
-                    >
-                      <BlogCard blog={blog} />
-                    </div>
-                  ))}
-                </div>
-              ) : null}
+                {remainingBlogs.length > 0 ? (
+                  <div className="grid gap-4 sm:gap-6 lg:gap-8 sm:grid-cols-2 xl:grid-cols-3">
+                    {remainingBlogs.map((blog, index) => (
+                      <div
+                        key={blog.id || index}
+                        className="animate-fade-in"
+                        style={{ animationDelay: `${index * 60}ms` }}
+                      >
+                        <BlogCard blog={blog} />
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
 
-              {totalPages > 1 ? (
-                <div className="flex justify-end pt-6">
-                  <div className="inline-flex items-center gap-3 rounded-full border border-[#FFD700]/25 bg-black/40 px-3 py-1.5 sm:px-4">
-                    <span className="text-xs sm:text-sm text-white/60">
-                      Page {currentPage} of {totalPages}
-                    </span>
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
-                        disabled={currentPage === 1}
-                        className="inline-flex items-center gap-1 rounded-full border border-[#FFD700]/25 bg-[#FFD700]/10 px-2.5 py-1 text-xs font-medium text-[#FFED4E] transition-opacity hover:bg-[#FFD700]/20 disabled:cursor-not-allowed disabled:opacity-40"
-                        aria-label="Previous page"
-                      >
-                        <ChevronLeft className="h-4 w-4" aria-hidden="true" />
-                        Prev
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
-                        disabled={currentPage === totalPages}
-                        className="inline-flex items-center gap-1 rounded-full border border-[#FFD700]/25 bg-[#FFD700]/10 px-2.5 py-1 text-xs font-medium text-[#FFED4E] transition-opacity hover:bg-[#FFD700]/20 disabled:cursor-not-allowed disabled:opacity-40"
-                        aria-label="Next page"
-                      >
-                        Next
-                        <ChevronRight className="h-4 w-4" aria-hidden="true" />
-                      </button>
+                {totalPages > 1 ? (
+                  <div className="flex justify-end pt-6">
+                    <div className="inline-flex items-center gap-3 rounded-full border border-[#FFD700]/25 bg-black/40 px-3 py-1.5 sm:px-4">
+                      <span className="text-xs sm:text-sm text-white/60">
+                        Page {currentPage} of {totalPages}
+                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                          disabled={currentPage === 1}
+                          className="inline-flex items-center gap-1 rounded-full border border-[#FFD700]/25 bg-[#FFD700]/10 px-2.5 py-1 text-xs font-medium text-[#FFED4E] transition-opacity hover:bg-[#FFD700]/20 disabled:cursor-not-allowed disabled:opacity-40"
+                          aria-label="Previous page"
+                        >
+                          <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+                          Prev
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+                          disabled={currentPage === totalPages}
+                          className="inline-flex items-center gap-1 rounded-full border border-[#FFD700]/25 bg-[#FFD700]/10 px-2.5 py-1 text-xs font-medium text-[#FFED4E] transition-opacity hover:bg-[#FFD700]/20 disabled:cursor-not-allowed disabled:opacity-40"
+                          aria-label="Next page"
+                        >
+                          Next
+                          <ChevronRight className="h-4 w-4" aria-hidden="true" />
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ) : null}
-            </div>
+                ) : null}
+              </div>
+            ) : (
+              <div className="relative mx-auto max-w-3xl rounded-3xl border border-dashed border-[#FFD700]/30 bg-black/60 px-8 py-12 text-center text-white/75">
+                No blog posts match your search.
+              </div>
+            )
           ) : (
             <div className="relative mx-auto max-w-3xl rounded-3xl border border-dashed border-[#FFD700]/30 bg-black/60 px-8 py-12 text-center text-white/75">
               กำลังเตรียมเรื่องราวใหม่ ๆ อยู่ในขณะนี้ โปรดกลับมาเยี่ยมชมอีกครั้งเร็ว ๆ นี้
@@ -259,3 +339,4 @@ export function BlogGrid({ blogs = [], totalBlogs = 0, latestPublishedAt = null 
     </section>
   );
 }
+
