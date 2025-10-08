@@ -65,7 +65,7 @@ function LatestBadge({ formattedDate }) {
   return (
     <span className="inline-flex items-center gap-2 rounded-full border border-[#FFD700]/30 bg-[#FFD700]/5 px-4 py-1.5 text-xs sm:text-sm text-white/70">
       <span className="flex h-1.5 w-1.5 rounded-full bg-[#FFED4E] shadow-[0_0_8px_rgba(255,237,78,0.7)]" />
-      <span className="font-medium text-white/80">อัปเดตล่าสุด {formattedDate}</span>
+      <span className="font-medium text-white/80">Last Updated On {formattedDate}</span>
     </span>
   );
 }
@@ -253,7 +253,7 @@ export function BlogGrid({ blogs = [], totalBlogs = 0, latestPublishedAt = null 
             </div>
             <div className="flex flex-col gap-4 w-full sm:w-auto sm:items-end">
               <div className="flex flex-wrap items-center gap-3 justify-start sm:justify-end">
-                <StatBadge label="จำนวนบล็อกทั้งหมด" value={formattedTotal} />
+                <StatBadge label="Total Blogs" value={formattedTotal} />
                 <LatestBadge formattedDate={formattedLatest} />
               </div>
               <div className="relative w-full sm:w-72 sm:self-end">
