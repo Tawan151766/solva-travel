@@ -94,9 +94,13 @@ export function SelectTrigger({ children, className = "" }) {
   );
 }
 
-export function SelectValue({ placeholder = "Select...", className = "" }) {
+export function SelectValue({
+  placeholder = "Select...",
+  className = "",
+  fallbackDisplay,
+}) {
   const { selectedValue, selectedLabel } = useContext(SelectContext);
-  const display = selectedLabel || selectedValue;
+  const display = selectedLabel || fallbackDisplay || selectedValue;
 
   return (
     <span
