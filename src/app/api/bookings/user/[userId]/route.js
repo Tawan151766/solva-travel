@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '../../../../../lib/prisma.js';
 import jwt from 'jsonwebtoken';
 import { getServerSession } from 'next-auth/next';
-import { authOptions } from '../../../../lib/nextauth.js';
+import { authOptions } from '../../../../../lib/nextauth.js';
 
 // GET /api/bookings/user/[userId] - Get bookings for specific user
 export async function GET(request, { params }) {

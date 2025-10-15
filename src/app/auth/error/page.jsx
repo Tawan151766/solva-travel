@@ -1,7 +1,7 @@
 "use client"
 
 import { useSearchParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import Link from 'next/link'
 
 const errorMessages = {
@@ -22,7 +22,7 @@ const errorMessages = {
   }
 }
 
-export default function AuthErrorPage() {
+function AuthErrorContent() {
   const searchParams = useSearchParams()
   const [error, setError] = useState(null)
 
@@ -107,5 +107,26 @@ export default function AuthErrorPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function AuthErrorPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-black via-[#0a0804] to-black flex items-center justify-center p-4">
+        <div className="max-w-md w-full">
+          <div className="bg-gradient-to-br from-black/80 to-[#0a0804]/80 backdrop-blur-xl border border-[#FFD700]/30 rounded-2xl p-8 text-center">
+            <div className="animate-pulse">
+              <div className="w-16 h-16 mx-auto mb-6 bg-[#FFD700]/20 rounded-full"></div>
+              <div className="h-8 bg-[#FFD700]/20 rounded mb-4"></div>
+              <div className="h-4 bg-[#FFD700]/10 rounded mb-2"></div>
+              <div className="h-4 bg-[#FFD700]/10 rounded"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }>
+      <AuthErrorContent />
+    </Suspense>
   )
 }
