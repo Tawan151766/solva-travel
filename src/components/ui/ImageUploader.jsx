@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+﻿import { useState, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { useAuth } from '@/contexts/AuthContext-simple';
 import { Upload, X, Image as ImageIcon } from 'lucide-react';
@@ -31,7 +31,7 @@ export default function ImageUploader({
     setUploading(true);
     
     try {
-      console.log('🔍 ImageUploader Auth status:', { 
+      console.log('ðŸ” ImageUploader Auth status:', { 
         nextAuthSession: !!session?.user, 
         legacyAuth: !!legacyAuth,
         currentUser: currentUser?.email || currentUser?.firstName 
@@ -64,15 +64,16 @@ export default function ImageUploader({
         }
 
         const result = await response.json();
-        return result.data; // Return the data object with secure_url, etc.
+        const data = result.data || {};
+        return data.secure_url || data.url; // Return a direct URL for preview
       });
 
       const results = await Promise.all(uploadPromises);
       
       if (multiple) {
-        onImageUploaded(results.map(result => result.secure_url)); // Use secure_url from Cloudinary
+        onImageUploaded(results); // Array of URLs
       } else {
-        onImageUploaded(results[0].secure_url); // Use secure_url from Cloudinary
+        onImageUploaded(results[0]); // Single URL
       }
 
     } catch (error) {
@@ -195,3 +196,5 @@ export default function ImageUploader({
     </div>
   );
 }
+
+

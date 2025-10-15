@@ -1,7 +1,7 @@
-"use client";
+﻿"use client";
 
 import { useAuth } from "@/contexts/AuthContext-simple";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -13,11 +13,12 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import UserManagement from "@/components/management/UserManagement";
-import BookingManagement from "@/components/management/BookingManagement";
+import UserManagement from "@/components/management/User management";
+import BookingManagement from "@/components/management/BookingManagement/index.jsx";
 import GalleryManagement from "@/components/management/GalleryManagement";
+import BlogManagement from "@/components/management/BlogManagement";
 import FileUpload from "@/components/ui/FileUpload";
-import { Users, Calendar, Package, BarChart3, Upload } from "lucide-react";
+import { Users, Calendar, Package, BarChart3, Upload, Newspaper } from "lucide-react";
 import PackageManagement from "@/components/management/PackgeManagement";
 
 export default function ManagementPage() {
@@ -29,6 +30,7 @@ export default function ManagementPage() {
     totalPackages: 0,
     pendingBookings: 0,
   });
+  const [blogMeta, setBlogMeta] = useState({ count: 0, loading: true });
 
   useEffect(() => {
     if (!loading) {
@@ -44,16 +46,7 @@ export default function ManagementPage() {
     }
   }, [isAuthenticated, loading, user, router]);
 
-  useEffect(() => {
-    if (
-      isAuthenticated &&
-      (user?.role === "OPERATOR" || user?.role === "ADMIN")
-    ) {
-      fetchStats();
-    }
-  }, [isAuthenticated, user]);
-
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     try {
       const response = await fetch("/api/management/stats", {
         headers: {
@@ -68,7 +61,44 @@ export default function ManagementPage() {
     } catch (error) {
       console.error("Error fetching stats:", error);
     }
-  };
+  }, []);
+
+  const fetchBlogCount = useCallback(async () => {
+    setBlogMeta((prev) => ({ ...prev, loading: true }));
+
+    try {
+      const params = new URLSearchParams({ limit: "1", page: "1" });
+      const response = await fetch(`/api/blog?${params.toString()}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch blog count");
+      }
+
+      const data = await response.json();
+      const totalCount =
+        data?.data?.pagination?.totalCount ??
+        (Array.isArray(data?.data?.blogs) ? data.data.blogs.length : 0);
+
+      setBlogMeta({ count: totalCount, loading: false });
+    } catch (error) {
+      console.error("Error fetching blog count:", error);
+      setBlogMeta((prev) => ({ ...prev, loading: false }));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (
+      isAuthenticated &&
+      (user?.role === "OPERATOR" || user?.role === "ADMIN")
+    ) {
+      fetchStats();
+      fetchBlogCount();
+    }
+  }, [isAuthenticated, user, fetchStats, fetchBlogCount]);
 
   if (loading) {
     return (
@@ -113,7 +143,7 @@ export default function ManagementPage() {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
               {[
                 {
                   title: "Total Users",
@@ -135,6 +165,11 @@ export default function ManagementPage() {
                   icon: <BarChart3 />,
                   value: stats.pendingBookings,
                   color: "text-orange-400",
+                },
+                {
+                  title: "Blog Posts",
+                  icon: <Newspaper />,
+                  value: blogMeta.loading ? "..." : blogMeta.count,
                 },
               ].map((item, idx) => (
                 <div
@@ -160,7 +195,7 @@ export default function ManagementPage() {
 
             {/* Tabs */}
             <Tabs defaultValue="upload" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-5">
+              <TabsList className="grid w-full grid-cols-6">
                 <TabsTrigger value="upload">
                   <Upload className="h-4 w-4 mr-2" />
                   ทดสอบ Upload
@@ -187,6 +222,10 @@ export default function ManagementPage() {
                   </svg>
                   จัดการแกลเลอรี่
                 </TabsTrigger>
+                <TabsTrigger value="Blog">
+                  <Newspaper className="h-4 w-4 mr-2" />
+                  จัดการ Blog
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="upload">
@@ -197,7 +236,7 @@ export default function ManagementPage() {
                     </h3>
                     <p className="text-white/70 text-sm mb-4">
                       ทดสอบการอัปโหลดไฟล์ไปยัง Cloudinary พร้อมการปรับขนาดและ
-                      optimization อัตโนมัติ
+                      optimization อัตโนมัติ 
                     </p>
                     <FileUpload
                       onUploadSuccess={(files) => {
@@ -279,6 +318,21 @@ export default function ManagementPage() {
                   </div>
                 </div>
               </TabsContent>
+              <TabsContent value="Blog">
+                <div className="space-y-4">
+                  <div className="border border-[#FFD700]/20 rounded-lg bg-black/60 backdrop-blur-xl p-6">
+                    <h3 className="text-lg font-semibold text-white mb-2">
+                      Blog Management
+                     </h3>
+                    <p className="text-white/70 text-sm mb-4">
+                      {blogMeta.loading
+                        ? "กำลังโหลดข้อมูล Blog ..."
+                        : `ดูเเละเเก้ไขจัดการ Blog `}
+                    </p>
+                    <BlogManagement showHeader={false} onStatsChange={setBlogMeta} />
+                  </div>
+                </div>
+              </TabsContent>
             </Tabs>
           </div>
         </div>
@@ -286,3 +340,24 @@ export default function ManagementPage() {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -39,9 +39,9 @@ export async function GET(request) {
     // Fetch statistics
     const [totalUsers, totalTourRequests, totalPackages, pendingTourRequests] = await Promise.all([
       prisma.user.count(),
-      prisma.customTourRequest.count(),
+      prisma.customRequest.count(),
       prisma.travelPackage.count(),
-      prisma.customTourRequest.count({
+      prisma.customRequest.count({
         where: { status: 'PENDING' }
       })
     ]);
