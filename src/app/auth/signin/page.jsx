@@ -2,10 +2,10 @@
 
 import { signIn, getProviders } from "next-auth/react"
 import { useSearchParams } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useEffect, useState, Suspense } from "react"
 import Link from "next/link"
 
-export default function SignInPage() {
+function SignInContent() {
   const searchParams = useSearchParams()
   const [providers, setProviders] = useState(null)
   const [error, setError] = useState(null)
@@ -126,5 +126,26 @@ export default function SignInPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-black via-[#0a0804] to-black flex items-center justify-center p-4">
+        <div className="max-w-md w-full">
+          <div className="bg-gradient-to-br from-black/80 to-[#0a0804]/80 backdrop-blur-xl border border-[#FFD700]/20 rounded-2xl p-8">
+            <div className="animate-pulse">
+              <div className="w-16 h-16 mx-auto mb-4 bg-[#FFD700]/20 rounded-full"></div>
+              <div className="h-8 bg-[#FFD700]/20 rounded mb-4"></div>
+              <div className="h-12 bg-[#FFD700]/10 rounded mb-4"></div>
+              <div className="h-12 bg-[#FFD700]/10 rounded"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }>
+      <SignInContent />
+    </Suspense>
   )
 }
