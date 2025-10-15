@@ -128,9 +128,10 @@ export default function BlogFormModal({
               }}
             >
               <SelectTrigger className="mt-2 bg-black/40 border-white/15 text-white rounded-xl focus:ring-2 focus:ring-[#FFD700]/60">
-                <SelectValue placeholder={authorPlaceholder}>
-                  {displayAuthorLabel}
-                </SelectValue>
+                <SelectValue
+                  placeholder={authorPlaceholder}
+                  fallbackDisplay={displayAuthorLabel}
+                />
               </SelectTrigger>
               <SelectContent className="bg-black/95 border-white/10 text-white">
                 {authorsLoading ? (

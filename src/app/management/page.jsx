@@ -322,11 +322,11 @@ export default function ManagementPage() {
                 <div className="space-y-4">
                   <div className="border border-[#FFD700]/20 rounded-lg bg-black/60 backdrop-blur-xl p-6">
                     <h3 className="text-lg font-semibold text-white mb-2">
-                      จัดการ Blog
-                    </h3>
+                      Blog Management
+                     </h3>
                     <p className="text-white/70 text-sm mb-4">
                       {blogMeta.loading
-                        ? "กำลังโหลดข้อมูลบทความ..."
+                        ? "กำลังโหลดข้อมูล Blog ..."
                         : `ดูเเละเเก้ไขจัดการ Blog `}
                     </p>
                     <BlogManagement showHeader={false} onStatsChange={setBlogMeta} />
