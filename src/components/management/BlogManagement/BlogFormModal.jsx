@@ -1,4 +1,5 @@
 ﻿import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -76,6 +77,33 @@ export default function BlogFormModal({
   const displayAuthorLabel =
     selectedAuthorLabel || formData.authorName || (formData.authorId && !authorsLoading ? "Unknown user" : undefined);
 
+  // รูปภาพ
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(formData.imageUrl || "");
+
+  // reset image preview/file ทุกครั้งที่เปิดฟอร์มใหม่หรือแก้ไข Blog
+  useEffect(() => {
+    if (isOpen) {
+      setImageFile(null);
+      setImagePreview(formData.imageUrl || "");
+    }
+  }, [isOpen, formData.imageUrl]);
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file));
+      setFormData((prev) => ({ ...prev, imageFile: file }));
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setImageFile(null);
+    setImagePreview("");
+    setFormData((prev) => ({ ...prev, imageFile: null, imageUrl: "" }));
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl border border-white/10 bg-gradient-to-b from-black/90 to-black/80 backdrop-blur-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.6)] p-0 overflow-hidden">
@@ -86,6 +114,43 @@ export default function BlogFormModal({
         </DialogHeader>
 
         <div className="px-6 py-5 space-y-6">
+            {/* Image Upload Field */}
+            <Field>
+              <Field.Label htmlFor="blog-image">รูปภาพ Blog</Field.Label>
+              {imagePreview ? (
+                <div className="mb-2 flex flex-col items-start gap-2">
+                  <img
+                    src={imagePreview}
+                    alt="Blog preview"
+                    style={{ width: 200, height: 200, objectFit: "cover", borderRadius: 12, border: "1px solid #FFD700" }}
+                  />
+                  <div className="flex gap-2">
+                    <Button type="button" variant="outline" onClick={handleRemoveImage} className="text-red-400 border-red-400/30">ลบรูป</Button>
+                    <label className="cursor-pointer text-[#FFD700]">
+                      เปลี่ยนรูป
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        style={{ display: "none" }}
+                      />
+                    </label>
+                  </div>
+                </div>
+              ) : (
+                <label className="cursor-pointer text-[#FFD700]">
+                  <span className="inline-block mb-2">เพิ่มรูปภาพ</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    id="blog-image"
+                    onChange={handleImageChange}
+                    style={{ display: "none" }}
+                  />
+                </label>
+              )}
+              <Field.Hint>รองรับไฟล์ .jpg .png .webp ขนาดไม่เกิน 5MB</Field.Hint>
+            </Field>
           <Field>
             <Field.Label htmlFor="blog-title">Title</Field.Label>
             <Input

@@ -278,6 +278,7 @@ const BlogManagement = ({ showHeader = false, renderHeader, onStatsChange }) => 
       published: Boolean(blog.published),
       authorId: blog.authorId || currentAuthorId,
       authorName: blog.authorName || currentAuthorLabel,
+      imageUrl: blog.imageUrl || "",
     });
     setIsFormOpen(true);
   };
@@ -321,15 +322,16 @@ const BlogManagement = ({ showHeader = false, renderHeader, onStatsChange }) => 
 
     try {
       if (formMode === "create") {
-        const result = await handleCreateBlog({
-          formData: {
-            title: formData.title.trim(),
-            content: formData.content.trim(),
-            published: formData.published,
-            authorId: formData.authorId,
-          },
-          toast,
-        });
+        const payload = {
+          title: formData.title.trim(),
+          content: formData.content.trim(),
+          published: formData.published,
+          authorId: formData.authorId,
+        };
+        // include image file if present
+        if (formData.imageFile) payload.imageFile = formData.imageFile;
+
+        const result = await handleCreateBlog({ formData: payload, toast });
 
         if (result) {
           setIsFormOpen(false);
@@ -337,16 +339,16 @@ const BlogManagement = ({ showHeader = false, renderHeader, onStatsChange }) => 
           loadBlogs();
         }
       } else if (formMode === "edit" && formData.id) {
-        const result = await handleUpdateBlog({
-          formData: {
-            id: formData.id,
-            title: formData.title.trim(),
-            content: formData.content.trim(),
-            published: formData.published,
-            authorId: formData.authorId,
-          },
-          toast,
-        });
+        const payload = {
+          id: formData.id,
+          title: formData.title.trim(),
+          content: formData.content.trim(),
+          published: formData.published,
+          authorId: formData.authorId,
+        };
+        if (formData.imageFile) payload.imageFile = formData.imageFile;
+
+        const result = await handleUpdateBlog({ formData: payload, toast });
 
         if (result) {
           setIsFormOpen(false);

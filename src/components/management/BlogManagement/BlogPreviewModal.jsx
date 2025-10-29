@@ -71,6 +71,7 @@ const BlogPreviewModal = ({ isOpen, onOpenChange, blog }) => {
               </div>
             </div>
 
+            {/* Blog Image Preview */}
             <div className="px-8 py-6">
               <div className="space-y-4">
                 <div className="flex items-center gap-2 pb-2">
@@ -78,14 +79,24 @@ const BlogPreviewModal = ({ isOpen, onOpenChange, blog }) => {
                   <h3 className="text-lg font-semibold text-white">Content</h3>
                 </div>
 
-                <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-pink-600/10 rounded-xl blur-xl" />
-                  <div className="relative bg-zinc-900/80 backdrop-blur-sm rounded-xl border border-white/10 p-6">
-                    <div className="prose prose-invert max-w-none">
-                      <p className="text-zinc-200 leading-relaxed whitespace-pre-wrap text-base">
-                        {blog.content || "No content provided."}
-                      </p>
-                    </div>
+                <div className="flex flex-col md:flex-row gap-8 items-start">
+                  <div>
+                    {blog.imageUrl ? (
+                      <img
+                        src={blog.imageUrl}
+                        alt="Blog preview"
+                        style={{ width: 150, height: 150, objectFit: "cover", borderRadius: 12, border: "1px solid #FFD700" }}
+                      />
+                    ) : (
+                      <div className="w-[150px] h-[150px] flex items-center justify-center bg-black/30 border border-dashed border-[#FFD700] rounded-xl text-[#FFD700] text-center">
+                        ไม่มีรูป
+                      </div>
+                    )}
+                  </div>
+                  <div className="prose prose-invert max-w-none">
+                    <p className="text-zinc-200 leading-relaxed whitespace-pre-wrap text-base">
+                      {blog.content || "No content provided."}
+                    </p>
                   </div>
                 </div>
               </div>
