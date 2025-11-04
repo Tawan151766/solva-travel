@@ -1,5 +1,5 @@
 ﻿import { Button } from "@/components/ui/button";
-import { useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2 } from "lucide-react";
+import { Loader2, UploadCloud } from "lucide-react";
 
 function getAuthorDisplayName(author) {
   if (!author) {
@@ -77,11 +77,13 @@ export default function BlogFormModal({
   const displayAuthorLabel =
     selectedAuthorLabel || formData.authorName || (formData.authorId && !authorsLoading ? "Unknown user" : undefined);
 
-  // รูปภาพ
+  // ??????
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(formData.imageUrl || "");
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef(null);
 
-  // reset image preview/file ทุกครั้งที่เปิดฟอร์มใหม่หรือแก้ไข Blog
+  // reset image preview/file ????????????????????????????????? Blog
   useEffect(() => {
     if (isOpen) {
       setImageFile(null);
@@ -89,19 +91,48 @@ export default function BlogFormModal({
     }
   }, [isOpen, formData.imageUrl]);
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImageFile(file);
-      setImagePreview(URL.createObjectURL(file));
-      setFormData((prev) => ({ ...prev, imageFile: file }));
-    }
+  const applySelectedImage = (file) => {
+    if (!file) return;
+
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+    setFormData((prev) => ({ ...prev, imageFile: file, imageRemoved: false }));
+  };
+
+  const handleImageChange = (event) => {
+    const file = event.target.files?.[0];
+    applySelectedImage(file);
   };
 
   const handleRemoveImage = () => {
     setImageFile(null);
     setImagePreview("");
-    setFormData((prev) => ({ ...prev, imageFile: null, imageUrl: "" }));
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+    setFormData((prev) => ({ ...prev, imageFile: null, imageUrl: "", imageRemoved: true }));
+  };
+
+  const handleDragOver = (event) => {
+    event.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (event) => {
+    event.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (event) => {
+    event.preventDefault();
+    setIsDragging(false);
+
+    const file = event.dataTransfer?.files?.[0];
+    applySelectedImage(file);
+  };
+
+  const openFilePicker = () => {
+    fileInputRef.current?.click();
   };
 
   return (
@@ -114,43 +145,79 @@ export default function BlogFormModal({
         </DialogHeader>
 
         <div className="px-6 py-5 space-y-6">
-            {/* Image Upload Field */}
-            <Field>
-              <Field.Label htmlFor="blog-image">รูปภาพ Blog</Field.Label>
-              {imagePreview ? (
-                <div className="mb-2 flex flex-col items-start gap-2">
-                  <img
-                    src={imagePreview}
-                    alt="Blog preview"
-                    style={{ width: 200, height: 200, objectFit: "cover", borderRadius: 12, border: "1px solid #FFD700" }}
-                  />
-                  <div className="flex gap-2">
-                    <Button type="button" variant="outline" onClick={handleRemoveImage} className="text-red-400 border-red-400/30">ลบรูป</Button>
-                    <label className="cursor-pointer text-[#FFD700]">
-                      เปลี่ยนรูป
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageChange}
-                        style={{ display: "none" }}
-                      />
-                    </label>
-                  </div>
+          {/* Image Upload Field */}
+          <Field>
+            <Field.Label htmlFor="blog-image">
+              <span className="border-b border-dashed border-white pb-0.5 text-white">
+                เพิ่มรูปภาพ
+              </span>
+              <span className="text-white/80"> สำหรับ Blog</span>
+            </Field.Label>
+            {imagePreview ? (
+              <div className="mt-3 flex flex-col items-start gap-4">
+                <img
+                  src={imagePreview}
+                  alt="Blog preview"
+                  className="h-52 w-52 rounded-2xl border border-[#FFD700]/60 object-cover shadow-[0_0_20px_rgba(255,215,0,0.15)]"
+                />
+                <div className="flex flex-wrap gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleRemoveImage}
+                    className="border-red-400/30 text-red-300 hover:bg-red-500/10"
+                  >
+                    ลบรูปภาพ
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={openFilePicker}
+                    className="border-[#FFD700]/40 text-[#FFD700] hover:bg-[#FFD700]/10"
+                  >
+                    เลือกรูปภาพใหม่
+                  </Button>
                 </div>
-              ) : (
-                <label className="cursor-pointer text-[#FFD700]">
-                  <span className="inline-block mb-2">เพิ่มรูปภาพ</span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    id="blog-image"
-                    onChange={handleImageChange}
-                    style={{ display: "none" }}
-                  />
-                </label>
-              )}
-              <Field.Hint>รองรับไฟล์ .jpg .png .webp ขนาดไม่เกิน 5MB</Field.Hint>
-            </Field>
+              </div>
+            ) : (
+              <div
+                role="button"
+                tabIndex={0}
+                aria-label="เพิ่มรูปภาพสำหรับ Blog"
+                onClick={openFilePicker}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault()
+                    openFilePicker()
+                  }
+                }}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                className={`mt-3 flex w-full cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed p-6 text-center transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD700]/60 ${
+                  isDragging
+                    ? "border-[#FFD700] bg-[#FFD700]/5 text-[#FFD700]"
+                    : "border-white/20 bg-black/30 text-white/70 hover:border-[#FFD700]/80 hover:bg-white/5"
+                }`}
+              >
+                <UploadCloud className="h-12 w-12 text-current" />
+                <p className="text-sm font-semibold">ลากและวางรูปภาพที่นี่</p>
+                <p className="text-xs text-white/50">หรือคลิกเพื่อเลือกไฟล์จากเครื่อง</p>
+              </div>
+            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              id="blog-image"
+              onChange={handleImageChange}
+              className="hidden"
+            />
+            <Field.Hint>
+              รองรับไฟล์ .jpg .png .webp และต้องมีขนาดไม่เกิน 5MB
+            </Field.Hint>
+          </Field>
+
           <Field>
             <Field.Label htmlFor="blog-title">Title</Field.Label>
             <Input
@@ -251,7 +318,7 @@ export default function BlogFormModal({
             disabled={isSubmitting}
             className="border-white/20 text-gray-200 hover:bg-white/10 rounded-xl"
           >
-            ยกเลิก
+            cancel
           </Button>
 
 
@@ -295,3 +362,8 @@ Field.Hint = function FieldHint({ children }) {
     <p className="text-xs text-white/45 leading-relaxed pt-1">{children}</p>
   );
 };
+
+
+
+
+

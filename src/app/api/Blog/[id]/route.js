@@ -58,6 +58,7 @@ export async function PUT(request) {
     }
 
     let id, title, content, published, authorId, imageUrl;
+    let removeImage = false;
     const contentType = request.headers.get('content-type') || '';
     if (contentType.includes('multipart/form-data')) {
       const form = await request.formData();
@@ -66,10 +67,14 @@ export async function PUT(request) {
       content = form.get('content');
       published = form.get('published') === 'true';
       authorId = form.get('authorId');
+      const removeImageField = form.get('removeImage');
+      if (typeof removeImageField === 'string') {
+        removeImage = removeImageField === 'true';
+      }
       const imageFile = form.get('image');
       if (imageFile && imageFile.size > 0) {
         const buffer = Buffer.from(await imageFile.arrayBuffer());
-  const CloudinaryService = (await import('../../../../lib/cloudinary.js')).default;
+        const CloudinaryService = (await import('../../../../lib/cloudinary.js')).default;
         const cloudinary = new CloudinaryService();
         const result = await cloudinary.uploadBuffer(buffer, imageFile.name);
         imageUrl = result.url;
@@ -81,7 +86,10 @@ export async function PUT(request) {
       content = body.content;
       published = body.published;
       authorId = body.authorId;
-      imageUrl = body.imageUrl || null;
+      if (Object.prototype.hasOwnProperty.call(body, 'imageUrl')) {
+        imageUrl = body.imageUrl;
+      }
+      removeImage = Boolean(body.removeImage);
     }
 
     if (!id) {
@@ -96,7 +104,14 @@ export async function PUT(request) {
     if (typeof content === 'string') data.content = content.trim();
     if (typeof published === 'boolean') data.published = published;
     if (typeof authorId === 'string' && authorId.trim()) data.authorId = authorId.trim();
-    if (typeof imageUrl === 'string' && imageUrl.trim()) data.imageUrl = imageUrl.trim();
+    if (removeImage || imageUrl === null) {
+      data.imageUrl = null;
+    } else if (typeof imageUrl === 'string') {
+      const trimmedImage = imageUrl.trim();
+      if (trimmedImage) {
+        data.imageUrl = trimmedImage;
+      }
+    }
 
     if (Object.keys(data).length === 0) {
       return NextResponse.json({

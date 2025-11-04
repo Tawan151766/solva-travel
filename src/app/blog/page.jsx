@@ -35,6 +35,7 @@ async function getPublishedBlogs() {
         ? `${blog.author.firstName ?? ""} ${blog.author.lastName ?? ""}`.trim() || null
         : null,
       createdAt: blog.createdAt?.toISOString() ?? null,
+      imageUrl: blog.imageUrl || null,
     }));
   } catch (error) {
     console.error("Failed to load published blogs", error);

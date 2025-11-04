@@ -78,6 +78,7 @@ function FeaturedBlogCard({ blog, showLatestBadge = true }) {
     content,
     authorName = "Solva Travel Team",
     createdAt,
+    imageUrl = null,
   } = blog;
 
   const collapsedText = useMemo(() => buildExcerpt(content, 260), [content]);
@@ -108,6 +109,21 @@ function FeaturedBlogCard({ blog, showLatestBadge = true }) {
           </span>
         ) : null}
 
+        {imageUrl ? (
+          <div className="relative overflow-hidden rounded-3xl border border-[#FFD700]/30 bg-black/30 shadow-[0_20px_50px_rgba(0,0,0,0.35)]">
+            <img
+              src={imageUrl}
+              alt={`ภาพประกอบเรื่อง ${title}`}
+              loading="lazy"
+              className="h-72 w-full object-cover transition-transform duration-500 hover:scale-[1.02]"
+            />
+          </div>
+        ) : (
+          <div className="flex h-72 items-center justify-center rounded-3xl border border-dashed border-[#FFD700]/30 bg-black/40 text-sm font-medium text-[#FFED4E]/80">
+            ไม่มีรูปภาพสำหรับรีวิวนี้
+          </div>
+        )}
+
         <div className="space-y-4">
           <h3 className="text-2xl sm:text-3xl font-semibold leading-tight text-white">
             {title}
@@ -125,12 +141,12 @@ function FeaturedBlogCard({ blog, showLatestBadge = true }) {
               {isExpanded ? (
                 <>
                   <EyeOff className="h-4 w-4" aria-hidden="true" />
-                  <span>ซ่อนรีวิว</span>
+                  <span>ซ่อนเนื้อหา</span>
                 </>
               ) : (
                 <>
                   <Eye className="h-4 w-4" aria-hidden="true" />
-                  <span>อ่านรีวิวเต็ม</span>
+                  <span>อ่านต่อ</span>
                 </>
               )}
             </button>
@@ -331,7 +347,7 @@ export function BlogGrid({ blogs = [], totalBlogs = 0, latestPublishedAt = null 
             )
           ) : (
             <div className="relative mx-auto max-w-3xl rounded-3xl border border-dashed border-[#FFD700]/30 bg-black/60 px-8 py-12 text-center text-white/75">
-              กำลังเตรียมเรื่องราวใหม่ ๆ อยู่ในขณะนี้ โปรดกลับมาเยี่ยมชมอีกครั้งเร็ว ๆ นี้
+              ยังไม่มีบทความเผยแพร่ในขณะนี้
             </div>
           )}
         </div>
@@ -339,4 +355,3 @@ export function BlogGrid({ blogs = [], totalBlogs = 0, latestPublishedAt = null 
     </section>
   );
 }
-

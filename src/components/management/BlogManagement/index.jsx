@@ -20,6 +20,9 @@ const defaultFormState = {
   published: false,
   authorId: "",
   authorName: "",
+  imageUrl: "",
+  imageFile: null,
+  imageRemoved: false,
 };
 
 const getUserDisplayName = (user) => {
@@ -279,6 +282,8 @@ const BlogManagement = ({ showHeader = false, renderHeader, onStatsChange }) => 
       authorId: blog.authorId || currentAuthorId,
       authorName: blog.authorName || currentAuthorLabel,
       imageUrl: blog.imageUrl || "",
+      imageFile: null,
+      imageRemoved: false,
     });
     setIsFormOpen(true);
   };
@@ -347,6 +352,10 @@ const BlogManagement = ({ showHeader = false, renderHeader, onStatsChange }) => 
           authorId: formData.authorId,
         };
         if (formData.imageFile) payload.imageFile = formData.imageFile;
+        if (!formData.imageFile && formData.imageRemoved) {
+          payload.imageUrl = null;
+          payload.removeImage = true;
+        }
 
         const result = await handleUpdateBlog({ formData: payload, toast });
 
