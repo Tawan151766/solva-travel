@@ -182,10 +182,11 @@ function normalizeArticles(source, fallback, { fillToFour = false } = {}) {
 }
 
 export default async function TravelBlogPage({ searchParams }) {
+  const params = await searchParams;
   const searchQuery =
-    typeof searchParams?.q === "string" ? searchParams.q.trim() : "";
+    typeof params?.q === "string" ? params.q.trim() : "";
   const rawPage =
-    typeof searchParams?.page === "string" ? parseInt(searchParams.page, 10) : 1;
+    typeof params?.page === "string" ? parseInt(params.page, 10) : 1;
   const publishedBlogs = await getPublishedBlogs();
   const filteredBlogs = searchQuery
     ? publishedBlogs.filter((blog) => matchesSearch(blog, searchQuery))
@@ -282,7 +283,7 @@ export default async function TravelBlogPage({ searchParams }) {
                 <span className="h-2 w-2 rounded-full bg-blue-400" />
                 <span>
                   {totalPublished === 1
-                    ? "1 travel story"
+                    ? "1 Articles"
                     : `${totalPublished} Articles`}
                 </span>
               </div>
