@@ -13,7 +13,7 @@ const sortOptions = [
   { value: "createdAt_asc", label: "Created Date (Oldest)" },
   { value: "travelDate_desc", label: "Travel Date (Newest)" },
   { value: "travelDate_asc", label: "Travel Date (Oldest)" },
-  { value: "contactName_asc", label: "Customer (A-Z)" },
+  { value: "contactName_asc", label: "Customer (A-Z) " },
   { value: "contactName_desc", label: "Customer (Z-A)" },
   { value: "estimatedCost_desc", label: "Budget (Highest)" },
   { value: "estimatedCost_asc", label: "Budget (Lowest)" },
