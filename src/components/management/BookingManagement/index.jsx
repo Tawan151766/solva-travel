@@ -16,6 +16,7 @@ const BookingManagement = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
+  const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'desc' });
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -69,8 +70,13 @@ const BookingManagement = () => {
     loadRequests();
   }, [loadRequests]);
 
-  const filteredRequests = useMemo(() => {
-    return customTourRequests.filter((request) => {
+  const handleSortChange = (value) => {
+    const [key, direction] = value.split('_');
+    setSortConfig({ key, direction });
+  };
+
+  const sortedAndFilteredRequests = useMemo(() => {
+    let filtered = customTourRequests.filter((request) => {
       const searchValue = searchTerm.toLowerCase();
       const matchesSearch =
         request.contactName?.toLowerCase().includes(searchValue) ||
@@ -84,7 +90,41 @@ const BookingManagement = () => {
 
       return matchesSearch && matchesStatus;
     });
-  }, [customTourRequests, searchTerm, statusFilter]);
+
+    const sorted = [...filtered].sort((a, b) => {
+      const { key, direction } = sortConfig;
+      if (!key) return 0;
+
+      const aValue = a[key];
+      const bValue = b[key];
+      const isAsc = direction === 'asc';
+
+      if (aValue === null || aValue === undefined) return 1;
+      if (bValue === null || bValue === undefined) return -1;
+
+      switch (key) {
+        case 'createdAt':
+        case 'travelDate':
+          return isAsc
+            ? new Date(aValue) - new Date(bValue)
+            : new Date(bValue) - new Date(aValue);
+        case 'travelers':
+        case 'estimatedCost':
+          return isAsc ? (parseFloat(aValue) || 0) - (parseFloat(bValue) || 0) : (parseFloat(bValue) || 0) - (parseFloat(aValue) || 0);
+        case 'contactName':
+        case 'destination':
+        case 'trackingNumber':
+          return isAsc
+            ? String(aValue).localeCompare(String(bValue))
+            : String(bValue).localeCompare(String(aValue));
+        default:
+          return 0;
+      }
+    });
+
+    return sorted;
+
+  }, [customTourRequests, searchTerm, statusFilter, sortConfig]);
 
   const renderStatusBadge = useCallback(
     (status) => getStatusBadge(statusOptions, status),
@@ -143,10 +183,12 @@ const BookingManagement = () => {
         statusFilter={statusFilter}
         onStatusFilterChange={setStatusFilter}
         statusOptions={statusOptions}
+        sortConfig={sortConfig}
+        onSortChange={handleSortChange}
       />
 
       <CustomTourRequestsTable
-        requests={filteredRequests}
+        requests={sortedAndFilteredRequests}
         onViewRequest={handleViewRequest}
         onEditRequest={handleEditRequest}
         onDeleteRequest={handleDeleteRequest}

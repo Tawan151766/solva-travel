@@ -396,7 +396,7 @@ const BlogManagement = ({ showHeader = false, renderHeader, onStatsChange }) => 
         />
         <Button
           onClick={handleOpenCreate}
-          className="self-start md:self-auto bg-gradient-to-r from-[#FFD700] to-[#FFED4E] text-black hover:from-[#FFED4E] hover:to-[#FFD700]"
+          className="self-start md:self-auto  from-[#FFD700] text-black hover:to-[#FFD700]"
         >
           <Plus className="h-4 w-4 mr-2" /> New Blog
         </Button>
