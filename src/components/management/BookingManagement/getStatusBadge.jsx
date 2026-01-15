@@ -4,7 +4,7 @@ const getStatusBadge = (statusOptions, status) => {
   const statusOption = statusOptions.find((option) => option.value === status);
 
   return (
-    <Badge className={statusOption?.color || "bg-gray-100 text-gray-800"}>
+    <Badge className={`${statusOption?.color || "bg-gray-100 text-gray-800"} text-sm px-3.5 py-1 font-semibold rounded-lg transform scale-[1]`}>
       {statusOption?.label || status}
     </Badge>
   );
