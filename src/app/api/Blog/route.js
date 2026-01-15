@@ -45,6 +45,7 @@ export async function GET(request) {
       id: b.id,
       title: b.title,
       content: b.content,
+      imageUrl: b.imageUrl || null,
       authorId: b.authorId,
       authorName: b.author ? `${b.author.firstName} ${b.author.lastName}` : null,
       published: b.published,
@@ -89,8 +90,34 @@ export async function POST(request) {
       }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { title, content, authorId, published = false } = body || {};
+    let title, content, authorId, published = false, imageUrl = null;
+    let formData;
+    const contentType = request.headers.get('content-type') || '';
+    if (contentType.includes('multipart/form-data')) {
+      // รับไฟล์จาก multipart/form-data
+      const form = await request.formData();
+      title = form.get('title');
+      content = form.get('content');
+      authorId = form.get('authorId');
+      published = form.get('published') === 'true';
+      const imageFile = form.get('image');
+      if (imageFile && imageFile.size > 0) {
+        // อัปโหลดไป Cloudinary
+        const buffer = Buffer.from(await imageFile.arrayBuffer());
+  const CloudinaryService = (await import('../../../lib/cloudinary.js')).default;
+        const cloudinary = new CloudinaryService();
+        const result = await cloudinary.uploadBuffer(buffer, imageFile.name);
+        imageUrl = result.url;
+      }
+    } else {
+      // รับข้อมูลแบบ json
+      const body = await request.json();
+      title = body.title;
+      content = body.content;
+      authorId = body.authorId;
+      published = body.published || false;
+      imageUrl = body.imageUrl || null;
+    }
 
     if (!title || !content || !authorId) {
       return NextResponse.json({
@@ -105,6 +132,7 @@ export async function POST(request) {
         content: String(content).trim(),
         authorId,
         published: Boolean(published),
+        imageUrl,
       },
       include: {
         author: { select: { id: true, firstName: true, lastName: true } }
@@ -122,6 +150,7 @@ export async function POST(request) {
           authorId: created.authorId,
           authorName: created.author ? `${created.author.firstName} ${created.author.lastName}` : null,
           published: created.published,
+          imageUrl: created.imageUrl,
           createdAt: created.createdAt,
           updatedAt: created.updatedAt,
         }

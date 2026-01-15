@@ -23,6 +23,7 @@ const BlogTable = ({ blogs, onView, onEdit, onDelete }) => {
       <Table>
         <TableHeader>
           <TableRow className="border-[#FFD700]/20 bg-black/40">
+            <TableHead className="text-[#FFD700] font-semibold">รูปภาพ</TableHead>
             <TableHead className="text-[#FFD700] font-semibold">Title</TableHead>
             <TableHead className="text-[#FFD700] font-semibold">Excerpt</TableHead>
             <TableHead className="text-[#FFD700] font-semibold">Author</TableHead>
@@ -51,6 +52,20 @@ const BlogTable = ({ blogs, onView, onEdit, onDelete }) => {
                 key={blog.id}
                 className="border-[#FFD700]/10 hover:bg-[#FFD700]/5 transition-colors duration-200"
               >
+                <TableCell className="text-white font-medium">
+                  {blog.imageUrl ? (
+                    <img
+                      src={blog.imageUrl}
+                      alt="Blog preview"
+                      style={{ width: 150, height: 150, objectFit: "cover", borderRadius: 12, border: "1px solid #FFD700" }}
+                    />
+                  ) : (
+                    <div className="w-[150px] h-[150px] flex items-center justify-center bg-black/30 border border-dashed border-[#FFD700] rounded-xl text-[#FFD700] text-center">
+                      ไม่มีรูป
+                    </div>
+                  )}
+                </TableCell>
+
                 <TableCell className="text-white font-medium">
                   {blog.title}
                 </TableCell>

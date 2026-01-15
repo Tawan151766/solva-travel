@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import { CalendarDays, Eye, EyeOff, Quote, UserRound } from "lucide-react";
 
 const dateFormatter = new Intl.DateTimeFormat("th-TH", {
@@ -44,6 +44,7 @@ export function BlogCard({ blog }) {
     content,
     authorName = "Solva Travel Team",
     createdAt,
+    imageUrl = null,
   } = blog || {};
 
   const collapsedText = useMemo(() => buildExcerpt(content), [content]);
@@ -70,6 +71,17 @@ export function BlogCard({ blog }) {
         </div>
 
         <div className="relative flex flex-col gap-4">
+          {imageUrl ? (
+            <div className="relative overflow-hidden rounded-2xl border border-[#FFD700]/25 bg-black/50">
+              <img
+                src={imageUrl}
+                alt={`ภาพประกอบเรื่อง ${title}`}
+                loading="lazy"
+                className="h-48 w-full object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+            </div>
+          ) : null}
+
           <span className="inline-flex items-center gap-2 text-[#FFED4E]">
             <Quote className="h-4 w-4" aria-hidden="true" />
             <span className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#FFED4E]/90">

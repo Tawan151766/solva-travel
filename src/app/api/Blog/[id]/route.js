@@ -31,6 +31,7 @@ export async function GET(request, { params }) {
           id: blog.id,
           title: blog.title,
           content: blog.content,
+          imageUrl: blog.imageUrl || null,
           authorId: blog.authorId,
           authorName: blog.author ? `${blog.author.firstName} ${blog.author.lastName}` : null,
           published: blog.published,
@@ -56,8 +57,40 @@ export async function PUT(request) {
       }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { id, title, content, published, authorId } = body || {};
+    let id, title, content, published, authorId, imageUrl;
+    let removeImage = false;
+    const contentType = request.headers.get('content-type') || '';
+    if (contentType.includes('multipart/form-data')) {
+      const form = await request.formData();
+      id = form.get('id');
+      title = form.get('title');
+      content = form.get('content');
+      published = form.get('published') === 'true';
+      authorId = form.get('authorId');
+      const removeImageField = form.get('removeImage');
+      if (typeof removeImageField === 'string') {
+        removeImage = removeImageField === 'true';
+      }
+      const imageFile = form.get('image');
+      if (imageFile && imageFile.size > 0) {
+        const buffer = Buffer.from(await imageFile.arrayBuffer());
+        const CloudinaryService = (await import('../../../../lib/cloudinary.js')).default;
+        const cloudinary = new CloudinaryService();
+        const result = await cloudinary.uploadBuffer(buffer, imageFile.name);
+        imageUrl = result.url;
+      }
+    } else {
+      const body = await request.json();
+      id = body.id;
+      title = body.title;
+      content = body.content;
+      published = body.published;
+      authorId = body.authorId;
+      if (Object.prototype.hasOwnProperty.call(body, 'imageUrl')) {
+        imageUrl = body.imageUrl;
+      }
+      removeImage = Boolean(body.removeImage);
+    }
 
     if (!id) {
       return NextResponse.json({
@@ -71,6 +104,14 @@ export async function PUT(request) {
     if (typeof content === 'string') data.content = content.trim();
     if (typeof published === 'boolean') data.published = published;
     if (typeof authorId === 'string' && authorId.trim()) data.authorId = authorId.trim();
+    if (removeImage || imageUrl === null) {
+      data.imageUrl = null;
+    } else if (typeof imageUrl === 'string') {
+      const trimmedImage = imageUrl.trim();
+      if (trimmedImage) {
+        data.imageUrl = trimmedImage;
+      }
+    }
 
     if (Object.keys(data).length === 0) {
       return NextResponse.json({
@@ -98,6 +139,7 @@ export async function PUT(request) {
           authorId: updated.authorId,
           authorName: updated.author ? `${updated.author.firstName} ${updated.author.lastName}` : null,
           published: updated.published,
+          imageUrl: updated.imageUrl,
           createdAt: updated.createdAt,
           updatedAt: updated.updatedAt,
         } 
