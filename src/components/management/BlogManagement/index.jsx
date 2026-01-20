@@ -20,6 +20,9 @@ const defaultFormState = {
   published: false,
   authorId: "",
   authorName: "",
+  imageUrl: "",
+  imageFile: null,
+  imageRemoved: false,
 };
 
 const getUserDisplayName = (user) => {
@@ -278,6 +281,9 @@ const BlogManagement = ({ showHeader = false, renderHeader, onStatsChange }) => 
       published: Boolean(blog.published),
       authorId: blog.authorId || currentAuthorId,
       authorName: blog.authorName || currentAuthorLabel,
+      imageUrl: blog.imageUrl || "",
+      imageFile: null,
+      imageRemoved: false,
     });
     setIsFormOpen(true);
   };
@@ -321,15 +327,16 @@ const BlogManagement = ({ showHeader = false, renderHeader, onStatsChange }) => 
 
     try {
       if (formMode === "create") {
-        const result = await handleCreateBlog({
-          formData: {
-            title: formData.title.trim(),
-            content: formData.content.trim(),
-            published: formData.published,
-            authorId: formData.authorId,
-          },
-          toast,
-        });
+        const payload = {
+          title: formData.title.trim(),
+          content: formData.content.trim(),
+          published: formData.published,
+          authorId: formData.authorId,
+        };
+        // include image file if present
+        if (formData.imageFile) payload.imageFile = formData.imageFile;
+
+        const result = await handleCreateBlog({ formData: payload, toast });
 
         if (result) {
           setIsFormOpen(false);
@@ -337,16 +344,20 @@ const BlogManagement = ({ showHeader = false, renderHeader, onStatsChange }) => 
           loadBlogs();
         }
       } else if (formMode === "edit" && formData.id) {
-        const result = await handleUpdateBlog({
-          formData: {
-            id: formData.id,
-            title: formData.title.trim(),
-            content: formData.content.trim(),
-            published: formData.published,
-            authorId: formData.authorId,
-          },
-          toast,
-        });
+        const payload = {
+          id: formData.id,
+          title: formData.title.trim(),
+          content: formData.content.trim(),
+          published: formData.published,
+          authorId: formData.authorId,
+        };
+        if (formData.imageFile) payload.imageFile = formData.imageFile;
+        if (!formData.imageFile && formData.imageRemoved) {
+          payload.imageUrl = null;
+          payload.removeImage = true;
+        }
+
+        const result = await handleUpdateBlog({ formData: payload, toast });
 
         if (result) {
           setIsFormOpen(false);
@@ -394,7 +405,7 @@ const BlogManagement = ({ showHeader = false, renderHeader, onStatsChange }) => 
         />
         <Button
           onClick={handleOpenCreate}
-          className="self-start md:self-auto bg-gradient-to-r from-[#FFD700] to-[#FFED4E] text-black hover:from-[#FFED4E] hover:to-[#FFD700]"
+          className="self-start md:self-auto  from-[#FFD700] text-black hover:to-[#FFD700]"
         >
           <Plus className="h-4 w-4 mr-2" /> New Blog
         </Button>

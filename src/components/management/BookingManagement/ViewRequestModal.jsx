@@ -14,58 +14,67 @@ const ViewRequestModal = ({
 }) => {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl bg-black/95 backdrop-blur-xl border border-[#FFD700]/20 shadow-2xl">
+      
+      <DialogContent className="max-w-2xl bg-gradient-to-br from-black/95 via-[#0a0804]/95 to-black/95 backdrop-blur-xl border border-[#FFD700]/30 shadow-2xl shadow-[#FFD700]/20 p-6">
         <DialogHeader>
-          <DialogTitle>Custom Tour Request Details</DialogTitle>
+          <DialogTitle className="text-white text-2xl font-bold">
+            <span className="bg-gradient-to-r from-[#FFD700] to-[#FFED4E] bg-clip-text text-transparent">
+              Custom Tour Request Details
+            </span>
+          </DialogTitle>
         </DialogHeader>
         {selectedRequest && (
           <div className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label className="text-sm font-medium text-gray-500">
+               
+                <Label className="text-white font-bold text-sm">
                   Tracking Number
                 </Label>
-                <p className="font-mono">{selectedRequest.trackingNumber}</p>
+                <p className="font-mono text-white mt-2">{selectedRequest.trackingNumber}</p>
               </div>
               <div>
-                <Label className="text-sm font-medium text-gray-500">
+               
+                <Label className="text-white font-bold text-sm">
                   Status
                 </Label>
-                <div className="mt-1">
+                <div className="mt-2">
                   {renderStatusBadge(selectedRequest.status)}
                 </div>
               </div>
             </div>
 
             <div>
-              <Label className="text-sm font-medium text-gray-500">
+              
+              <Label className="text-white font-bold text-sm">
                 Customer Information
               </Label>
-              <div className="mt-2 p-3 bg-gray-50 rounded-lg">
-                <p className="font-medium">{selectedRequest.contactName}</p>
-                <p className="text-sm text-gray-600">
+              <div className="mt-2 p-4 bg-black/50 border border-[#FFD700]/20 rounded-lg">
+                <p className="font-medium text-white">{selectedRequest.contactName}</p>
+                <p className="text-sm text-white/70 mt-1">
                   {selectedRequest.contactEmail}
                 </p>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-white/70">
                   {selectedRequest.contactPhone}
                 </p>
               </div>
             </div>
 
             <div>
-              <Label className="text-sm font-medium text-gray-500">
+              
+              <Label className="text-white font-bold text-sm">
                 Tour Information
               </Label>
-              <div className="mt-2 p-3 bg-gray-50 rounded-lg">
-                <p className="font-medium">{selectedRequest.destination}</p>
-                <p className="text-sm text-gray-600">
+              <div className="mt-2 p-4 bg-black/50 border border-[#FFD700]/20 rounded-lg">
+                <p className="font-medium text-white">{selectedRequest.destination}</p>
+                <p className="text-sm text-white/70 mt-1">
                   {new Date(selectedRequest.startDate).toLocaleDateString()} -
                   {new Date(selectedRequest.endDate).toLocaleDateString()}
                 </p>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-white/70">
                   {selectedRequest.numberOfPeople} Travelers
                 </p>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-[#FFD700] font-medium">
                   Budget: THB{selectedRequest.budget?.toLocaleString()}
                 </p>
               </div>
@@ -73,18 +82,20 @@ const ViewRequestModal = ({
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label className="text-sm font-medium text-gray-500">
+                
+                <Label className="text-white font-bold text-sm">
                   Preferred Accommodation
                 </Label>
-                <p className="mt-1">
+                <p className="mt-2 text-white/80">
                   {selectedRequest.accommodation || "Not specified"}
                 </p>
               </div>
               <div>
-                <Label className="text-sm font-medium text-gray-500">
+                
+                <Label className="text-white font-bold text-sm">
                   Transportation
                 </Label>
-                <p className="mt-1">
+                <p className="mt-2 text-white/80">
                   {selectedRequest.transportation || "Not specified"}
                 </p>
               </div>
@@ -92,10 +103,11 @@ const ViewRequestModal = ({
 
             {selectedRequest.activities && (
               <div>
-                <Label className="text-sm font-medium text-gray-500">
+                
+                <Label className="text-white font-bold text-sm">
                   Activities
                 </Label>
-                <p className="mt-1 p-3 bg-gray-50 rounded-lg">
+                <p className="mt-2 p-4 bg-black/50 border border-[#FFD700]/20 rounded-lg text-white/80">
                   {selectedRequest.activities}
                 </p>
               </div>
@@ -103,10 +115,11 @@ const ViewRequestModal = ({
 
             {selectedRequest.description && (
               <div>
-                <Label className="text-sm font-medium text-gray-500">
+                
+                <Label className="text-white font-bold text-sm">
                   Description
                 </Label>
-                <p className="mt-1 p-3 bg-gray-50 rounded-lg">
+                <p className="mt-2 p-4 bg-black/50 border border-[#FFD700]/20 rounded-lg text-white/80">
                   {selectedRequest.description}
                 </p>
               </div>
@@ -114,10 +127,11 @@ const ViewRequestModal = ({
 
             {selectedRequest.responseNotes && (
               <div>
-                <Label className="text-sm font-medium text-gray-500">
+               
+                <Label className="text-white font-bold text-sm">
                   Response Notes
                 </Label>
-                <p className="mt-1 p-3 bg-gray-50 rounded-lg">
+                <p className="mt-2 p-4 bg-black/50 border border-[#FFD700]/20 rounded-lg text-white/80">
                   {selectedRequest.responseNotes}
                 </p>
               </div>

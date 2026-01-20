@@ -12,9 +12,11 @@ import { handleCreate as handleCreateAction } from "./handleCreate.jsx";
 import { handleSubmit as handleSubmitAction } from "./handleSubmit.jsx";
 import { handleDelete as handleDeleteAction } from "./handleDelete.jsx";
 import { filterUsers } from "./filterUsers.jsx";
+import { applyAdvancedFilters } from "./advancedFilter.jsx";
 import UserForm from "./UserForm";
 import Modal from "./Modal";
 import TableUser from "./TableUser";
+import FilterPanel from "./FilterPanel";
 
 export default function UserManagement() {
   const [users, setUsers] = useState([]);
@@ -23,6 +25,12 @@ export default function UserManagement() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [filters, setFilters] = useState({
+    sortBy: "lastLogin",
+    sortOrder: "desc",
+    statuses: [],
+    roles: [],
+  });
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
@@ -73,7 +81,7 @@ export default function UserManagement() {
       onSuccess: () => fetchUsers(),
     });
 
-  const filteredUsers = filterUsers(users, searchTerm);
+  const filteredUsers = applyAdvancedFilters(users, searchTerm, filters);
 
   if (loading) {
     return <div className="text-center py-8 text-white">Loading users...</div>;
@@ -81,18 +89,19 @@ export default function UserManagement() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex items-center gap-3">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#FFD700]" />
           <Input
             placeholder="Search users..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-3 bg-black/50 border border-[#FFD700]/30 rounded-xl text-white placeholder-white/50 focus:outline-none focus:border-[#FFD700] focus:bg-black/70 transition-all"
+            className="w-full pl-10 pr-4 py-3 bg-black/50 border border-[#FFD700]/30 rounded-xl text-white placeholder-white/50 focus:outline-none focus:border-[#FFD700] focus:bg-black/70 transition-all"
           />
         </div>
+        <FilterPanel filters={filters} onFilterChange={setFilters} />
         <Button
-          className="flex items-center gap-2 bg-[#FFD700] text-black hover:bg-[#FFD700]/90 font-medium"
+          className="flex items-center gap-2 bg-[#FFD700] text-black hover:bg-[#FFD700]/90 font-medium whitespace-nowrap"
           onClick={handleCreate}
         >
           <Plus className="h-4 w-4" />
